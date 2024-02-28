@@ -1,4 +1,7 @@
+//using ApiSportTogether.model.dbContext;
+using ApiSportTogether.model.dbContext;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -10,12 +13,12 @@ IConfigurationRoot configuration = new ConfigurationBuilder()
 // Récupérer la chaîne de connexion
 string connectionString = configuration.GetConnectionString("DefaultConnection")!;
 
-//// Ajouter le contexte de base de données
-//builder.Services.AddDbContext<IterDbContext>(options =>
-//    options.UseMySql(connectionString, new MySqlServerVersion("8.0.35"), mysqlOptions => mysqlOptions.EnableRetryOnFailure(
-//                maxRetryCount: 5,
-//                maxRetryDelay: TimeSpan.FromSeconds(10),
-//                errorNumbersToAdd: null)));
+// Ajouter le contexte de base de données
+builder.Services.AddDbContext<SportTogetherContext>(options =>
+    options.UseMySql(connectionString, new MySqlServerVersion("8.0.35"), mysqlOptions => mysqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(10),
+                errorNumbersToAdd: null)));
 
 builder.Services.AddSignalR();
 builder.Services.AddCors(options =>
@@ -75,7 +78,7 @@ if (!app.Environment.IsDevelopment())
     _ = app.UseHsts();
 }
 // Configuration des endpoints
-app.MapGet("/", () => "API ITER ITER!");
+app.MapGet("/", () => "Api de Sport Together");
 
 // Activation des endpoints pour les contrôleurs
 app.MapControllers();
