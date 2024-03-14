@@ -1,6 +1,13 @@
+using Microsoft.AspNetCore.Authentication;
 using SportTogetherBlazor.Components;
+using SportTogetherBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddScoped<AuthServices>();
+builder.Services.AddScoped(sp => new HttpClient
+{
+    BaseAddress = new Uri("http://localhost:5000/ApiSportTogether/")
+});
 
 // Add services to the container.
 builder.Services.AddRazorComponents()

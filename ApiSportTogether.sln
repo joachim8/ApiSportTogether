@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiSportTogether", "ApitSpo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiSportTogether.model", "ApiSportTogether.model\ApiSportTogether.model.csproj", "{064EF7D1-CB78-45F7-86E3-1BAA18EA97AA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SportTogetherBlazor", "SportTogetherBlazor\SportTogetherBlazor.csproj", "{5DF02D93-6300-45CF-A76D-C50C9A2F9167}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SportTogetherBlazor", "SportTogetherBlazor\SportTogetherBlazor.csproj", "{5DF02D93-6300-45CF-A76D-C50C9A2F9167}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
