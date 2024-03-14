@@ -5,7 +5,7 @@ namespace ApiSportTogether.model.ObjectContext;
 
 public partial class Message
 {
-    public int Id { get; set; }
+    public int MessagesId { get; set; }
 
     public int? GroupeId { get; set; }
 

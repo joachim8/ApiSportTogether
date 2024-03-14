@@ -33,11 +33,11 @@ public partial class SportTogetherContext : DbContext
 
     public virtual DbSet<Sport> Sports { get; set; }
 
+    public virtual DbSet<SportFavori> SportFavoris { get; set; }
+
     public virtual DbSet<Utilisateur> Utilisateurs { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseMySql("server=localhost;user=root;database=sport-together;port=3306", ServerVersion.Parse("8.0.31-mysql"));
+  
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -55,9 +55,7 @@ public partial class SportTogetherContext : DbContext
 
             entity.HasIndex(e => e.UtilisateurId2, "fk_amis_UtilisateurID2");
 
-            entity.Property(e => e.AmisId)
-                .ValueGeneratedNever()
-                .HasColumnName("amis_id");
+            entity.Property(e => e.AmisId).HasColumnName("amis_id");
             entity.Property(e => e.DateAjout).HasColumnType("datetime");
             entity.Property(e => e.UtilisateurId1).HasColumnName("UtilisateurID1");
             entity.Property(e => e.UtilisateurId2).HasColumnName("UtilisateurID2");
@@ -85,9 +83,7 @@ public partial class SportTogetherContext : DbContext
 
             entity.HasIndex(e => e.ImageId, "fk_annonces_image_id");
 
-            entity.Property(e => e.AnnoncesId)
-                .ValueGeneratedNever()
-                .HasColumnName("annonces_id");
+            entity.Property(e => e.AnnoncesId).HasColumnName("annonces_id");
             entity.Property(e => e.Description).HasColumnType("text");
             entity.Property(e => e.GenreAttendu).HasColumnType("enum('Femme','Homme','Mixte')");
             entity.Property(e => e.ImageId).HasColumnName("image_id");
@@ -117,15 +113,13 @@ public partial class SportTogetherContext : DbContext
 
         modelBuilder.Entity<Groupe>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PRIMARY");
+            entity.HasKey(e => e.GroupesId).HasName("PRIMARY");
 
             entity.ToTable("groupes");
 
             entity.HasIndex(e => e.AnnonceId, "fk_groupes_AnnonceID");
 
-            entity.Property(e => e.Id)
-                .ValueGeneratedNever()
-                .HasColumnName("ID");
+            entity.Property(e => e.GroupesId).HasColumnName("groupes_ID");
             entity.Property(e => e.AnnonceId).HasColumnName("AnnonceID");
             entity.Property(e => e.DateCreation).HasColumnType("datetime");
             entity.Property(e => e.DateSuppression).HasColumnType("datetime");
@@ -144,9 +138,7 @@ public partial class SportTogetherContext : DbContext
 
             entity.HasIndex(e => e.UtilisateurId, "fk_images_UtilisateurID");
 
-            entity.Property(e => e.ImagesId)
-                .ValueGeneratedNever()
-                .HasColumnName("images_id");
+            entity.Property(e => e.ImagesId).HasColumnName("images_id");
             entity.Property(e => e.Timestamp).HasColumnType("datetime");
             entity.Property(e => e.Type).HasColumnType("enum('Profil','Publication','ActuSport')");
             entity.Property(e => e.Url)
@@ -162,7 +154,7 @@ public partial class SportTogetherContext : DbContext
 
         modelBuilder.Entity<Message>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PRIMARY");
+            entity.HasKey(e => e.MessagesId).HasName("PRIMARY");
 
             entity.ToTable("messages");
 
@@ -170,9 +162,7 @@ public partial class SportTogetherContext : DbContext
 
             entity.HasIndex(e => e.UtilisateurId, "fk_messages_UtilisateurID");
 
-            entity.Property(e => e.Id)
-                .ValueGeneratedNever()
-                .HasColumnName("ID");
+            entity.Property(e => e.MessagesId).HasColumnName("messages_id");
             entity.Property(e => e.Contenu).HasColumnType("text");
             entity.Property(e => e.GroupeId).HasColumnName("GroupeID");
             entity.Property(e => e.Timestamp).HasColumnType("datetime");
@@ -181,7 +171,7 @@ public partial class SportTogetherContext : DbContext
 
         modelBuilder.Entity<Participation>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PRIMARY");
+            entity.HasKey(e => e.ParticipationsId).HasName("PRIMARY");
 
             entity.ToTable("participations");
 
@@ -191,9 +181,7 @@ public partial class SportTogetherContext : DbContext
 
             entity.HasIndex(e => e.UtilisateurId, "fk_participations_UtilisateurID");
 
-            entity.Property(e => e.Id)
-                .ValueGeneratedNever()
-                .HasColumnName("ID");
+            entity.Property(e => e.ParticipationsId).HasColumnName("participations_id");
             entity.Property(e => e.AnnonceId).HasColumnName("AnnonceID");
             entity.Property(e => e.DateParticipation).HasColumnType("datetime");
             entity.Property(e => e.GroupeId).HasColumnName("GroupeID");
@@ -210,9 +198,7 @@ public partial class SportTogetherContext : DbContext
 
             entity.HasIndex(e => e.ImageId, "fk_publications_image_id");
 
-            entity.Property(e => e.PublicationsId)
-                .ValueGeneratedNever()
-                .HasColumnName("publications_id");
+            entity.Property(e => e.PublicationsId).HasColumnName("publications_id");
             entity.Property(e => e.Contenu).HasColumnType("text");
             entity.Property(e => e.ImageId).HasColumnName("image_id");
             entity.Property(e => e.UtilisateurId).HasColumnName("UtilisateurID");
@@ -232,23 +218,45 @@ public partial class SportTogetherContext : DbContext
 
             entity.ToTable("sports");
 
-            entity.Property(e => e.SportsId)
-                .ValueGeneratedNever()
-                .HasColumnName("sports_id");
+            entity.Property(e => e.SportsId).HasColumnName("sports_id");
             entity.Property(e => e.Nom).HasMaxLength(255);
+        });
+
+        modelBuilder.Entity<SportFavori>(entity =>
+        {
+            entity.HasKey(e => e.SportFavoriId).HasName("PRIMARY");
+
+            entity
+                .ToTable("sport_favori")
+                .HasCharSet("utf8mb3")
+                .UseCollation("utf8mb3_general_ci");
+
+            entity.HasIndex(e => e.UtilisateursId, "fk_sport_favori_utilisateursID");
+
+            entity.HasIndex(e => e.SportsId, "fk_sports_sportsFavoriID");
+
+            entity.Property(e => e.SportFavoriId).HasColumnName("sport_favori_id");
+            entity.Property(e => e.SportsId).HasColumnName("sports_id");
+            entity.Property(e => e.UtilisateursId).HasColumnName("utilisateurs_id");
+
+            entity.HasOne(d => d.Sports).WithMany(p => p.SportFavoris)
+                .HasForeignKey(d => d.SportsId)
+                .HasConstraintName("fk_sports_sportsFavoriID");
+
+            entity.HasOne(d => d.Utilisateurs).WithMany(p => p.SportFavoris)
+                .HasForeignKey(d => d.UtilisateursId)
+                .HasConstraintName("fk_sport_favori_utilisateursID");
         });
 
         modelBuilder.Entity<Utilisateur>(entity =>
         {
-            entity.HasKey(e => e.UserId).HasName("PRIMARY");
+            entity.HasKey(e => e.UtilisateursId).HasName("PRIMARY");
 
             entity.ToTable("utilisateurs");
 
             entity.HasIndex(e => e.ImageId, "fk_utilisateurs_image_id");
 
-            entity.Property(e => e.UserId)
-                .ValueGeneratedNever()
-                .HasColumnName("user_id");
+            entity.Property(e => e.UtilisateursId).HasColumnName("utilisateurs_id");
             entity.Property(e => e.Description).HasColumnType("text");
             entity.Property(e => e.Email).HasMaxLength(255);
             entity.Property(e => e.Etat).HasColumnType("enum('Actif','Bloqué')");
@@ -258,7 +266,6 @@ public partial class SportTogetherContext : DbContext
             entity.Property(e => e.Nom).HasMaxLength(255);
             entity.Property(e => e.Prenom).HasMaxLength(25);
             entity.Property(e => e.Pseudo).HasMaxLength(25);
-            entity.Property(e => e.SportsFavoris).HasMaxLength(255);
             entity.Property(e => e.Ville).HasMaxLength(255);
 
             entity.HasOne(d => d.Image).WithMany(p => p.Utilisateurs)

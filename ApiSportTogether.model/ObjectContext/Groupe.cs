@@ -5,7 +5,7 @@ namespace ApiSportTogether.model.ObjectContext;
 
 public partial class Groupe
 {
-    public int Id { get; set; }
+    public int GroupesId { get; set; }
 
     public int? AnnonceId { get; set; }
 

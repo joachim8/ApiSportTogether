@@ -10,4 +10,6 @@ public partial class Sport
     public string? Nom { get; set; }
 
     public virtual ICollection<Annonce> Annonces { get; set; } = new List<Annonce>();
+
+    public virtual ICollection<SportFavori> SportFavoris { get; set; } = new List<SportFavori>();
 }

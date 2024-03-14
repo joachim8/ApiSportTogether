@@ -39,13 +39,18 @@ builder.Services.AddAuthentication(options =>
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("IterIter49000EliasJoachimAAAAAAAAAAAAAAAAAAAAAAAA")),
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("SportTogetherJoachimAAAAAAAAAAAAAAAAAAAAAAAA")),
         ValidateIssuer = false,
         ValidateAudience = false,
-        ClockSkew = TimeSpan.FromMinutes(10)
+        ClockSkew = TimeSpan.FromMinutes(60)
     };
 });
-
+// Ajouter le contexte de base de données
+builder.Services.AddDbContext<SportTogetherContext>(options =>
+    options.UseMySql(connectionString, new MySqlServerVersion("8.0.35"), mysqlOptions => mysqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(10),
+                errorNumbersToAdd: null)));
 // Ajout des services pour les contrôleurs
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
@@ -53,8 +58,7 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 });
 WebApplication app = builder.Build();
 app.UseHttpsRedirection();
-builder.WebHost.UseUrls("http://localhost:5000");
-
+builder.WebHost.UseUrls("http://localhost:5000/");
 app.UseCors("MyCorsPolicy"); // Utiliser la politique CORS
 
 
@@ -78,7 +82,7 @@ if (!app.Environment.IsDevelopment())
     _ = app.UseHsts();
 }
 // Configuration des endpoints
-app.MapGet("/", () => "Api de Sport Together");
+app.MapGet("/", () => "Api de Sport.");
 
 // Activation des endpoints pour les contrôleurs
 app.MapControllers();

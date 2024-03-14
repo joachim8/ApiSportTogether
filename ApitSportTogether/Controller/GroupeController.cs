@@ -33,7 +33,7 @@ namespace ApiSportTogether.Controllers
         {
             var groupe = _context.Groupes
                                  .Include(g => g.Annonce)
-                                 .FirstOrDefault(g => g.Id == id);
+                                 .FirstOrDefault(g => g.GroupesId == id);
 
             return groupe == null ? NotFound() : groupe;
         }
@@ -45,14 +45,14 @@ namespace ApiSportTogether.Controllers
             _context.Groupes.Add(groupe);
             _context.SaveChanges();
 
-            return CreatedAtAction(nameof(GetGroupeById), new { id = groupe.Id }, groupe);
+            return CreatedAtAction(nameof(GetGroupeById), new { id = groupe.GroupesId }, groupe);
         }
 
         // PUT: ApiSportTogether/Groupe/5
         [HttpPut("{id}")]
         public IActionResult PutGroupe(int id, Groupe groupe)
         {
-            if (id != groupe.Id)
+            if (id != groupe.GroupesId)
             {
                 return BadRequest();
             }
@@ -65,7 +65,7 @@ namespace ApiSportTogether.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!_context.Groupes.Any(g => g.Id == id))
+                if (!_context.Groupes.Any(g => g.GroupesId == id))
                 {
                     return NotFound();
                 }

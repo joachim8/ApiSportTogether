@@ -3,6 +3,8 @@ using ApiSportTogether.model.ObjectContext;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ApiSportTogether.model.dbContext;
+using System.Security.Cryptography;
+using Microsoft.AspNetCore.Identity;
 
 namespace ApiSportTogether.Controllers
 {
@@ -21,7 +23,7 @@ namespace ApiSportTogether.Controllers
 
         // GET: ApiSportTogether/Utilisateur
         [HttpGet]
-        public ActionResult<IEnumerable<Utilisateur>> GetUtilisateurs()
+        public ActionResult<List<Utilisateur>> GetUtilisateurs()
         {
             return _context.Utilisateurs
                            .Include(u => u.Image)
@@ -42,7 +44,7 @@ namespace ApiSportTogether.Controllers
                                        .Include(u => u.AmiUtilisateurId2Navigations)
                                        .Include(u => u.Annonces)
                                        .Include(u => u.Publications)
-                                       .FirstOrDefault(u => u.UserId == id);
+                                       .FirstOrDefault(u => u.UtilisateursId == id);
 
             return utilisateur == null ? NotFound() : utilisateur;
         }
@@ -51,17 +53,27 @@ namespace ApiSportTogether.Controllers
         [HttpPost]
         public ActionResult<Utilisateur> PostUtilisateur(Utilisateur utilisateur)
         {
-            _context.Utilisateurs.Add(utilisateur);
-            _context.SaveChanges();
+            string motDePasseEncrypter = string.Empty;
+            if(utilisateur != null)
+            {
+                if(utilisateur.MotDePasse != null && utilisateur.MotDePasse != string.Empty)
+                {
+                    utilisateur.MotDePasse = HashPassword(utilisateur.MotDePasse);
+                }
+                _context.Utilisateurs.Add(utilisateur);
+                _context.SaveChanges();
 
-            return CreatedAtAction(nameof(GetUtilisateurById), new { id = utilisateur.UserId }, utilisateur);
+                return CreatedAtAction(nameof(GetUtilisateurById), new { id = utilisateur.UtilisateursId }, utilisateur);
+            }else 
+            { return NotFound(); }
+
         }
 
         // PUT: ApiSportTogether/Utilisateur/5
         [HttpPut("{id}")]
         public IActionResult PutUtilisateur(int id, Utilisateur utilisateur)
         {
-            if (id != utilisateur.UserId)
+            if (id != utilisateur.UtilisateursId)
             {
                 return BadRequest();
             }
@@ -74,7 +86,7 @@ namespace ApiSportTogether.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!_context.Utilisateurs.Any(u => u.UserId == id))
+                if (!_context.Utilisateurs.Any(u => u.UtilisateursId == id))
                 {
                     return NotFound();
                 }
@@ -85,6 +97,12 @@ namespace ApiSportTogether.Controllers
             }
 
             return NoContent();
+        }
+
+        private string HashPassword(string password)
+        {
+            var hasher = new PasswordHasher<object>();
+            return hasher.HashPassword(null, password);
         }
 
         // DELETE: ApiSportTogether/Utilisateur/5

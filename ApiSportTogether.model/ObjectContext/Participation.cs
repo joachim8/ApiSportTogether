@@ -5,7 +5,7 @@ namespace ApiSportTogether.model.ObjectContext;
 
 public partial class Participation
 {
-    public int Id { get; set; }
+    public int ParticipationsId { get; set; }
 
     public int? UtilisateurId { get; set; }
 

@@ -5,7 +5,7 @@ namespace ApiSportTogether.model.ObjectContext;
 
 public partial class Utilisateur
 {
-    public int UserId { get; set; }
+    public int UtilisateursId { get; set; }
 
     public string Nom { get; set; } = null!;
 
@@ -20,8 +20,6 @@ public partial class Utilisateur
     public int? Age { get; set; }
 
     public string? Ville { get; set; }
-
-    public string? SportsFavoris { get; set; }
 
     public string? Email { get; set; }
 
@@ -44,4 +42,6 @@ public partial class Utilisateur
     public virtual ICollection<Image> Images { get; set; } = new List<Image>();
 
     public virtual ICollection<Publication> Publications { get; set; } = new List<Publication>();
+
+    public virtual ICollection<SportFavori> SportFavoris { get; set; } = new List<SportFavori>();
 }
