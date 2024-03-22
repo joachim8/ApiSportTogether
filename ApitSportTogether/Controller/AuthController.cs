@@ -2,6 +2,7 @@
 using ApiSportTogether.model.ObjectContext;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -36,6 +37,23 @@ namespace ApiSportTogether.Controller
                 {
                     string token = GenerateJwtToken(utili.UtilisateursId);
                     Response.Cookies.Append("AuthToken", token, new CookieOptions { HttpOnly = true });
+                    utili.EnLigne =  true;
+                    _context.Entry(utili).State = EntityState.Modified;
+                    try
+                    {
+                        _context.SaveChanges();
+                    }
+                    catch (DbUpdateConcurrencyException)
+                    {
+                        if (!_context.Utilisateurs.Any(u => u.UtilisateursId == utili.UtilisateursId))
+                        {
+                            return NotFound();
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
                     return Ok(new { utili });
                 }
                 else

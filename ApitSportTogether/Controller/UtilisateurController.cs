@@ -56,10 +56,6 @@ namespace ApiSportTogether.Controllers
             string motDePasseEncrypter = string.Empty;
             if(utilisateur != null)
             {
-                if(utilisateur.MotDePasse != null && utilisateur.MotDePasse != string.Empty)
-                {
-                    utilisateur.MotDePasse = HashPassword(utilisateur.MotDePasse);
-                }
                 _context.Utilisateurs.Add(utilisateur);
                 _context.SaveChanges();
 
@@ -71,7 +67,7 @@ namespace ApiSportTogether.Controllers
 
         // PUT: ApiSportTogether/Utilisateur/5
         [HttpPut("{id}")]
-        public IActionResult PutUtilisateur(int id, Utilisateur utilisateur)
+        public ActionResult PutUtilisateur(int id, Utilisateur utilisateur)
         {
             if (id != utilisateur.UtilisateursId)
             {
