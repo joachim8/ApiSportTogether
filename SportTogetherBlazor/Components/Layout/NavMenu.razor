@@ -1,8 +1,4 @@
-﻿@using Microsoft.AspNetCore.Components.Authorization
-@inject AuthenticationStateProvider AuthenticationStateProvider
-
-@if (isUserAuthenticated)
-{
+﻿<link href="NavBar.css" rel="stylesheet" />
     <nav class="navbar">
         <ul class="navbar__menu">
             <li class="navbar__item">
@@ -23,16 +19,8 @@
         </ul>
     </nav>
 
-}
+
 
 @code {
-    private bool isUserAuthenticated;
-
-    protected override async Task OnInitializedAsync()
-    {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-
-        isUserAuthenticated = user.Identity.IsAuthenticated;
-    }
+   
 }

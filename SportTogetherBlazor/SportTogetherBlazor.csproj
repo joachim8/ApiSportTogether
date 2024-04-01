@@ -7,52 +7,67 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Update="wwwroot\SportTogeherImages\athletisme.jpg">
+    <None Include="wwwroot\images\athletisme.jpg" />
+    <None Include="wwwroot\images\badminton.jpg" />
+    <None Include="wwwroot\images\ballon-foot.jpg" />
+    <None Include="wwwroot\images\basketball.jpg" />
+    <None Include="wwwroot\images\boxe.jpg" />
+    <None Include="wwwroot\images\courreuse.jpg" />
+    <None Include="wwwroot\images\cycliste.jpg" />
+    <None Include="wwwroot\images\gymnastique.jpg" />
+    <None Include="wwwroot\images\hockey.jpg" />
+    <None Include="wwwroot\images\natation.jpg" />
+    <None Include="wwwroot\images\poids-salle.jpg" />
+    <None Include="wwwroot\images\pétanque.jpg" />
+    <None Include="wwwroot\images\rugby.jpg" />
+    <None Include="wwwroot\images\volleyball.jpg" />
+    <None Include="wwwroot\images\yoga.jpg" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="wwwroot\images\athletisme.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="wwwroot\SportTogeherImages\badminton.jpg">
+    <Content Update="wwwroot\images\badminton.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="wwwroot\SportTogeherImages\ballon-foot.jpg">
+    <Content Update="wwwroot\images\ballon-foot.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="wwwroot\SportTogeherImages\basketball.jpg">
+    <Content Update="wwwroot\images\basketball.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="wwwroot\SportTogeherImages\boxe.jpg">
+    <Content Update="wwwroot\images\boxe.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="wwwroot\SportTogeherImages\courreuse.jpg">
+    <Content Update="wwwroot\images\courreuse.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="wwwroot\SportTogeherImages\cycliste.jpg">
+    <Content Update="wwwroot\images\cycliste.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="wwwroot\SportTogeherImages\gymnastique.jpg">
+    <Content Update="wwwroot\images\gymnastique.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="wwwroot\SportTogeherImages\hockey.jpg">
+    <Content Update="wwwroot\images\hockey.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="wwwroot\SportTogeherImages\logo.png">
+    <Content Update="wwwroot\images\natation.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="wwwroot\SportTogeherImages\natation.jpg">
+    <Content Update="wwwroot\images\poids-salle.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="wwwroot\SportTogeherImages\poids-salle.jpg">
+    <Content Update="wwwroot\images\pétanque.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="wwwroot\SportTogeherImages\pétanque.jpg">
+    <Content Update="wwwroot\images\rugby.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="wwwroot\SportTogeherImages\rugby.jpg">
+    <Content Update="wwwroot\images\volleyball.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="wwwroot\SportTogeherImages\volleyball.jpg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="wwwroot\SportTogeherImages\yoga.jpg">
+    <Content Update="wwwroot\images\yoga.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
