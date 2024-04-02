@@ -1,12 +1,11 @@
 ﻿@inject NavigationManager NavigationManager
 @inherits LayoutComponentBase
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <div class="page">
-    @if (NavigationManager.Uri != NavigationManager.BaseUri)
+    @if (NavigationManager.Uri != NavigationManager.BaseUri && NavigationManager.Uri != (NavigationManager.BaseUri + "Connexion") && NavigationManager.Uri != (NavigationManager.BaseUri + "Inscription"))
     {
-        <div class="sidebar">
-            <NavMenu />
-        </div>
+        <NavMenu />
     }
 
     <main>

@@ -1,4 +1,4 @@
-﻿@page "/"
+﻿@page "/Connexion"
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 @using SportTogetherBlazor.Services
 @using System.Text.Json
@@ -11,13 +11,15 @@
             <div class="col col-md-8 col-lg-6 col-xl-5">
                 <div class="card" style="border-radius: 1rem;">
                         <div class=" d-flex align-items-center">
-                        <div class="card-body text-black d-flex flex-column justify-content-center">
+                        <div class="card-body text-black d-flex flex-column text-center">
                                 <EditForm Model="@loginModel" OnSubmit="@HandleLogin" FormName="LoginForm">
-                                <a href="https://localhost:7161/">
-                                    <img src="images/logo-black.png" class="img-fluid" style="width:100px; height:100px;" />
-                                </a>
+                                
                                 <div class="text-center">
-                                    <h2 class="fw-bold text-uppercase">Connexion</h2>                                
+                                    <h2 class="fw-bold text-uppercase">
+                                        Connexion <a href="https://localhost:7161/">
+                                            <img src="images/logo-black.png" class="img-fluid align-self-center" style="width:100px; height:100px;" />
+                                        </a>
+                                    </h2>
                                 </div>
                                     <div class="form-outline mb-4">
                                         <label class="form-label" for="pseudo">Pseudo</label>
@@ -91,7 +93,6 @@
                         Pseudo = loginModel.Pseudo,
                         Password = loginModel.Password
                     };
-
             
             NavigationManager.NavigateTo("/Accueil");
 
