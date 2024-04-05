@@ -53,6 +53,7 @@ namespace ApiSportTogether.Controller
         {
             if (utilisateur != null)
             {
+                utilisateur.MotDePasse = HashPassword(utilisateur.MotDePasse);
                 _context.Utilisateurs.Add(utilisateur);
                 _context.SaveChanges();
 

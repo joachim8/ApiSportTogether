@@ -105,6 +105,16 @@
                                     <label class="form-label" for="pseudo">Pseudo</label>
                                     <InputText id="pseudo" class="form-control" @bind-Value="inscriptionModel.Pseudo" />
                                 </div>
+                                    <!-- Colonne de droite ou gauche selon votre disposition -->
+                                    <div class="form-outline mb-2">
+                                        <label class="form-label" for="motDePasse">Mot de passe</label>
+                                        <InputText id="motDePasse" type="password" class="form-control" @bind-Value="inscriptionModel.MotDePasse" />
+                                    </div>
+                                    <div class="form-outline mb-2">
+                                        <label class="form-label" for="confirmationMotDePasse">Confirmer le mot de passe</label>
+                                        <InputText id="confirmationMotDePasse" type="password" class="form-control" @bind-Value="inscriptionModel.ConfirmationMotDePasse" />
+                                    </div>
+
                                 <div class="form-outline  mb-2">
                                         <label class="form-label" for="genre">Genre</label>
                                     <InputSelect id="genre" class="form-control" @bind-Value="inscriptionModel.Genre">
@@ -271,8 +281,9 @@
         try
         {
             inscriptionModel.Ville = rechercheVille;
-            var response = await httpClient.PostAsJsonAsync("CreateUtilisateur/Utilisateur", inscriptionModel);
-            
+            inscriptionModel.ConfirmationMotDePasse = string.Empty;
+            var response = await httpClient.PostAsJsonAsync("Utilisateur/CreateUtilisateur", inscriptionModel);
+
             if (response.IsSuccessStatusCode)
             {
                 // Désérialisez le contenu de la réponse en un objet UtilisateurInfo
@@ -291,7 +302,11 @@
                 }
                 // // L'inscription a réussi, redirigez ou affichez un message de succès.
                 // NavigationManager.NavigateTo("SportTogether/Annonces");
-                sportsList = await httpClient.GetFromJsonAsync<List<Sport>>("ApiSportTogether/Sport");
+                var list = await httpClient.GetFromJsonAsync<List<Object>>("Sport");
+                foreach(Object obj in list)
+                {
+                    sportsList.Add((Sport)obj);
+                }
                 showModal = true;
             }
             else
@@ -336,6 +351,13 @@
         public string? Etat { get; set; }
         // La validation de la ville peut être plus complexe, dépendant de votre logique d'application.
         public string Ville { get; set; }
+
+        [Required(ErrorMessage = "Le mot de passe est requis.")]
+        [RegularExpression("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^\\da-zA-Z]).{8,}$", ErrorMessage = "Le mot de passe doit contenir au moins 8 caractères, dont une majuscule, un chiffre, et un caractère spécial.")]
+        public string MotDePasse { get; set; }
+
+        [Compare("MotDePasse", ErrorMessage = "Les mots de passe ne correspondent pas.")]
+        public string ConfirmationMotDePasse { get; set; }
     }
     public class Ville
     {
@@ -346,7 +368,7 @@
     {
         public int SportId { get; set; }
         public string Name { get; set; }
-        public bool IsSelected { get; set; } // Ajouté pour gérer la sélection dans l'interface utilisateur
+        public bool IsSelected { get; set; } = false; // Ajouté pour gérer la sélection dans l'interface utilisateur
 
     }
     public class SportFavori

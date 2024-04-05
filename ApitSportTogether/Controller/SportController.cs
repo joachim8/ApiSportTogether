@@ -20,7 +20,9 @@ namespace ApiSportTogether.Controller
         [HttpGet]
         public ActionResult<List<Sport>> GetSports()
         {
-            return _context.Sports.ToList();
+            List<Sport> sports = new List<Sport>();
+            sports = _context.Sports.ToList();
+            return sports;
         }
 
         // GET: ApiSportTogether/Sport/5
