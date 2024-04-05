@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authentication;
 using SportTogetherBlazor.Components;
 using SportTogetherBlazor.Services;
 
@@ -12,7 +11,7 @@ builder.Services.AddScoped(sp => new HttpClient
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
-
+builder.Services.AddBlazorBootstrap();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -31,5 +30,9 @@ app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
-
+app.MapGet("/", context =>
+{
+    context.Response.Redirect("/SportTogether");
+    return Task.CompletedTask;
+});
 app.Run();

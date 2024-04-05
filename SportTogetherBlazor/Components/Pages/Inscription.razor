@@ -1,92 +1,372 @@
-﻿@page "/Inscription"
-
-!-- Section: Design Block -->
-<section class="text-center">
-  <!-- Background image -->
-  <div class="p-5 bg-image" style="
-        background-image: url('https://mdbootstrap.com/img/new/textures/full/171.jpg');
-        height: 300px;
-        "></div>
-  <!-- Background image -->
-
-  <div class="card mx-4 mx-md-5 shadow-5-strong" style="
-        margin-top: -100px;
-        background: hsla(0, 0%, 100%, 0.8);
+﻿@page "/SportTogether/Inscription"
+@inject HttpClient httpClient
+@using System.ComponentModel.DataAnnotations;
+@using System.Text.Json.Serialization;
+@* 
+    [JsonPropertyName("UtilisateursId")]
+    public int UtilisateursId { get; set; }
+    [JsonPropertyName("Nom")]
+    public string Nom { get; set; } = null!;
+    [JsonPropertyName("Prenom")]
+    public string Prenom { get; set; } = null!;
+    [JsonPropertyName("Pseudo")]
+    public string? Pseudo { get; set; }
+    [JsonPropertyName("MotDePasse")]
+    public string MotDePasse { get; set; } = null!;
+    [JsonPropertyName("Genre")]
+    public string? Genre { get; set; }
+    [JsonPropertyName("Age")]
+    public int? Age { get; set; }
+    [JsonPropertyName("Ville")]
+    public string? Ville { get; set; }
+    [JsonPropertyName("Email")]
+    public string? Email { get; set; }
+    [JsonPropertyName("Description")]
+    public string? Description { get; set; }
+    [JsonPropertyName("Etat")]
+    public string? Etat { get; set; } *@
+<style>
+    /* Style pour le conteneur global pour centrer la section */
+    body, html {
+        height: 100%; /* Nécessaire pour le centrage vertical */
+        margin-top: 5px;
+        
+    }
+   
+    /* Style de fond personnalisé avec effet flou */
+    .gradient-custom-2 {
+        /* Adapté aux préférences de couleurs, inspiré par Apple */
+        background: rgba(255, 255, 255, 0.7);
         backdrop-filter: blur(30px);
-        ">
-    <div class="card-body py-5 px-md-5">
+    }
 
-      <div class="row d-flex justify-content-center">
-        <div class="col-lg-8">
-          <h2 class="fw-bold mb-5">Sign up now</h2>
-          <form>
-            <!-- 2 column grid layout with text inputs for the first and last names -->
-            <div class="row">
-              <div class="col-md-6 mb-4">
-                <div class="form-outline">
-                  <input type="text" id="form3Example1" class="form-control" />
-                  <label class="form-label" for="form3Example1">First name</label>
+    /* Amélioration de l'ombre pour un effet plus prononcé */
+    .shadow-5-strong {
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Assure que la card prend toute la largeur de ses champs */
+    .card-registration .card-body {
+        padding: 5rem 5rem; /* Ajustez selon la largeur souhaitée */
+    }
+
+    /* Adaptations supplémentaires pour améliorer l'alignement et l'espacement */
+    .card-registration-2 {
+        border-radius: 15px;
+    }
+    /* Personnalisation spécifique pour les champs de formulaire */
+    .form-control, .form-control-lg, .select {
+        border-radius: 0.5rem;
+
+    }
+</style>
+<div class="container-fluid justify-content-center w-50">
+<section class="text-center ">
+        <div class="card mx-4 mx-md-5 shadow-5-strong text-white" style="background-color:#2C3B64  ;backdrop-filter: blur(30px);">
+        <div class="card-body py-5 px-md-5">
+            <div class="row d-flex justify-content-center">
+                <div class="col-lg-8">
+                    <div class="text-center">
+                        <h2 class="fw-bold mb-5">
+                            <a href="https://localhost:7161/SportTogether">
+                                <img src="images/logo-no-background.png" class="img-fluid align-self-center" style="width:100px; height:100px;" />
+                            </a>
+                           S'inscrire
+                        </h2>
+                    </div>
+                   
+                    <EditForm Model="@inscriptionModel" OnSubmit="@HandleInscription" FormName="InscriptionForm">
+                            <DataAnnotationsValidator />
+                            <ValidationSummary />
+                        <div class="row">
+                            <!-- Colonne de gauche -->
+                            <div class="col-md-6">
+                                <div class="form-outline  mb-2">
+                                    <label class="form-label" for="prenom">Prénom</label>
+                                    <InputText id="prenom" class="form-control" @bind-Value="inscriptionModel.Prenom" />
+                                </div>
+                                <div class="form-outline  mb-2">
+                                    <label class="form-label" for="nom">Nom</label>
+                                    <InputText id="nom" class="form-control" @bind-Value="inscriptionModel.Nom" />
+                                </div>
+                                <div class="form-outline mb-2">
+                                    <label class="form-label" for="email">Adresse Email</label>
+                                    <InputText id="email" class="form-control" @bind-Value="inscriptionModel.Email" />
+                                </div>
+                                <div class="form-outline  mb-2">
+                                        <label class="form-label" for="age">Âge</label>
+                                    <InputNumber id="age" class="form-control" @bind-Value="inscriptionModel.Age" min="15" max="120" />
+                                </div>
+                            </div>
+
+                            <!-- Colonne de droite -->
+                            <div class="col-md-6">
+                                <div class="form-outline  mb-2">
+                                    <label class="form-label" for="pseudo">Pseudo</label>
+                                    <InputText id="pseudo" class="form-control" @bind-Value="inscriptionModel.Pseudo" />
+                                </div>
+                                <div class="form-outline  mb-2">
+                                        <label class="form-label" for="genre">Genre</label>
+                                    <InputSelect id="genre" class="form-control" @bind-Value="inscriptionModel.Genre">
+                                        <option value="">Sélectionnez votre genre</option>
+                                        <option value="Femme">Femme</option>
+                                        <option value="Homme">Homme</option>
+                                        <option value="Non-genre">Non-genre</option>
+                                    </InputSelect>
+                                </div>
+                                <div class="form-outline  mb-2">
+                                        <label class="form-label" for="rechercheVille">Ville</label>
+                                    <InputText id="rechercheVille" class="form-control"
+                                                   @bind-Value="rechercheVille"
+                                               @oninput="@(async (ChangeEventArgs e) => await RechercherVilles(e.Value.ToString()))" />
+                                    @if (villes.Any())
+                                    {
+                                        <div class="list-group">
+                                            @foreach (var ville in villes)
+                                            {
+                                                <button type="button" class="list-group-item list-group-item-action"
+                                                        @onclick="() => SelectionnerVille(ville)">
+                                                    @ville.Nom
+                                                </button>
+                                            }
+                                        </div>
+                                    }
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Boutons soumettre et réseaux sociaux centrés en bas -->
+                        <div class="row">
+                            <div class="col-12 d-flex justify-content-center">
+                                <button type="submit" class="btn btn-outline-light btn-block mb-2">S'inscrire</button>
+                                  
+                                <button class="btn btn-outline-info btn-block mb-2 mx-2"><a href="/SportTogether/Connexion" style="text-decoration: none; color:aliceblue">Se connecter</a></button>
+                               
+                            </div>
+                            <div class="col-12 text-center">
+                                <p>or sign up with:</p>
+                                <button type="button" class="btn btn-link btn-floating mx-1">
+                                    <Icon Name="IconName.Google" Color="IconColor.Light" />
+                                </button>
+                                <button type="button" class="btn btn-link btn-floating mx-1">
+                                        <Icon Name="IconName.Apple" Color="IconColor.Light" />
+                                </button>
+                            </div>
+                        </div>
+                    </EditForm>
                 </div>
-              </div>
-              <div class="col-md-6 mb-4">
-                <div class="form-outline">
-                  <input type="text" id="form3Example2" class="form-control" />
-                  <label class="form-label" for="form3Example2">Last name</label>
-                </div>
-              </div>
             </div>
-
-            <!-- Email input -->
-            <div class="form-outline mb-4">
-              <input type="email" id="form3Example3" class="form-control" />
-              <label class="form-label" for="form3Example3">Email address</label>
-            </div>
-
-            <!-- Password input -->
-            <div class="form-outline mb-4">
-              <input type="password" id="form3Example4" class="form-control" />
-              <label class="form-label" for="form3Example4">Password</label>
-            </div>
-
-            <!-- Checkbox -->
-            <div class="form-check d-flex justify-content-center mb-4">
-              <input class="form-check-input me-2" type="checkbox" value="" id="form2Example33" checked />
-              <label class="form-check-label" for="form2Example33">
-                Subscribe to our newsletter
-              </label>
-            </div>
-
-            <!-- Submit button -->
-            <button type="submit" class="btn btn-primary btn-block mb-4">
-              Sign up
-            </button>
-
-            <!-- Register buttons -->
-            <div class="text-center">
-              <p>or sign up with:</p>
-              <button type="button" class="btn btn-link btn-floating mx-1">
-                <i class="fab fa-facebook-f"></i>
-              </button>
-
-              <button type="button" class="btn btn-link btn-floating mx-1">
-                <i class="fab fa-google"></i>
-              </button>
-
-              <button type="button" class="btn btn-link btn-floating mx-1">
-                <i class="fab fa-twitter"></i>
-              </button>
-
-              <button type="button" class="btn btn-link btn-floating mx-1">
-                <i class="fab fa-github"></i>
-              </button>
-            </div>
-          </form>
         </div>
-      </div>
     </div>
-  </div>
+        @if (showModal)
+        {
+            <div class="modal" tabindex="-1" style="display:block;">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Sélectionnez vos sports favoris</h5>
+                            <button type="button" class="close" @onclick="() => showModal = false">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <EditForm Model="@sportsList" OnValidSubmit="@HandleSportsFavorisSubmit">
+                                @foreach (var sport in sportsList)
+                                {
+                                    <div class="form-check">
+                                        <InputCheckbox class="form-check-input" @bind-Value="sport.IsSelected" />
+                                        <label class="form-check-label">@sport.Name</label>
+                                    </div>
+                                }
+                                <button type="submit" class="btn btn-primary">Enregistrer</button>
+                            </EditForm>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        }
+
 </section>
+</div>
+
 
 @code {
+    public InscriptionModel? inscriptionModel { get; set; } = new InscriptionModel();
+    private List<Ville> villes = new List<Ville>();
+    private string rechercheVille { get; set; }
+    private List<Sport> sportsList = new();
+    private bool showModal = false;
+    private UtilisateurInfo utilisateurInfo;
+    private void SelectionnerVille(Ville ville)
+    {
+        rechercheVille = ville.Nom;
+        villes.Clear(); // Cache les suggestions après la sélection
+    }
+
+    private async Task RechercherVilles(string recherche)
+    {
+        if (!string.IsNullOrEmpty(recherche) && recherche.Length >= 2) // Pour éviter des requêtes inutiles
+        {
+            if (!string.IsNullOrEmpty(recherche) && recherche.Length > 1) // Limite les requêtes pour les recherches de 2 caractères ou plus
+            {
+                try
+                {
+                    villes = await httpClient.GetFromJsonAsync<List<Ville>>($"https://geo.api.gouv.fr/communes?nom={recherche}&fields=nom,departement&boost=population&limit=5");
+                    StateHasChanged();
+                }
+                catch (Exception ex)
+                {
+                    // Gérez les exceptions, par exemple, en affichant un message d'erreur
+                    Console.WriteLine($"Erreur lors de la récupération des villes: {ex.Message}");
+                }
+            }
+
+        }
+    }
+    private async Task HandleSportsFavorisSubmit()
+    {
+        var selectedSports = sportsList.Where(s => s.IsSelected).ToList();
+
+        if (selectedSports.Count < 2)
+        {
+            // Gérez l'erreur : Assurez-vous de notifier l'utilisateur de sélectionner au moins 2 sports
+            return;
+        }
+
+        List<Task<HttpResponseMessage>> postTasks = new List<Task<HttpResponseMessage>>();
+        foreach (var sport in selectedSports)
+        {
+            var sportFavori = new SportFavori
+                {
+                    SportsId = sport.SportId,
+                    UtilisateursId = utilisateurInfo.UtilisateursId
+
+                };
+
+            postTasks.Add(httpClient.PostAsJsonAsync("VotreEndpointApi/SportFavori", sportFavori));
+        }
+
+        // Attendre que toutes les requêtes soient terminées
+        var responses = await Task.WhenAll(postTasks);
+
+        // Vérifiez si toutes les requêtes ont été couronnées de succès
+        if (responses.All(response => response.IsSuccessStatusCode))
+        {
+            // Tous les sports favoris ont été ajoutés avec succès
+            // Vous pouvez rediriger l'utilisateur ou afficher un message de confirmation
+        }
+        else
+        {
+            // Au moins une requête a échoué
+            // Vous pouvez recueillir les messages d'erreur et les afficher à l'utilisateur
+        }
+
+        // Traitez les sports sélectionnés ici
+        // Par exemple, envoyez-les à votre API pour les enregistrer comme sports favoris de l'utilisateur
+    }
+    private async Task HandleInscription()
+    {
+        try
+        {
+            inscriptionModel.Ville = rechercheVille;
+            var response = await httpClient.PostAsJsonAsync("CreateUtilisateur/Utilisateur", inscriptionModel);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                // Désérialisez le contenu de la réponse en un objet UtilisateurInfo
+                utilisateurInfo = (await response.Content.ReadFromJsonAsync<UtilisateurInfo>())!;
+
+                // Assurez-vous d'ajouter une vérification de nullité ici pour éviter des exceptions
+                if (utilisateurInfo != null)
+                {
+                    // Vous pouvez maintenant accéder aux propriétés de utili
+                    Console.WriteLine($"Pseudo de l'utilisateur : {utilisateurInfo.Pseudo}");
+                }
+                else
+                {
+                    // Gérer le cas où la désérialisation échoue ou la réponse est vide
+                    Console.WriteLine("Erreur lors de la désérialisation de la réponse.");
+                }
+                // // L'inscription a réussi, redirigez ou affichez un message de succès.
+                // NavigationManager.NavigateTo("SportTogether/Annonces");
+                sportsList = await httpClient.GetFromJsonAsync<List<Sport>>("ApiSportTogether/Sport");
+                showModal = true;
+            }
+            else
+            {
+                // La réponse a échoué. Gérez les erreurs ici.
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Erreur lors de l'inscription: {errorMessage}");
+            }
+        }
+        catch (Exception ex)
+        {
+            // Une exception a été levée. Gérez l'erreur ici.
+            Console.WriteLine($"Exception lors de l'inscription: {ex.Message}");
+        }
+    }
+    public class InscriptionModel
+    {
+        [Required(ErrorMessage = "Le prénom est requis.")]
+        [StringLength(100, ErrorMessage = "Le prénom ne peut pas dépasser 100 caractères.")]
+        public string Prenom { get; set; }
+
+        [Required(ErrorMessage = "Le nom est requis.")]
+        [StringLength(100, ErrorMessage = "Le nom ne peut pas dépasser 100 caractères.")]
+        public string Nom { get; set; }
+
+        [Required(ErrorMessage = "L'adresse email est requise.")]
+        [EmailAddress(ErrorMessage = "L'adresse email n'est pas valide.")]
+        public string Email { get; set; }
+
+        [Required(ErrorMessage = "L'âge est requis.")]
+        [Range(15, 120, ErrorMessage = "L'âge doit être compris entre 15 et 120 ans.")]
+        public int? Age { get; set; }
+
+        [Required(ErrorMessage = "Le pseudo est requis.")]
+        [StringLength(100, ErrorMessage = "Le pseudo ne peut pas dépasser 100 caractères.")]
+        public string Pseudo { get; set; }
+
+        [Required(ErrorMessage = "Le genre est requis.")]
+        public string Genre { get; set; }
+
+        public string? Description { get; set; }
+        public string? Etat { get; set; }
+        // La validation de la ville peut être plus complexe, dépendant de votre logique d'application.
+        public string Ville { get; set; }
+    }
+    public class Ville
+    {
+        public string Nom { get; set; }
+        public string CodeDepartement { get; set; }
+    }
+    public class Sport
+    {
+        public int SportId { get; set; }
+        public string Name { get; set; }
+        public bool IsSelected { get; set; } // Ajouté pour gérer la sélection dans l'interface utilisateur
+
+    }
+    public class SportFavori
+    {
+        [JsonPropertyName("SportFavoriId")]
+        public int SportFavoriId { get; set; }
+
+        [JsonPropertyName("SportsId")]
+        public int SportsId { get; set; }
+
+        [JsonPropertyName("UtilisateursId")]
+        public int UtilisateursId { get; set; }
+
+    }
+    public class UtilisateurInfo
+    {
+        [JsonPropertyName("UtilisateursId")]
+        public int UtilisateursId { get; set; }
+        [JsonPropertyName("Pseudo")]
+        public string Pseudo { get; set; } = null!;
+    }
 
 }

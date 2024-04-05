@@ -28,18 +28,24 @@ public partial class Utilisateur
     public bool? EnLigne { get; set; }
     [JsonPropertyName("ImageId")]
     public int? ImageId { get; set; }
+    [JsonIgnore]
     [JsonPropertyName("AmiUtilisateurId1Navigations")]
     public virtual ICollection<Ami> AmiUtilisateurId1Navigations { get; set; } = new List<Ami>();
+    [JsonIgnore]
     [JsonPropertyName("AmiUtilisateurId2Navigations")]
     public virtual ICollection<Ami> AmiUtilisateurId2Navigations { get; set; } = new List<Ami>();
+    [JsonIgnore]
     [JsonPropertyName("Annonces")]
     public virtual ICollection<Annonce> Annonces { get; set; } = new List<Annonce>();
     [JsonPropertyName("Image")]
     public virtual Image? Image { get; set; }
+    [JsonIgnore]
     [JsonPropertyName("Images")]
     public virtual ICollection<Image> Images { get; set; } = new List<Image>();
+    [JsonIgnore]
     [JsonPropertyName("Publications")]
     public virtual ICollection<Publication> Publications { get; set; } = new List<Publication>();
+    [JsonIgnore]
     [JsonPropertyName("SportFavoris")]
     public virtual ICollection<SportFavori> SportFavoris { get; set; } = new List<SportFavori>();
 }

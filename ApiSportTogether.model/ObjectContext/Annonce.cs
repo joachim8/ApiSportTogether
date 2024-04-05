@@ -34,7 +34,7 @@ public partial class Annonce
 
     [JsonPropertyName("AuteurNavigation")]
     public virtual Utilisateur AuteurNavigation { get; set; } = null!;
-
+    [JsonIgnore]
     [JsonPropertyName("Groupes")]
     public virtual ICollection<Groupe> Groupes { get; set; } = new List<Groupe>();
 

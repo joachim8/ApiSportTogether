@@ -1,12 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using ApiSportTogether.model.dbContext;
 using ApiSportTogether.model.ObjectContext;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using ApiSportTogether.model.dbContext;
-using System.Security.Cryptography;
-using Microsoft.AspNetCore.Identity;
 
-namespace ApiSportTogether.Controllers
+namespace ApiSportTogether.Controller
 {
     [ApiController]
     [Route("ApiSportTogether/[controller]")]
@@ -50,17 +48,17 @@ namespace ApiSportTogether.Controllers
         }
 
         // POST: ApiSportTogether/Utilisateur
-        [HttpPost]
-        public ActionResult<Utilisateur> PostUtilisateur(Utilisateur utilisateur)
+        [HttpPost("CreateUtilisateur")]
+        public ActionResult<Utilisateur> PostUtilisateur([FromBody]Utilisateur utilisateur)
         {
-            string motDePasseEncrypter = string.Empty;
-            if(utilisateur != null)
+            if (utilisateur != null)
             {
                 _context.Utilisateurs.Add(utilisateur);
                 _context.SaveChanges();
 
                 return CreatedAtAction(nameof(GetUtilisateurById), new { id = utilisateur.UtilisateursId }, utilisateur);
-            }else 
+            }
+            else
             { return NotFound(); }
 
         }

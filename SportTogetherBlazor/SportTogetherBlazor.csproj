@@ -25,6 +25,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Blazor.Bootstrap" Version="2.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Update="wwwroot\images\athletisme.jpg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

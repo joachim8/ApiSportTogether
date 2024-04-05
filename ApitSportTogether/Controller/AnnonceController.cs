@@ -3,7 +3,7 @@ using ApiSportTogether.model.ObjectContext;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace ApiSportTogether.Controllers
+namespace ApiSportTogether.Controller
 {
     [ApiController]
     [Route("ApiSportTogether/[controller]")]
@@ -44,7 +44,7 @@ namespace ApiSportTogether.Controllers
 
         // POST: ApiSportTogether/Annonce
         [HttpPost]
-        public ActionResult<Annonce> PostAnnonce(Annonce annonce)
+        public ActionResult<Annonce> PostAnnonce([FromBody] Annonce annonce)
         {
             _context.Annonces.Add(annonce);
             _context.SaveChanges();

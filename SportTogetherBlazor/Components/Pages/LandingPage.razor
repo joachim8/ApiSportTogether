@@ -1,19 +1,19 @@
-﻿@page "/"
+﻿@page "/SportTogether"
 @inject NavigationManager NavigationManager
-<nav class="navbar sticky-top navbar-expand-lg" style="background:#201c1c">
+<nav class="navbar sticky-top navbar-expand-lg " style="background:#201c1c">
     <div class="container-fluid">
         <a class="navbar-brand" href="#">
             <img src="/images/logo-no-background.png" width="60" height="60" alt="SportTogether"> <span class="text-light">SportTogether</span>
         </a>
     </div>
-    <div class="ms-auto">
+    <div class="ms-l-auto ms-sm-1">
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse text-nowrap" id="navbarNavDropdown">
+        <div class="collapse navbar-collapse accordion-collapse  text-nowrap" id="navbarNavDropdown">
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <NavLink class="nav-link text-light" href="/" style="color: lightgray;">Accueil</NavLink>
+                    <NavLink class="nav-link text-light" href="/SportTogether" style="color: lightgray;">Accueil</NavLink>
                 </li>
                 <li class="nav-item">
                     <NavLink class="nav-link text-light" href="#Apropos" style="color: lightgray;">A propos</NavLink>
@@ -22,9 +22,9 @@
                     <NavLink class="nav-link text-light" href="#Contact" style="color: lightgray;">Contact</NavLink>
                 </li>
             </ul>
-            <button class="btn btn-sm m-1" style="background:Red;"><a href="/Connexion" style="text-decoration: none;">Se connecter</a></button>
+            <button class="btn btn-sm m-1" style="background:Red;"><a href="/SportTogether/Connexion" style="text-decoration: none; color:aliceblue">Se connecter</a></button>
             <hr/>
-            <button class="btn btn-sm btn-light"><a href="/Inscription" style="text-decoration: none;">Inscription</a></button>
+            <button class="btn btn-sm btn-light"><a href="/SportTogether/Inscription" style="text-decoration: none; color:black">Inscription</a></button>
         </div>
        
    </div>

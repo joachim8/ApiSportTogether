@@ -26,7 +26,7 @@ namespace ApiSportTogether.Controller
         [HttpPost("login")]
         public ActionResult Login([FromBody] UserCredentials credentials)
         {
-            Utilisateur? utili = _context.Utilisateurs.Where(u => u.Pseudo == credentials.Pseudo).FirstOrDefault() ?? throw new Exception("Votre login ou mot de passe n'est pas valide.");
+            Utilisateur? utili = _context.Utilisateurs.Where(u => u.Pseudo == credentials.Pseudo).FirstOrDefault();
 
             // Méthode pour trouver l'utilisateur
             if (utili != null)
@@ -37,7 +37,7 @@ namespace ApiSportTogether.Controller
                 {
                     string token = GenerateJwtToken(utili.UtilisateursId);
                     Response.Cookies.Append("AuthToken", token, new CookieOptions { HttpOnly = true });
-                    utili.EnLigne =  true;
+                    utili.EnLigne = true;
                     _context.Entry(utili).State = EntityState.Modified;
                     try
                     {
@@ -58,26 +58,26 @@ namespace ApiSportTogether.Controller
                 }
                 else
                 {
-                    throw new Exception("Votre login ou mdp n'est pas valide.");
+                    return NotFound("Votre login ou mot de passe n'est pas valide.");
                 }
             }
             else
             {
-
+                return NotFound("Votre login ou mot de passe n'est pas valide.");
             }
-            return Unauthorized();
+
         }
 
         private bool ValidateUser(UserCredentials credentials)
         {
             bool IsValid = false;
-            Utilisateur ? utili =  _context.Utilisateurs.Where(u => u.Pseudo == credentials.Pseudo).FirstOrDefault();
-            if(utili != null)
+            Utilisateur? utili = _context.Utilisateurs.Where(u => u.Pseudo == credentials.Pseudo).FirstOrDefault();
+            if (utili != null)
             {
                 IsValid = VerifyPassword(utili.MotDePasse, credentials.Password);
                 utili.EnLigne = true;
             }
-            
+
             return IsValid;
         }
 
@@ -103,7 +103,7 @@ namespace ApiSportTogether.Controller
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
-           
+
         }
         private bool VerifyPassword(string hashedPassword, string providedPassword)
         {
@@ -112,10 +112,10 @@ namespace ApiSportTogether.Controller
             return result == PasswordVerificationResult.Success;
         }
     }
-   
+
     public class UserCredentials
     {
-        public string Pseudo { get; set; }
-        public string Password { get; set; }
+        public required string Pseudo { get; set; }
+        public required string Password { get; set; }
     }
 }

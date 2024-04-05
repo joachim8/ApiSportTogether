@@ -3,7 +3,7 @@ using ApiSportTogether.model.ObjectContext;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace ApiSportTogether.Controllers
+namespace ApiSportTogether.Controller
 {
     [ApiController]
     [Route("ApiSportTogether/[controller]")]
@@ -40,7 +40,7 @@ namespace ApiSportTogether.Controllers
 
         // POST: ApiSportTogether/Groupe
         [HttpPost]
-        public ActionResult<Groupe> PostGroupe(Groupe groupe)
+        public ActionResult<Groupe> PostGroupe([FromBody] Groupe groupe)
         {
             _context.Groupes.Add(groupe);
             _context.SaveChanges();

@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using ApiSportTogether.model.ObjectContext;
+﻿using ApiSportTogether.model.ObjectContext;
 using Microsoft.EntityFrameworkCore;
-using Pomelo.EntityFrameworkCore.MySql.Scaffolding.Internal;
 
 namespace ApiSportTogether.model.dbContext;
 
@@ -37,7 +34,7 @@ public partial class SportTogetherContext : DbContext
 
     public virtual DbSet<Utilisateur> Utilisateurs { get; set; }
 
-  
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -260,7 +257,7 @@ public partial class SportTogetherContext : DbContext
             entity.Property(e => e.Description).HasColumnType("text");
             entity.Property(e => e.Email).HasMaxLength(255);
             entity.Property(e => e.Etat).HasColumnType("enum('Actif','Bloqué')");
-            entity.Property(e => e.Genre).HasColumnType("enum('Femme','Homme','Mixte')");
+            entity.Property(e => e.Genre).HasColumnType("enum('Femme','Homme','Mixte', 'Non-genre')");
             entity.Property(e => e.ImageId).HasColumnName("image_id");
             entity.Property(e => e.MotDePasse).HasMaxLength(100);
             entity.Property(e => e.Nom).HasMaxLength(255);

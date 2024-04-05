@@ -3,7 +3,7 @@ using ApiSportTogether.model.ObjectContext;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace ApiSportTogether.Controllers
+namespace ApiSportTogether.Controller
 {
     [ApiController]
     [Route("ApiSportTogether/[controller]")]
@@ -39,7 +39,7 @@ namespace ApiSportTogether.Controllers
 
         // POST: ApiSportTogether/Ami
         [HttpPost]
-        public ActionResult<Ami> PostAmi(Ami ami)
+        public ActionResult<Ami> PostAmi([FromBody] Ami ami)
         {
             _context.Amis.Add(ami);
             _context.SaveChanges();

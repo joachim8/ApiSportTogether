@@ -1,11 +1,10 @@
 ﻿namespace ApiSportTogether.Controller
 {
+    using global::ApiSportTogether.model.dbContext;
+    using global::ApiSportTogether.model.ObjectContext;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.EntityFrameworkCore;
     using System.Linq;
-    using System.Threading.Tasks;
-    using global::ApiSportTogether.model.dbContext;
-    using global::ApiSportTogether.model.ObjectContext;
 
     namespace ApiSportTogether.Controllers
     {
@@ -24,7 +23,7 @@
             [HttpGet]
             public ActionResult<List<SportFavori>> GetSportsFavoris()
             {
-                return  _context.SportFavoris
+                return _context.SportFavoris
                     .Include(sf => sf.Sports)
                     .Include(sf => sf.Utilisateurs)
                     .ToList();
@@ -34,7 +33,7 @@
             [HttpGet("{id}")]
             public ActionResult<SportFavori> GetSportFavori(int id)
             {
-                var sportFavori =  _context.SportFavoris
+                var sportFavori = _context.SportFavoris
                     .Include(sf => sf.Sports)
                     .Include(sf => sf.Utilisateurs)
                     .FirstOrDefaultAsync(sf => sf.SportFavoriId == id);
@@ -49,10 +48,10 @@
 
             // POST: SportFavori
             [HttpPost]
-            public ActionResult<SportFavori> PostSportFavori(SportFavori sportFavori)
+            public ActionResult<SportFavori> PostSportFavori([FromBody] SportFavori sportFavori)
             {
                 _context.SportFavoris.Add(sportFavori);
-                 _context.SaveChangesAsync();
+                _context.SaveChangesAsync();
 
                 return CreatedAtAction("GetSportFavori", new { id = sportFavori.SportFavoriId }, sportFavori);
             }
@@ -89,7 +88,7 @@
 
             // DELETE: SportFavori/5
             [HttpDelete("{id}")]
-            public  ActionResult DeleteSportFavori(int id)
+            public ActionResult DeleteSportFavori(int id)
             {
                 var sportFavori = _context.SportFavoris.Find(id);
                 if (sportFavori == null)
@@ -98,7 +97,7 @@
                 }
 
                 _context.SportFavoris.Remove(sportFavori);
-                 _context.SaveChangesAsync();
+                _context.SaveChangesAsync();
 
                 return NoContent();
             }
