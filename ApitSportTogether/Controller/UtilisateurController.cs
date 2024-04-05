@@ -47,7 +47,7 @@ namespace ApiSportTogether.Controller
             return utilisateur == null ? NotFound() : utilisateur;
         }
 
-        // POST: ApiSportTogether/Utilisateur
+        // POST: ApiSportTogether/Utilisateur/CreateUtilisateur
         [HttpPost("CreateUtilisateur")]
         public ActionResult<Utilisateur> PostUtilisateur([FromBody]Utilisateur utilisateur)
         {

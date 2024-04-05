@@ -2,29 +2,7 @@
 @inject HttpClient httpClient
 @using System.ComponentModel.DataAnnotations;
 @using System.Text.Json.Serialization;
-@* 
-    [JsonPropertyName("UtilisateursId")]
-    public int UtilisateursId { get; set; }
-    [JsonPropertyName("Nom")]
-    public string Nom { get; set; } = null!;
-    [JsonPropertyName("Prenom")]
-    public string Prenom { get; set; } = null!;
-    [JsonPropertyName("Pseudo")]
-    public string? Pseudo { get; set; }
-    [JsonPropertyName("MotDePasse")]
-    public string MotDePasse { get; set; } = null!;
-    [JsonPropertyName("Genre")]
-    public string? Genre { get; set; }
-    [JsonPropertyName("Age")]
-    public int? Age { get; set; }
-    [JsonPropertyName("Ville")]
-    public string? Ville { get; set; }
-    [JsonPropertyName("Email")]
-    public string? Email { get; set; }
-    [JsonPropertyName("Description")]
-    public string? Description { get; set; }
-    [JsonPropertyName("Etat")]
-    public string? Etat { get; set; } *@
+@inject NavigationManager NavigationManager
 <style>
     /* Style pour le conteneur global pour centrer la section */
     body, html {
@@ -169,40 +147,31 @@
             </div>
         </div>
     </div>
-        @if (showModal)
-        {
-            <div class="modal" tabindex="-1" style="display:block;">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Sélectionnez vos sports favoris</h5>
-                            <button type="button" class="close" @onclick="() => showModal = false">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <EditForm Model="@sportsList" OnValidSubmit="@HandleSportsFavorisSubmit">
-                                @foreach (var sport in sportsList)
-                                {
-                                    <div class="form-check">
-                                        <InputCheckbox class="form-check-input" @bind-Value="sport.IsSelected" />
-                                        <label class="form-check-label">@sport.Name</label>
-                                    </div>
-                                }
-                                <button type="submit" class="btn btn-primary">Enregistrer</button>
-                            </EditForm>
-                        </div>
+            <Modal @ref="modal" title="Sélectionnez vos sports favoris" IsVerticallyCentered="true">
+                <BodyTemplate>
+                    <EditForm Model="@sportsList" OnValidSubmit="@HandleSportsFavorisSubmit">
+                        @foreach (var sport in sportsList)
+                        {
+                            <div class="form-check">
+                                <InputCheckbox class="form-check-input" @bind-Value="sport.IsSelected" />
+                                <label class="form-check-label">@sport.Nom</label>
+                            </div>
+                        }
+                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                    </EditForm>
+                </BodyTemplate>
+                <FooterTemplate>
+                    <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Ok</Button>
+                </FooterTemplate>
+            </Modal>
 
-                    </div>
-                </div>
-            </div>
-        }
 
 </section>
 </div>
 
 
 @code {
+    private Modal modal = default!;
     public InscriptionModel? inscriptionModel { get; set; } = new InscriptionModel();
     private List<Ville> villes = new List<Ville>();
     private string rechercheVille { get; set; }
@@ -213,6 +182,14 @@
     {
         rechercheVille = ville.Nom;
         villes.Clear(); // Cache les suggestions après la sélection
+    }
+    public class SportsWrapper
+    {
+        [JsonPropertyName("$id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("$values")]
+        public List<Sport> Sports { get; set; }
     }
 
     private async Task RechercherVilles(string recherche)
@@ -245,36 +222,31 @@
             return;
         }
 
-        List<Task<HttpResponseMessage>> postTasks = new List<Task<HttpResponseMessage>>();
+
         foreach (var sport in selectedSports)
         {
-            var sportFavori = new SportFavori
+            SportFavori sportFavori = new SportFavori
                 {
-                    SportsId = sport.SportId,
+                    SportsId = sport.SportsId,
                     UtilisateursId = utilisateurInfo.UtilisateursId
 
                 };
 
-            postTasks.Add(httpClient.PostAsJsonAsync("VotreEndpointApi/SportFavori", sportFavori));
-        }
+            var response = await httpClient.PostAsJsonAsync("SportFavori/CreateSportFavori", sportFavori);
 
-        // Attendre que toutes les requêtes soient terminées
-        var responses = await Task.WhenAll(postTasks);
-
-        // Vérifiez si toutes les requêtes ont été couronnées de succès
-        if (responses.All(response => response.IsSuccessStatusCode))
-        {
-            // Tous les sports favoris ont été ajoutés avec succès
-            // Vous pouvez rediriger l'utilisateur ou afficher un message de confirmation
+            if (response.IsSuccessStatusCode)
+            {
+            }
+            else
+            {
+              string errorMessage =   await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Pb d'ajout de sport en favori : {errorMessage}");
+            }
         }
-        else
-        {
-            // Au moins une requête a échoué
-            // Vous pouvez recueillir les messages d'erreur et les afficher à l'utilisateur
-        }
+        NavigationManager.NavigateTo("SportTogether/Annonces");
+        
 
-        // Traitez les sports sélectionnés ici
-        // Par exemple, envoyez-les à votre API pour les enregistrer comme sports favoris de l'utilisateur
+
     }
     private async Task HandleInscription()
     {
@@ -300,14 +272,36 @@
                     // Gérer le cas où la désérialisation échoue ou la réponse est vide
                     Console.WriteLine("Erreur lors de la désérialisation de la réponse.");
                 }
-                // // L'inscription a réussi, redirigez ou affichez un message de succès.
-                // NavigationManager.NavigateTo("SportTogether/Annonces");
-                var list = await httpClient.GetFromJsonAsync<List<Object>>("Sport");
-                foreach(Object obj in list)
-                {
-                    sportsList.Add((Sport)obj);
-                }
+                await GetListOfSport();
+                await OnShowModalClick();
+            }
+            else
+            {
+                // La réponse a échoué. Gérez les erreurs ici.
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Erreur lors de l'inscription: {errorMessage}");
+            }
+        }
+        catch (Exception ex)
+        {
+            // Une exception a été levée. Gérez l'erreur ici.
+            Console.WriteLine($"Exception lors de l'inscription: {ex.Message}");
+        }
+    }
+    private async Task GetListOfSport()
+    {
+        try
+        {
+            
+            var response = await httpClient.GetAsync("Sport");
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Utilisez SportsWrapper pour la désérialisation
+                var wrapper = await response.Content.ReadFromJsonAsync<SportsWrapper>();
+                sportsList = wrapper?.Sports ?? new List<Sport>();
                 showModal = true;
+                
             }
             else
             {
@@ -355,7 +349,7 @@
         [Required(ErrorMessage = "Le mot de passe est requis.")]
         [RegularExpression("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^\\da-zA-Z]).{8,}$", ErrorMessage = "Le mot de passe doit contenir au moins 8 caractères, dont une majuscule, un chiffre, et un caractère spécial.")]
         public string MotDePasse { get; set; }
-
+        [Required(ErrorMessage = "Le mot de passe est requis.")]
         [Compare("MotDePasse", ErrorMessage = "Les mots de passe ne correspondent pas.")]
         public string ConfirmationMotDePasse { get; set; }
     }
@@ -366,8 +360,10 @@
     }
     public class Sport
     {
-        public int SportId { get; set; }
-        public string Name { get; set; }
+        [JsonPropertyName("SportsId")]
+        public int SportsId { get; set; }
+        [JsonPropertyName("Nom")]
+        public string Nom { get; set; }
         public bool IsSelected { get; set; } = false; // Ajouté pour gérer la sélection dans l'interface utilisateur
 
     }
@@ -389,6 +385,15 @@
         public int UtilisateursId { get; set; }
         [JsonPropertyName("Pseudo")]
         public string Pseudo { get; set; } = null!;
+    }
+    private async Task OnShowModalClick()
+    {
+        await modal.ShowAsync();
+    }
+
+    private async Task OnHideModalClick()
+    {
+        await modal.HideAsync();
     }
 
 }

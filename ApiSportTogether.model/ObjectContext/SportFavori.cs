@@ -6,14 +6,15 @@ public partial class SportFavori
     public int SportFavoriId { get; set; }
 
     [JsonPropertyName("SportsId")]
-    public int SportsId { get; set; }
+    public int? SportsId { get; set; }
 
     [JsonPropertyName("UtilisateursId")]
-    public int UtilisateursId { get; set; }
+    public int? UtilisateursId { get; set; }
 
     [JsonPropertyName("Sports")]
-    public virtual Sport Sports { get; set; } = null!;
-
+    [JsonIgnore]
+    public virtual Sport? Sports { get; set; }
+    [JsonIgnore]
     [JsonPropertyName("Utilisateurs")]
-    public virtual Utilisateur Utilisateurs { get; set; } = null!;
+    public virtual Utilisateur? Utilisateurs { get; set; }
 }

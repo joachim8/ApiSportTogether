@@ -12,7 +12,10 @@ IConfigurationRoot configuration = new ConfigurationBuilder()
     .Build();
 // Récupérer la chaîne de connexion
 string connectionString = configuration.GetConnectionString("DefaultConnection")!;
-
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "API SportTogether", Version = "v1" });
+});
 // Ajouter le contexte de base de données
 builder.Services.AddDbContext<SportTogetherContext>(options =>
     options.UseMySql(connectionString, new MySqlServerVersion("8.0.35"), mysqlOptions => mysqlOptions.EnableRetryOnFailure(
@@ -57,6 +60,14 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
 });
 WebApplication app = builder.Build();
+if(app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "API ITER ITER V1");
+    });
+}
 app.UseHttpsRedirection();
 builder.WebHost.UseUrls("http://localhost:5000/");
 app.UseCors("MyCorsPolicy"); // Utiliser la politique CORS
