@@ -1,6 +1,7 @@
 ﻿@page "/SportTogether"
 @inject NavigationManager NavigationManager
-<nav class="navbar sticky-top navbar-expand-lg " style="background:#201c1c">
+<PageTitle>Accueil | SportTogether</PageTitle>
+<nav class="navbar sticky-top navbar-expand-lg position-sticky" style="background:#201c1c">
     <div class="container-fluid">
         <a class="navbar-brand" href="#">
             <img src="/images/logo-no-background.png" width="60" height="60" alt="SportTogether"> <span class="text-light">SportTogether</span>
@@ -22,9 +23,9 @@
                     <NavLink class="nav-link text-light" href="#Contact" style="color: lightgray;">Contact</NavLink>
                 </li>
             </ul>
-            <button class="btn btn-sm m-1" style="background:Red;"><a href="/SportTogether/Connexion" style="text-decoration: none; color:aliceblue">Se connecter</a></button>
+            <Button Color="ButtonColor.None" onclick="@AllerSeConnecter" TooltipTitle="Se connecter"><Icon Name="IconName.PersonCircle" Color="IconColor.Light" Size="IconSize.x2"></Icon></Button>
             <hr/>
-            <button class="btn btn-sm btn-light"><a href="/SportTogether/Inscription" style="text-decoration: none; color:black">Inscription</a></button>
+            <Button Color="ButtonColor.None" onclick="@AllerInscription" TooltipTitle="Inscription" TooltipPlacement="TooltipPlacement.Bottom"><Icon Name="IconName.SignIntersectionFill" Color="IconColor.Light" Size="IconSize.x2"></Icon></Button>
         </div>
        
    </div>
@@ -33,5 +34,12 @@
 
 
 @code {
-  
+    private void AllerSeConnecter()
+    {
+        NavigationManager.NavigateTo("SportTogether/Connexion");
+    }  
+    private void AllerInscription()
+    {
+        NavigationManager.NavigateTo("SportTogether/Inscription");
+    }
 }

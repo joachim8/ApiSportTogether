@@ -2,9 +2,12 @@
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 @using SportTogetherBlazor.Services
 @using System.Text.Json
+@using SportTogetherBlazor.Models;
+@inject IJSRuntime jsRuntime
 @inject HttpClient httpClient
 @inject NavigationManager NavigationManager
-@inject ProtectedLocalStorage ProtectedLocalStorage
+@inject LocalStorageServices LocalStorage
+<PageTitle> Connexion | SportTogether</PageTitle>
 <section class="vh-100" style="background-color: #13222F;">
     <div class="container h-100">
         <div class="row no-gutters d-flex justify-content-center align-items-center h-100">
@@ -74,48 +77,70 @@
     private Modal modal = default!;
     private async Task HandleLogin()
     {
-        var response = await httpClient.PostAsJsonAsync("auth/login", loginModel);
-        if (response.IsSuccessStatusCode)
+        try
         {
-            var utilisateurInfo = new UtilisateurInfo
+            var response = await httpClient.PostAsJsonAsync("auth/login", loginModel);
+            if (response.IsSuccessStatusCode)
+            {
+                var options = new JsonSerializerOptions
                     {
-                        Pseudo = loginModel.Pseudo,
-                        Password = loginModel.Password
+                        PropertyNameCaseInsensitive = false
                     };
+                var jsonString = await response.Content.ReadAsStringAsync();
+                Utilisateur utilisateurInfo = JsonSerializer.Deserialize<Utilisateur>(jsonString, options)!;
+                if (utilisateurInfo.UtilisateursId != 0)
+                {
+                    await LocalStorage.SaveUserToLocalStore(utilisateurInfo);
+                    NavigationManager.NavigateTo("SportTogether/Annonces");
+                }
+                else
+                {
+                    titreErreur = "L'utilisateur n'a pas été enregistrer";
+                    errorMessage = "Une erreur s'est produite lors de la connexion. Veuillez réessayer plus tard.";
+                    showErrorModal = true;
+                    await OnShowModalClick();
+                }
 
-            NavigationManager.NavigateTo("SportTogether/Annonces");
 
+
+
+            }
+            else
+            {
+                // Vous pouvez personnaliser le message d'erreur basé sur le statut de la réponse
+                if (response.StatusCode == System.Net.HttpStatusCode.InternalServerError)
+                {
+                    titreErreur = "Le serveur ne répond pas";
+                    errorMessage = "Une erreur s'est produite lors de la connexion. Veuillez réessayer plus tard.";
+
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    errorMessage = "Mauvais nom d'utilisateur ou mot de passe.";
+                    titreErreur = "Erreur d'authentification";
+                }
+                showErrorModal = true;
+                await OnShowModalClick();
+            }
         }
-        else
+        catch (JsonException ex)
         {
-            // Vous pouvez personnaliser le message d'erreur basé sur le statut de la réponse
-            if (response.StatusCode == System.Net.HttpStatusCode.InternalServerError)
-            {
-                titreErreur = "Le serveur ne répond pas";
-                errorMessage = "Une erreur s'est produite lors de la connexion. Veuillez réessayer plus tard.";
-                
-            }
-            else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
-            {
-                errorMessage = "Mauvais nom d'utilisateur ou mot de passe.";
-                titreErreur = "Erreur d'authentification";
-            }
+            titreErreur = "Le Json a rencontré une exception";
+            errorMessage = ex.Message;
             showErrorModal = true;
             await OnShowModalClick();
         }
     }
 
+
+
     public class LoginModel
     {
         public string? Pseudo { get; set; }
-
         public string? Password { get; set; }
+
     }
-    public class UtilisateurInfo
-    {
-        public string Pseudo { get; set; } = null!;
-        public string Password { get; set; } = null!;
-    }
+    
 
     private async Task OnShowModalClick()
     {
@@ -126,5 +151,7 @@
     {
         await modal.HideAsync();
     }
+    
+
 }
 

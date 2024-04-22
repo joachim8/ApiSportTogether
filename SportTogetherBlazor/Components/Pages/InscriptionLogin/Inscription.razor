@@ -3,6 +3,7 @@
 @using System.ComponentModel.DataAnnotations;
 @using System.Text.Json.Serialization;
 @inject NavigationManager NavigationManager
+<PageTitle> Inscription | SportTogether</PageTitle>
 <style>
     /* Style pour le conteneur global pour centrer la section */
     body, html {
@@ -40,7 +41,7 @@
 </style>
 <div class="container-fluid justify-content-center w-50">
 <section class="text-center ">
-        <div class="card mx-4 mx-md-5 shadow-5-strong text-white" style="background-color:#2C3B64  ;backdrop-filter: blur(30px);">
+        <div class="card mx-4 mx-md-5 shadow-5-strong text-white" style="background-color:#13222F  ;backdrop-filter: blur(30px);">
         <div class="card-body py-5 px-md-5">
             <div class="row d-flex justify-content-center">
                 <div class="col-lg-8">
@@ -157,11 +158,11 @@
                                 <label class="form-check-label">@sport.Nom</label>
                             </div>
                         }
-                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                        <Button Color="ButtonColor.Secondary" type="submit">Enregistrer</Button>
                     </EditForm>
                 </BodyTemplate>
                 <FooterTemplate>
-                    <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Ok</Button>
+                   
                 </FooterTemplate>
             </Modal>
 

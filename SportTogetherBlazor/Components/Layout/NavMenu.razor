@@ -1,14 +1,15 @@
 ﻿@inherits LayoutComponentBase
+@using SportTogetherBlazor.Services
 @inject NavigationManager NavigationManager
-
-<div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark" style="width: 280px;">
+@inject LocalStorageServices LocalStorage
+<div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark position-sticky" style="width: 280px;">
     <a href="/SportTogether" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
         <img src="images/logo-no-background.png" class="img-fluid align-self-center p-1" style="width:70px; height:70px;" />
         <span class="fs-4">SportTogether</span>
     </a>
     <hr>
     <ul class="nav nav-pills flex-column mb-auto">
-        <li class="nav-item">
+        <li class="nav-item h-auto @(isClicked ? "clicked-style" : "")" @onclick="ToggleClick">
             <a href="/SportTogether/Annonces" class="nav-link text-white text-center text-capitalize" aria-current="page">
               <Icon Name="IconName.House" Color="IconColor.Light" Size="IconSize.x4" class="p-2"/>
                Annonces
@@ -18,20 +19,57 @@
     <hr>
     <div class="dropdown">
         <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
-            <img src="https://github.com/mdo.png" alt="" width="32" height="32" class="rounded-circle me-2">
-            <strong>mdo</strong>
+            @if (utilisateurInfo != null)
+            {
+                <img src="@utilisateurInfo.urlPhotoProfil" alt="" width="32" height="32" class="rounded-circle me-2">
+                <strong>@
+                    utilisateurInfo.Pseudo
+                </strong>
+            }
+            else
+            {
+                <strong>mdo</strong>
+            }
+    
+         
         </a>
         <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
-            <li><a class="dropdown-item" href="#">New project...</a></li>
-            <li><a class="dropdown-item" href="#">Settings</a></li>
+            <li><a class="dropdown-item" href="#">Parametre</a></li>
             <li><a class="dropdown-item" href="#">Profile</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="#">Sign out</a></li>
+            <li><a class="dropdown-item" href="#">Se déconnecter</a></li>
         </ul>
     </div>
 </div>
 
-
+<style>
+    .clicked-style {
+        background-color: darkblue;
+        border-radius: 10px;
+    }
+</style>
 @code {
+    private LocalStorageServices.UtilisateurInfo utilisateurInfo;
+    private string urlPhotoProfil = string.Empty;
+
+    bool isClicked = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUserInfo();
+    }
+
+    private async Task LoadUserInfo()
+    {
+        utilisateurInfo = await LocalStorage.GetUserFromLocalStore();
+
+     urlPhotoProfil =  await 
+        // Utiliser cette information pour lier aux éléments du HTML ci-dessus
+
+    }
+
+    void ToggleClick()
+    {
+        isClicked = !isClicked;
+    }
     
 }

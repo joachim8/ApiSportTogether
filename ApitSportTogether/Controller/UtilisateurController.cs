@@ -25,10 +25,6 @@ namespace ApiSportTogether.Controller
         {
             return _context.Utilisateurs
                            .Include(u => u.Image)
-                           .Include(u => u.AmiUtilisateurId1Navigations)
-                           .Include(u => u.AmiUtilisateurId2Navigations)
-                           .Include(u => u.Annonces)
-                           .Include(u => u.Publications)
                            .ToList();
         }
 
@@ -38,10 +34,6 @@ namespace ApiSportTogether.Controller
         {
             var utilisateur = _context.Utilisateurs
                                        .Include(u => u.Image)
-                                       .Include(u => u.AmiUtilisateurId1Navigations)
-                                       .Include(u => u.AmiUtilisateurId2Navigations)
-                                       .Include(u => u.Annonces)
-                                       .Include(u => u.Publications)
                                        .FirstOrDefault(u => u.UtilisateursId == id);
 
             return utilisateur == null ? NotFound() : utilisateur;

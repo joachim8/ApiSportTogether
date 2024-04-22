@@ -54,7 +54,7 @@ namespace ApiSportTogether.Controller
                             throw;
                         }
                     }
-                    return Ok(new { utili });
+                    return Ok(utili);
                 }
                 else
                 {

@@ -3,6 +3,7 @@ using SportTogetherBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<AuthServices>();
+builder.Services.AddScoped<LocalStorageServices>();
 builder.Services.AddScoped(sp => new HttpClient
 {
     BaseAddress = new Uri("http://localhost:5000/ApiSportTogether/")
