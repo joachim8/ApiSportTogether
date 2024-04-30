@@ -31,6 +31,8 @@ public partial class Annonce
 
     [JsonPropertyName("Lieu")]
     public string Lieu { get; set; } = null!;
+    [JsonPropertyName("DateHeureAnnonce")]
+    public DateTime DateHeureAnnonce { get; set; }
 
     [JsonPropertyName("AuteurNavigation")]
     public virtual Utilisateur AuteurNavigation { get; set; } = null!;
