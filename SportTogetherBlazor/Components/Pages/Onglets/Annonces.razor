@@ -1,4 +1,169 @@
 ﻿@page "/SportTogether/Annonces"
+@using SportTogetherBlazor.Models
 
 <PageTitle>Annonces | SportTogether</PageTitle>
 
+    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+       <div class="container-fluid">
+        <EditForm Model="@rechercheModel" OnSubmit="@RechercheSubmit" FormName="RechercheForm">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <div class="form-control">
+                <InputText  id="rechercheTitre" class="form-control"
+                           @bind-Value="rechercheModel.Titre" />
+                <Button Type="ButtonType.Submit" Color="ButtonColor.Light"> <Icon Name=" IconName.Search" /></Button>
+            </div>
+          </EditForm>
+       </div>
+    </nav>
+<div class="container-fluid">
+   
+
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <!-- Filter by Location -->
+            <div class="form-group">
+                <label for="locationFilter">Annonce + Ville de recherche</label>
+                <input type="text" class="form-control" id="locationFilter">
+            </div>
+        </div>
+        <div class="col-md-3">
+            <!-- Search Bar -->
+            <div class="form-group">
+                <label for="searchBar">Recherche dans les titres</label>
+                <input type="text" class="form-control" id="searchBar">
+            </div>
+        </div>
+        <div class="col-md-6">
+            <!-- Filter Buttons -->
+            <div class="btn-group">
+                <button type="button" class="btn btn-primary">Filtre par sports</button>
+                <button type="button" class="btn btn-primary">Filtre par villes</button>
+                <button type="button" class="btn btn-primary">Filtre par genre</button>
+            </div>
+        </div>
+    </div>
+    <!-- Cards Section -->
+    <div class="row mt-3">
+        @foreach (var annonce in annonces) {
+            <div class="col-md-4 mb-4 col-sm-6 col-xs-12">
+                <div class="card shadow p-3">
+                    <div class="card-header bg-transparent">
+                        <div class="row no-gutters">
+                            <div class="col-md-8">
+                                <img src="@annonce.ImageUrl" class="img-responsive" alt="image">
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-2">
+                                    <h5 class="card-title">@annonce.Titre</h5>
+                                    <p class="card-text">@annonce.Auteur</p>
+                                    <p class="card-text">@annonce.Lieu</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">@annonce.Description</p>
+                        <details class="accordion">
+                            <summary>Plus de détails</summary>
+                            <p>@annonce.Ville</p>
+                            <p>@annonce.Ville</p>
+                            <p>@annonce.Ville</p>
+                        </details>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <p class="text-muted">@annonce.DateHeureAnnonce.ToString("dd/MM/YYYY") à @annonce.DateHeureAnnonce.ToString("hh:mm")</p>
+                        <button class="btn btn-success">Participer</button>
+                        <button class="btn btn-info">Contacter</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div> 
+</div>
+
+
+
+
+<style>
+    /* Existing styles */
+    .card-header img {
+        width: 100%; /* Adjust image width within card */
+    }
+    .card{
+
+    }
+</style>
+
+@code {
+    private List<AnnonceVue> annonces = new List<AnnonceVue>();
+    private bool bFirstFiltreAnnonces = false;
+
+    private RechercheModel rechercheModel = new RechercheModel();
+    public class RechercheModel
+    {
+        public string Titre { get; set; }
+    }
+    protected override void OnAfterRender(bool firstRender)
+    {
+
+    }
+    protected override void OnInitialized()
+    {
+        rechercheModel.Titre = "Rechercher...";
+        for (int i = 1; i <= 20; i++)
+        {
+            annonces.Add(new AnnonceVue
+                {
+                    AnnoncesId = i,
+                    AuteurId = i,
+                    Auteur = $"Auteur {i}",
+                    SportId = i % 5 + 1, // Five different sports
+                    Titre = $"Titre de l'annonce {i}",
+                    Description = $"Description détaillée de l'annonce {i}. Voici plus de détails sur l'activité proposée, les compétences requises, etc.",
+                    GenreAttendu = (i % 2 == 0) ? "Masculin" : "Féminin",
+                    NombreParticipants = i % 10 + 5,
+                    ImageUrl = $"images/athletisme.jpg",
+                    Ville = $"Ville {i}",
+                    Lieu = $"Lieu {i}",
+                    DateHeureAnnonce = DateTime.Now.AddDays(i)
+                });
+        }
+    }
+
+    private async Task RechercheSubmit()
+    {
+        if (!string.IsNullOrWhiteSpace(rechercheModel.Titre))
+        {
+            if (bFirstFiltreAnnonces)
+            {
+                annonces.Clear();
+                for (int i = 1; i <= 20; i++)
+                {
+                    annonces.Add(new AnnonceVue
+                        {
+                            AnnoncesId = i,
+                            AuteurId = i,
+                            Auteur = $"Auteur {i}",
+                            SportId = i % 5 + 1, // Five different sports
+                            Titre = $"Titre de l'annonce {i}",
+                            Description = $"Description détaillée de l'annonce {i}. Voici plus de détails sur l'activité proposée, les compétences requises, etc.",
+                            GenreAttendu = (i % 2 == 0) ? "Masculin" : "Féminin",
+                            NombreParticipants = i % 10 + 5,
+                            ImageUrl = $"images/athletisme.jpg",
+                            Ville = $"Ville {i}",
+                            Lieu = $"Lieu {i}",
+                            DateHeureAnnonce = DateTime.Now.AddDays(i)
+                        });
+                }
+            }
+            annonces = annonces.Where(a => a.Titre.Contains(rechercheModel.Titre, StringComparison.OrdinalIgnoreCase)).ToList();
+            bFirstFiltreAnnonces = true;
+            StateHasChanged();
+        }
+        else
+        {
+            annonces = annonces;
+        }
+    }
+ }
