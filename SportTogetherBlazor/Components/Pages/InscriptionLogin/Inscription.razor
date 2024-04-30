@@ -3,6 +3,7 @@
 @using System.ComponentModel.DataAnnotations;
 @using System.Text.Json.Serialization;
 @inject NavigationManager NavigationManager
+@inject IJSRuntime jsRuntime
 <PageTitle> Inscription | SportTogether</PageTitle>
 <style>
     /* Style pour le conteneur global pour centrer la section */
@@ -48,7 +49,7 @@
                     <div class="text-center">
                         <h2 class="fw-bold mb-5">
                             <a href="https://localhost:7161/SportTogether">
-                                <img src="images/logo-no-background.png" class="img-fluid align-self-center" style="width:100px; height:100px;" />
+                                <img src="images/logo-transparent.png" class="img-fluid align-self-center" style="width:100px; height:100px;" />
                             </a>
                            S'inscrire
                         </h2>
@@ -144,30 +145,32 @@
                             </div>
                         </div>
                     </EditForm>
+                       
+                           
+
+                        
                 </div>
             </div>
         </div>
     </div>
-            <Modal @ref="modal" title="Sélectionnez vos sports favoris" IsVerticallyCentered="true">
-                <BodyTemplate>
-                    <EditForm Model="@sportsList" OnValidSubmit="@HandleSportsFavorisSubmit">
-                        @foreach (var sport in sportsList)
-                        {
-                            <div class="form-check">
-                                <InputCheckbox class="form-check-input" @bind-Value="sport.IsSelected" />
-                                <label class="form-check-label">@sport.Nom</label>
-                            </div>
-                        }
-                        <Button Color="ButtonColor.Secondary" type="submit">Enregistrer</Button>
-                    </EditForm>
-                </BodyTemplate>
-                <FooterTemplate>
-                   
-                </FooterTemplate>
-            </Modal>
-
-
 </section>
+    <Modal @ref="modal" title="Sélectionnez vos sports favoris" IsVerticallyCentered="true">
+        <BodyTemplate>
+            <EditForm Model="@sportsList" OnValidSubmit="@HandleSportsFavorisSubmit">
+                @foreach (var sport in sportsList)
+                {
+                    <div class="form-check">
+                        <InputCheckbox class="form-check-input" @bind-Value="sport.IsSelected" />
+                        <label class="form-check-label">@sport.Nom</label>
+                    </div>
+                }
+                <Button Color="ButtonColor.Secondary" Type="ButtonType.Submit">Enregistrer</Button>
+            </EditForm>
+        </BodyTemplate>
+        <FooterTemplate>
+
+        </FooterTemplate>
+    </Modal>
 </div>
 
 
@@ -179,6 +182,7 @@
     private List<Sport> sportsList = new();
     private bool showModal = false;
     private UtilisateurInfo utilisateurInfo;
+
     private void SelectionnerVille(Ville ville)
     {
         rechercheVille = ville.Nom;
@@ -213,6 +217,7 @@
 
         }
     }
+
     private async Task HandleSportsFavorisSubmit()
     {
         var selectedSports = sportsList.Where(s => s.IsSelected).ToList();
@@ -240,12 +245,12 @@
             }
             else
             {
-              string errorMessage =   await response.Content.ReadAsStringAsync();
+                string errorMessage =   await response.Content.ReadAsStringAsync();
                 Console.WriteLine($"Pb d'ajout de sport en favori : {errorMessage}");
             }
         }
         NavigationManager.NavigateTo("SportTogether/Annonces");
-        
+
 
 
     }
@@ -275,6 +280,7 @@
                 }
                 await GetListOfSport();
                 await OnShowModalClick();
+
             }
             else
             {
@@ -293,7 +299,7 @@
     {
         try
         {
-            
+
             var response = await httpClient.GetAsync("Sport");
 
             if (response.IsSuccessStatusCode)
@@ -301,8 +307,7 @@
                 // Utilisez SportsWrapper pour la désérialisation
                 var wrapper = await response.Content.ReadFromJsonAsync<SportsWrapper>();
                 sportsList = wrapper?.Sports ?? new List<Sport>();
-                showModal = true;
-                
+
             }
             else
             {
@@ -390,10 +395,12 @@
     private async Task OnShowModalClick()
     {
         await modal.ShowAsync();
+
     }
 
     private async Task OnHideModalClick()
     {
+
         await modal.HideAsync();
     }
 

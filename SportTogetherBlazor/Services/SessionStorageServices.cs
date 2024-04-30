@@ -1,5 +1,6 @@
 ﻿using SportTogetherBlazor.Models;
 using System.Text.Json;
+using static SportTogetherBlazor.Components.Pages.InscriptionLogin.Inscription;
 
 namespace SportTogetherBlazor.Services
 {
@@ -14,14 +15,32 @@ namespace SportTogetherBlazor.Services
 
         public void SaveUserToSession(Utilisateur utilisateurInfo)
         {
-            var serializedUser = JsonSerializer.Serialize(utilisateurInfo);
-             _httpContextAccessor.HttpContext!.Session.SetString("userInfo", serializedUser);
+            try
+            {
+                var serializedUser = JsonSerializer.Serialize(utilisateurInfo);
+                _httpContextAccessor.HttpContext.Session.SetString("userInfo", serializedUser);
+            }
+            catch (Exception ex)
+            {
+                // Log this error or handle it accordingly
+                Console.WriteLine("Error saving user to session: " + ex.Message);
+            }
         }
 
         public Utilisateur? GetUserFromSession()
         {
-            var userInfoJson = _httpContextAccessor.HttpContext.Session.GetString("userInfo");
-            return userInfoJson == null ? default : JsonSerializer.Deserialize<Utilisateur>(userInfoJson);
+            try
+            {
+                var userInfoJson = _httpContextAccessor.HttpContext.Session.GetString("userInfo");
+                return userInfoJson == null ? default : JsonSerializer.Deserialize<Utilisateur>(userInfoJson);
+            }
+            catch (Exception ex)
+            {
+                // Log this error or handle it accordingly
+                Console.WriteLine("Error saving user to session: " + ex.Message);
+                return null;
+            }
+           
         }
     }
 }

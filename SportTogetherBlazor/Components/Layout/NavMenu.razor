@@ -1,10 +1,11 @@
 ﻿@inherits LayoutComponentBase
 @using SportTogetherBlazor.Services
+@using SportTogetherBlazor.Models
 @inject NavigationManager NavigationManager
-@inject LocalStorageServices LocalStorage
+@inject SessionStorageServices session
 <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark position-sticky" style="width: 280px;">
     <a href="/SportTogether" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-        <img src="images/logo-no-background.png" class="img-fluid align-self-center p-1" style="width:70px; height:70px;" />
+        <img src="images/logo-transparent.png" class="img-fluid align-self-center p-1" style="width:70px; height:70px;" />
         <span class="fs-4">SportTogether</span>
     </a>
     <hr>
@@ -21,9 +22,8 @@
         <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
             @if (utilisateurInfo != null)
             {
-                <img src="@utilisateurInfo.urlPhotoProfil" alt="" width="32" height="32" class="rounded-circle me-2">
-                <strong>@
-                    utilisateurInfo.Pseudo
+              @*   <img src="@utilisateurInfo.urlPhotoProfil" alt="" width="32" height="32" class="rounded-circle me-2"> *@
+                <strong>@utilisateurInfo.Pseudo
                 </strong>
             }
             else
@@ -48,7 +48,7 @@
     }
 </style>
 @code {
-    private LocalStorageServices.UtilisateurInfo utilisateurInfo;
+    private Utilisateur utilisateurInfo;
     private string urlPhotoProfil = string.Empty;
 
     bool isClicked = false;
@@ -60,9 +60,11 @@
 
     private async Task LoadUserInfo()
     {
-        utilisateurInfo = await LocalStorage.GetUserFromLocalStore();
-
-     urlPhotoProfil =  await 
+        utilisateurInfo = session.GetUserFromSession()!;
+        if(utilisateurInfo == null){
+            NavigationManager.NavigateTo("/SportTogether/Connexion");
+        }
+     // urlPhotoProfil =  await 
         // Utiliser cette information pour lier aux éléments du HTML ci-dessus
 
     }

@@ -4,7 +4,7 @@
 <nav class="navbar sticky-top navbar-expand-lg position-sticky" style="background:#201c1c">
     <div class="container-fluid">
         <a class="navbar-brand" href="#">
-            <img src="/images/logo-no-background.png" width="60" height="60" alt="SportTogether"> <span class="text-light">SportTogether</span>
+            <img src="/images/logo-transparent.png" width="60" height="60" alt="SportTogether"> <span class="text-light">SportTogether</span>
         </a>
     </div>
     <div class="ms-l-auto ms-sm-1">
@@ -23,9 +23,9 @@
                     <NavLink class="nav-link text-light" href="#Contact" style="color: lightgray;">Contact</NavLink>
                 </li>
             </ul>
-            <Button Color="ButtonColor.None" onclick="@AllerSeConnecter" TooltipTitle="Se connecter"><Icon Name="IconName.PersonCircle" Color="IconColor.Light" Size="IconSize.x2"></Icon></Button>
+            <Button Color="ButtonColor.None" @onclick="@AllerSeConnecter" TooltipTitle="Se connecter"><Icon Name="IconName.PersonCircle" Color="IconColor.Light" Size="IconSize.x2"></Icon></Button>
             <hr/>
-            <Button Color="ButtonColor.None" onclick="@AllerInscription" TooltipTitle="Inscription" TooltipPlacement="TooltipPlacement.Bottom"><Icon Name="IconName.SignIntersectionFill" Color="IconColor.Light" Size="IconSize.x2"></Icon></Button>
+            <Button Color="ButtonColor.None" @onclick="@AllerInscription" TooltipTitle="Inscription" TooltipPlacement="TooltipPlacement.Bottom"><Icon Name="IconName.SignIntersectionFill" Color="IconColor.Light" Size="IconSize.x2"></Icon></Button>
         </div>
        
    </div>

@@ -6,7 +6,7 @@
 @inject IJSRuntime jsRuntime
 @inject HttpClient httpClient
 @inject NavigationManager NavigationManager
-@inject LocalStorageServices LocalStorage
+@inject SessionStorageServices session;
 <PageTitle> Connexion | SportTogether</PageTitle>
 <section class="vh-100" style="background-color: #13222F;">
     <div class="container h-100">
@@ -20,7 +20,7 @@
                                 <div class="text-center">
                                     <h2 class="fw-bold text-uppercase">
                                         Connexion <a href="https://localhost:7161/SportTogether">
-                                            <img src="images/logo-black.png" class="img-fluid align-self-center" style="width:100px; height:100px;" />
+                                            <img src="images/logo-noir.png" class="img-fluid align-self-center" style="width:100px; height:100px;" />
                                         </a>
                                     </h2>
                                 </div>
@@ -75,6 +75,8 @@
     private string errorMessage = "";
     private string titreErreur = "";
     private Modal modal = default!;
+    private Utilisateur utilisateur;
+
     private async Task HandleLogin()
     {
         try
@@ -90,8 +92,20 @@
                 Utilisateur utilisateurInfo = JsonSerializer.Deserialize<Utilisateur>(jsonString, options)!;
                 if (utilisateurInfo.UtilisateursId != 0)
                 {
-                    await LocalStorage.SaveUserToLocalStore(utilisateurInfo);
-                    NavigationManager.NavigateTo("SportTogether/Annonces");
+                    try
+                    {
+                        // Existing login logic
+                        session.SaveUserToSession(utilisateurInfo); // This may throw an exception
+                        NavigationManager.NavigateTo("SportTogether/Annonces");
+                    }
+                    catch (Exception ex)
+                    {
+                        titreErreur = "Erreur de Session";
+                        errorMessage = "Une erreur est survenue lors de la gestion de la session. " + ex.Message;
+                        showErrorModal = true;
+                        await OnShowModalClick();
+                    }
+                   
                 }
                 else
                 {
@@ -154,4 +168,3 @@
     
 
 }
-
