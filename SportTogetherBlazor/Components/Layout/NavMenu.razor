@@ -5,24 +5,31 @@
 @inject SessionStorageServices session
 <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark position-sticky" style="width: 280px;">
     <a href="/SportTogether" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-        <img src="images/logo-transparent.png" class="img-fluid align-self-center p-1" style="width:70px; height:70px;" />
+        <img src="images/logo-blanc.png" class="img-fluid align-self-center p-1" style="width:70px; height:70px;" />
         <span class="fs-4">SportTogether</span>
     </a>
     <hr>
     <ul class="nav nav-pills flex-column mb-auto">
-        <li class="nav-item h-auto @(isClicked ? "clicked-style" : "")" @onclick="ToggleClick">
+        <li class="nav-item h-auto @(linkClickedStates["Annonces"] ? "clicked-style" : "")" @onclick="@(() => ToggleClick("Annonces"))">
             <a href="/SportTogether/Annonces" class="nav-link text-white text-center text-capitalize" aria-current="page">
-              <Icon Name="IconName.House" Color="IconColor.Light" Size="IconSize.x4" class="p-2"/>
-               Annonces
+                <Icon Name="IconName.House" Color="IconColor.Light" Size="IconSize.x4" class="p-2" />
+                Annonces
+            </a>
+        </li>
+        <li class="nav-item h-auto @(linkClickedStates["MessagerieInstantane"] ? "clicked-style" : "")" @onclick="@(() => ToggleClick("MessagerieInstantane"))">
+            <a href="/SportTogether/MessagerieInstantane" class="nav-link text-white text-center text-capitalize" aria-current="page">
+                <Icon Name="IconName.Messenger" Color="IconColor.Light" Size="IconSize.x4" class="p-2" />
+                Messagerie
             </a>
         </li>
     </ul>
+
     <hr>
     <div class="dropdown">
         <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
             @if (utilisateurInfo != null)
             {
-              @*   <img src="@utilisateurInfo.urlPhotoProfil" alt="" width="32" height="32" class="rounded-circle me-2"> *@
+                <img src="@urlPhotoProfil" alt="" width="32" height="32" class="rounded-circle me-2">
                 <strong>@utilisateurInfo.Pseudo
                 </strong>
             }
@@ -43,19 +50,24 @@
 
 <style>
     .clicked-style {
-        background-color: darkblue;
+        background-color: #49beb7;
         border-radius: 10px;
     }
 </style>
 @code {
     private Utilisateur utilisateurInfo;
     private string urlPhotoProfil = string.Empty;
+    private Dictionary<string, bool> linkClickedStates = new Dictionary<string, bool>();
 
     bool isClicked = false;
 
     protected override async Task OnInitializedAsync()
     {
+        linkClickedStates.Add("Annonces", false);
+        linkClickedStates.Add("MessagerieInstantane", false);
+
         await LoadUserInfo();
+        await LoadImageUrl();
     }
 
     private async Task LoadUserInfo()
@@ -68,10 +80,29 @@
         // Utiliser cette information pour lier aux éléments du HTML ci-dessus
 
     }
-
-    void ToggleClick()
+    private async Task LoadImageUrl()
     {
-        isClicked = !isClicked;
+        urlPhotoProfil = session.GetImageUrl()!;
+        if (urlPhotoProfil == string.Empty)
+        {
+            NavigationManager.NavigateTo("/SportTogether/Connexion");
+        }
+        // urlPhotoProfil =  await
+
+        // Utiliser cette information pour lier aux éléments du HTML ci-dessus
+
+    }
+
+    void ToggleClick(string linkKey)
+    {
+        // Réinitialise tous les états à false
+        foreach (var key in linkClickedStates.Keys.ToList())
+        {
+            linkClickedStates[key] = false;
+        }
+
+        // Définit l'état du lien cliqué à true
+        linkClickedStates[linkKey] = true;
     }
     
 }

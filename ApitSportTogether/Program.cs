@@ -2,6 +2,7 @@
 using ApiSportTogether.model.dbContext;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -28,11 +29,13 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("MyCorsPolicy", builder =>
     {
-        _ = builder.WithOrigins("http//:localhost:5000") // URL du client autorisé
+        _ = builder.AllowAnyOrigin() // URL du client autorisé
                .AllowAnyHeader()
                .AllowAnyMethod();
+
     });
 });
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -86,6 +89,14 @@ app.UseForwardedHeaders();
 app.UseAuthentication();
 app.UseAuthorization();
 
+
+// Si les images sont dans un dossier spécifique à l'intérieur de wwwroot ou à un autre emplacement :
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(app.Environment.ContentRootPath, "Images")),
+    RequestPath = "/Images"
+});
 if (!app.Environment.IsDevelopment())
 {
     _ = app.UseExceptionHandler("/Error");

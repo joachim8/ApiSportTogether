@@ -42,6 +42,36 @@ namespace SportTogetherBlazor.Services
             }
            
         }
+
+
+        public void SaveImageUrl(string imageURL)
+        {
+            try
+            {
+                // Directly saving the image URL to session without serialization
+                _httpContextAccessor.HttpContext.Session.SetString("imageProfilUrl", imageURL);
+            }
+            catch (Exception ex)
+            {
+                // Log this error or handle it accordingly
+                Console.WriteLine("Error saving image URL to session: " + ex.Message);
+            }
+        }
+
+        public string? GetImageUrl()
+        {
+            try
+            {
+                // Directly getting the image URL from session without deserialization
+                return _httpContextAccessor.HttpContext.Session.GetString("imageProfilUrl");
+            }
+            catch (Exception ex)
+            {
+                // Log this error or handle it accordingly
+                Console.WriteLine("Error retrieving image URL from session: " + ex.Message);
+                return null;
+            }
+        }
     }
 }
 

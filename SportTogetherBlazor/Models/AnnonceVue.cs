@@ -1,7 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace SportTogetherBlazor.Models
-{
+namespace SportTogetherBlazor.Models;
+
     public class AnnonceVue
     {
         [JsonPropertyName("AnnoncesId")]
@@ -40,4 +40,4 @@ namespace SportTogetherBlazor.Models
         public DateTime DateHeureAnnonce { get; set; }
 
     }
-}
+

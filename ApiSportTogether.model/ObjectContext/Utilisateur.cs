@@ -26,8 +26,7 @@ public partial class Utilisateur
     public string? Etat { get; set; }
     [JsonPropertyName("EnLigne")]
     public bool? EnLigne { get; set; }
-    [JsonPropertyName("ImageId")]
-    public int? ImageId { get; set; }
+
     [JsonIgnore]
     [JsonPropertyName("AmiUtilisateurId1Navigations")]
     public virtual ICollection<Ami> AmiUtilisateurId1Navigations { get; set; } = new List<Ami>();
@@ -37,11 +36,10 @@ public partial class Utilisateur
     [JsonIgnore]
     [JsonPropertyName("Annonces")]
     public virtual ICollection<Annonce> Annonces { get; set; } = new List<Annonce>();
-    [JsonPropertyName("Image")]
-    public virtual Image? Image { get; set; }
     [JsonIgnore]
-    [JsonPropertyName("Images")]
-    public virtual ICollection<Image> Images { get; set; } = new List<Image>();
+    [JsonPropertyName("ProfileImages")]
+    public virtual ICollection<ProfileImage> ProfileImages { get; set; } = new List<ProfileImage>();
+
     [JsonIgnore]
     [JsonPropertyName("Publications")]
     public virtual ICollection<Publication> Publications { get; set; } = new List<Publication>();

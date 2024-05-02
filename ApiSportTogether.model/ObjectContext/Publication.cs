@@ -10,12 +10,9 @@ public partial class Publication
 
     [JsonPropertyName("Contenu")]
     public string? Contenu { get; set; }
-
-    [JsonPropertyName("ImageId")]
-    public int ImageId { get; set; }
-
-    [JsonPropertyName("Image")]
-    public virtual Image Image { get; set; } = null!;
+    [JsonIgnore]
+    [JsonPropertyName("PublicationImages")]
+    public virtual ICollection<PublicationImage> PublicationImages { get; set; } = new List<PublicationImage>();
 
     [JsonPropertyName("Utilisateur")]
     public virtual Utilisateur Utilisateur { get; set; } = null!;

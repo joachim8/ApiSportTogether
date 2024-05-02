@@ -76,7 +76,7 @@
     private string titreErreur = "";
     private Modal modal = default!;
     private Utilisateur utilisateur;
-
+    private ProfileImage imageProfil;
     private async Task HandleLogin()
     {
         try
@@ -95,7 +95,15 @@
                     try
                     {
                         // Existing login logic
-                        session.SaveUserToSession(utilisateurInfo); // This may throw an exception
+                        session.SaveUserToSession(utilisateurInfo);
+                      
+                            await GetImageAsync(utilisateurInfo.UtilisateursId);
+                            if(imageProfil != null)
+                            {
+                                session.SaveImageUrl(imageProfil.Url);
+                            }
+
+
                         NavigationManager.NavigateTo("SportTogether/Annonces");
                     }
                     catch (Exception ex)
@@ -105,7 +113,7 @@
                         showErrorModal = true;
                         await OnShowModalClick();
                     }
-                   
+
                 }
                 else
                 {
@@ -114,9 +122,6 @@
                     showErrorModal = true;
                     await OnShowModalClick();
                 }
-
-
-
 
             }
             else
@@ -146,7 +151,19 @@
         }
     }
 
-
+    private async Task GetImageAsync(int utilisateurId)
+    {
+        var response = await httpClient.GetAsync($"ProfileImage/GetProfileImageByUtilisateurId/{utilisateurId}");
+        if (response.IsSuccessStatusCode)
+        {
+            var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = false
+                };
+            var jsonString = await response.Content.ReadAsStringAsync();
+            imageProfil = JsonSerializer.Deserialize<ProfileImage>(jsonString, options)!;
+        }
+    }
 
     public class LoginModel
     {

@@ -31,15 +31,18 @@ public partial class Annonce
 
     [JsonPropertyName("Lieu")]
     public string Lieu { get; set; } = null!;
+    [JsonPropertyName("DateHeureAnnonce")]
+    public DateTime DateHeureAnnonce { get; set; }
 
     [JsonPropertyName("AuteurNavigation")]
     public virtual Utilisateur AuteurNavigation { get; set; } = null!;
     [JsonIgnore]
     [JsonPropertyName("Groupes")]
     public virtual ICollection<Groupe> Groupes { get; set; } = new List<Groupe>();
+    [JsonIgnore]
+    [JsonPropertyName("AnnonceImages")]
+    public virtual ICollection<AnnonceImage> AnnonceImages { get; set; } = new List<AnnonceImage>();
 
-    [JsonPropertyName("Image")]
-    public virtual Image? Image { get; set; }
 
     [JsonPropertyName("Sport")]
     public virtual Sport? Sport { get; set; }

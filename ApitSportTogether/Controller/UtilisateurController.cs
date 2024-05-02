@@ -24,7 +24,7 @@ namespace ApiSportTogether.Controller
         public ActionResult<List<Utilisateur>> GetUtilisateurs()
         {
             return _context.Utilisateurs
-                           .Include(u => u.Image)
+                           .Include(u => u.ProfileImages)
                            .ToList();
         }
 
@@ -33,7 +33,7 @@ namespace ApiSportTogether.Controller
         public ActionResult<Utilisateur> GetUtilisateurById(int id)
         {
             var utilisateur = _context.Utilisateurs
-                                       .Include(u => u.Image)
+                                       .Include(u => u.ProfileImages)
                                        .FirstOrDefault(u => u.UtilisateursId == id);
 
             return utilisateur == null ? NotFound() : utilisateur;

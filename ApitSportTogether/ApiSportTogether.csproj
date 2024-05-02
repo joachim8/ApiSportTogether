@@ -16,4 +16,10 @@
     <ProjectReference Include="..\ApiSportTogether.model\ApiSportTogether.model.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Images\photo_de_profil_joachim973_1.JPEG">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

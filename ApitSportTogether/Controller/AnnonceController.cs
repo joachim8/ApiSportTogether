@@ -25,7 +25,6 @@ namespace ApiSportTogether.Controller
             return _context.Annonces
                            .Include(a => a.AuteurNavigation)
                            .Include(a => a.Sport)
-                           .Include(a => a.Image)
                            .ToList();
         }
 
@@ -36,7 +35,7 @@ namespace ApiSportTogether.Controller
             var annonce = _context.Annonces
                                   .Include(a => a.AuteurNavigation)
                                   .Include(a => a.Sport)
-                                  .Include(a => a.Image)
+
                                   .FirstOrDefault(a => a.AnnoncesId == id);
 
             return annonce == null ? NotFound() : annonce;
