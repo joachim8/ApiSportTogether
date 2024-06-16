@@ -1,5 +1,6 @@
 ﻿using ApiSportTogether.model.dbContext;
 using ApiSportTogether.model.ObjectContext;
+using ApiSportTogether.model.ObjectVue;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,6 +23,8 @@ namespace ApiSportTogether.Controller
         [HttpGet]
         public ActionResult<List<Annonce>> GetAnnonces()
         {
+
+
             return _context.Annonces
                            .Include(a => a.AuteurNavigation)
                            .Include(a => a.Sport)
@@ -41,10 +44,32 @@ namespace ApiSportTogether.Controller
             return annonce == null ? NotFound() : annonce;
         }
 
-        // POST: ApiSportTogether/Annonce
-        [HttpPost]
+        // POST: ApiSportTogether/Annonce/CreateAnnonce
+        [HttpPost("CreateAnnonce")]
         public ActionResult<Annonce> PostAnnonce([FromBody] Annonce annonce)
         {
+            if (annonce == null)
+            {
+                return BadRequest("L'annonce ne peut pas être nulle.");
+            }
+
+            if (string.IsNullOrEmpty(annonce.Titre))
+            {
+                return BadRequest("Le titre est requis.");
+            }
+
+            if (string.IsNullOrEmpty(annonce.Description))
+            {
+                return BadRequest("La description est requise.");
+            }
+
+            if (annonce.DateHeureAnnonce < DateTime.Now)
+            {
+                return BadRequest("La date de l'annonce doit être égale ou supérieure à la date actuelle.");
+            }
+
+            // Ajoutez d'autres vérifications nécessaires
+
             _context.Annonces.Add(annonce);
             _context.SaveChanges();
 
@@ -95,6 +120,45 @@ namespace ApiSportTogether.Controller
             _context.SaveChanges();
 
             return NoContent();
+        }
+
+        // GET: ApiSportTogether/Annonce/vue/genre/ville
+        [HttpGet("/vue/{genre}/{ville}")]
+        public ActionResult<List<AnnonceVue>> GetAnnonceVue(string genre, string ville)
+        {
+            List<Annonce> listAnnonce = new List<Annonce>();
+            List<AnnonceVue> listAnnonceVue = new List<AnnonceVue>();
+            listAnnonce =  _context.Annonces.Where(a => a.GenreAttendu == genre || a.GenreAttendu == "Mixte" &&  a.Ville == ville).OrderBy(a => a.DateHeureAnnonce).Include(a => a.Sport).Include(a=> a.AnnonceImages).Include(a => a.AuteurNavigation).ToList();
+            if(listAnnonce.Count > 0)
+            {
+                foreach(Annonce annonce in listAnnonce)
+                {
+                    AnnonceVue annonceVue = new()
+                    {
+                        AnnoncesId = annonce.AnnoncesId,
+                        DateHeureAnnonce = annonce.DateHeureAnnonce,
+                        Auteur =  annonce.AuteurNavigation.Pseudo!,
+                        AuteurId = annonce.Auteur,
+                        Description = annonce.Description,
+                        GenreAttendu = annonce.GenreAttendu,
+                       Lieu = annonce.Lieu,
+                       SportId = annonce.SportId,
+                       SportName = annonce.Sport!.Nom,
+                       NombreParticipants = annonce.NombreParticipants,
+                       ListAnnonceImage = (List<AnnonceImage>)annonce.AnnonceImages! ?? new List<AnnonceImage>(),
+                       Titre = annonce.Titre,
+                       Ville = annonce.Ville,
+                    };
+
+              
+                    listAnnonceVue.Add(annonceVue);
+                }
+                return listAnnonceVue;
+            }
+            else
+            {
+                return NotFound();
+            }
         }
     }
 }

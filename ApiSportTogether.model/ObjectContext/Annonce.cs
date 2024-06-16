@@ -9,7 +9,8 @@ public partial class Annonce
     public int Auteur { get; set; }
 
     [JsonPropertyName("SportId")]
-    public int? SportId { get; set; }
+    public int? SportId { get; set; } 
+
 
     [JsonPropertyName("Titre")]
     public string? Titre { get; set; }
@@ -23,9 +24,6 @@ public partial class Annonce
     [JsonPropertyName("NombreParticipants")]
     public int? NombreParticipants { get; set; }
 
-    [JsonPropertyName("ImageId")]
-    public int? ImageId { get; set; }
-
     [JsonPropertyName("Ville")]
     public string Ville { get; set; } = null!;
 
@@ -33,9 +31,9 @@ public partial class Annonce
     public string Lieu { get; set; } = null!;
     [JsonPropertyName("DateHeureAnnonce")]
     public DateTime DateHeureAnnonce { get; set; }
-
+    [JsonIgnore]
     [JsonPropertyName("AuteurNavigation")]
-    public virtual Utilisateur AuteurNavigation { get; set; } = null!;
+    public virtual Utilisateur? AuteurNavigation { get; set; } 
     [JsonIgnore]
     [JsonPropertyName("Groupes")]
     public virtual ICollection<Groupe> Groupes { get; set; } = new List<Groupe>();

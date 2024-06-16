@@ -1,0 +1,62 @@
+﻿@using SportTogetherBlazor.Models 
+
+@code {
+    [Parameter]
+    public AnnonceVue annonceVue { get; set; }
+}
+
+
+ 
+        <div class="card shadow p-3">
+            <div class="card-header bg-transparent">
+                <div class="row no-gutters">
+                    <div class="col-md-8">
+                        <div id="carouselExampleFade_@annonceVue.AnnoncesId" class="carousel slide carousel-fade" data-ride="carousel">
+                            <div class="carousel-inner">
+                           @if(annonceVue.ListAnnonceImage != null)
+                            {
+                                @foreach (AnnonceImage annonceImage in annonceVue.ListAnnonceImage)
+                                {
+                                    <div class="carousel-item @(annonceVue.ListAnnonceImage.First() == annonceImage ? "active" : "")">
+                                        <img src="@annonceImage.Url" class="d-block w-100" alt="Image @(annonceImage.ImageId)">
+                                    </div>
+                                }
+                            }
+                            </div>
+                            <a class="carousel-control-prev" href="#carouselExampleFade_@annonceVue.AnnoncesId" role="button" data-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="sr-only">Previous</span>
+                            </a>
+                            <a class="carousel-control-next" href="#carouselExampleFade_@annonceVue.AnnoncesId" role="button" data-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="sr-only">Next</span>
+                            </a>
+                        </div>
+
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-2">
+                            <h5 class="card-title">@annonceVue.Titre</h5>
+                            <p class="card-text">@annonceVue.Auteur</p>
+                            <p>@annonceVue.Ville</p>
+                            <p class="card-text">@annonceVue.GenreAttendu</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+
+                <details class="accordion">
+                    <summary>Plus de détails</summary>
+                    <p class="card-text">La description :@annonceVue.Description</p>
+                    <p class="card-text">Lieu : @annonceVue.Lieu</p>
+                </details>
+            </div>
+            <div class="card-footer bg-transparent">
+                <p class="text-muted">@annonceVue.DateHeureAnnonce.ToString("dd/MM/yyyy") à @annonceVue.DateHeureAnnonce.ToString("hh:mm")</p>
+                <p class="text-muted">Nombre de participants : @annonceVue.NombreParticipants</p>
+            </div>
+        </div>
+
+
+

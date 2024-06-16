@@ -1,5 +1,423 @@
-﻿@page "/SportTogether/Annonces/AjoutAnnonce/{utilisateurID}/{villeDeBase}"
+﻿@page "/SportTogether/Annonces/AjoutAnnonce"
+@page "/SportTogether/NouvelleAnnonce"
+@inject HttpClient httpClient
+@using SportTogetherBlazor.Models
+@using SportTogetherBlazor.Components.Pages.ComposantsReutilisables
+@using SportTogetherBlazor.Services
+@using System.ComponentModel.DataAnnotations;
+@using System.Text.Json.Serialization;
+@using System.Net.Http.Headers
+@inject NavigationManager NavigationManager
+
+@inject SessionStorageServices session
+<PageTitle>Nouvelle Annonce | SportTogether</PageTitle>
+
+<style>
+    /* Styles pour centrer le formulaire et ajouter un cadre avec ombre */
+    .form-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh; /* Pleine hauteur */
+    }
+
+    .button-container {
+        display: flex;
+        justify-content: center; /* This will center the buttons in the div */
+        margin-top: 20px; /* Adds space between the form content and the buttons */
+    }
+
+    .form-box {
+        border: 5px solid #085f63; /* Bordure colorée */
+        box-shadow: 0 2px 4px #085f63; /* Ombre portée */
+        padding: 20px;
+        background: white;
+        width: 50%; /* Ajustez selon la largeur souhaitée */
+        margin-top: -50px; /* Ajustez selon le besoin */
+        border-radius: 5px;
+    }
+
+    /* Effet flèche pour les titres */
+    h2 {
+        position: relative;
+        padding-left: 30px;
+    }
+
+        h2::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 10px;
+            height: 10px;
+            border-right: 5px solid #085f63;
+            border-top: 5px solid #085f63;
+            transform: translateY(-50%) rotate(45deg);
+        }
+</style>
+
+<div class="form-container">
+    <div class="form-box">
+        <EditForm Model="@annonce" OnValidSubmit="@HandleCreateAnnonce" FormName="AjoutAnnonce">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <div class="justify-content-center">
+                @switch (currentStep)
+                {
+                    case 1:
+                        @Step1
+                        break;
+                    case 2:
+                        @Step2
+                        break;
+                    case 3:
+                        @Step3
+                        break;
+                    default:
+                        <p>Étape inconnue</p>
+                        break;
+                }
+            </div>
+
+            <div class="button-container">
+                @if (currentStep > 1)
+                {
+                    <Button Type="ButtonType.Button" Color="ButtonColor.Primary" @onclick="PreviousStep">Précédent</Button>
+                }
+                @if (currentStep < 3)
+                {
+                    <Button Type="ButtonType.Button" Color="ButtonColor.Secondary" @onclick="NextStep">Suivant</Button>
+                }
+                else
+                {
+                    <Button Type="ButtonType.Submit" class="btn btn-success" typeof="submit">Créer Annonce</Button>
+                }
+            </div>
+        </EditForm>
+
+    </div>
+</div>
 
 @code {
 
+    private Annonce annonce = new Annonce();
+    private List<Sport> sports = new List<Sport>();
+    private List<Ville> villes = new List<Ville>();
+    private string rechercheVille { get; set; }
+    private List<Sport> sportsList = new();
+    private AnnonceVue? annonceVue = null;
+    private Utilisateur utilisateurInfo;
+    private string imageUrl;
+    private int currentStep = 1;
+    private List<SelectedImage> selectedImages = new List<SelectedImage>();
+
+    private TimeOnly heureAnnonce = TimeOnly.FromDateTime(DateTime.Now);
+    private List<IBrowserFile> selectedFiles = new List<IBrowserFile>();
+
+    private void NextStep()
+    {
+        if (currentStep < 3)
+        {
+            currentStep++;
+        }
+    }
+
+    private void PreviousStep()
+    {
+        if (currentStep > 1)
+        {
+            currentStep--;
+        }
+    }
+
+    private RenderFragment Step1 => (__builder) =>
+    {
+        <div>
+            <h2>Étape 1: Informations de base</h2>
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="form-outline">
+                        <label class="form-label" for="titre">Titre</label>
+                        <InputText id="titre" class="form-control" @bind-Value="annonce.Titre" />
+                        <ValidationMessage For="@(() => annonce.Titre)" />
+                    </div>
+                    <div class="form-outline">
+                        <label class="form-label" for="description">Description</label>
+                        <InputTextArea id="description" class="form-control" @bind-Value="annonce.Description" />
+                    </div>
+                    <div class="form-outline  mb-2">
+                        <label class="form-label" for="rechercheVille">Ville</label>
+
+                        <InputText id="rechercheVille" class="form-control"
+                                   @bind-Value="rechercheVille"
+                                   @oninput="@(async (ChangeEventArgs e) => await RechercherVilles(e.Value.ToString()))" />
+
+                        @if (villes.Any())
+                        {
+                            <div class="list-group">
+                                @foreach (var ville in villes)
+                                {
+                                    <button type="button" class="list-group-item list-group-item-action"
+                                            @onclick="() => SelectionnerVille(ville)">
+                                        @ville.Nom
+                                    </button>
+                                }
+                            </div>
+                        }
+
+                    </div>
+
+                    <div class="form-outline">
+                        <label class="form-label" for="lieu">Lieu</label>
+                        <InputText id="lieu" class="form-control" @bind-Value="annonce.Lieu" />
+                        <ValidationMessage For="@(() => annonce.Lieu)" />
+                    </div>
+                    <div class="form-outline">
+                        <label class="form-label" for="genreAttendu">Genre Attendu</label>
+                        <InputSelect id="genreAttendu" class="form-control" @bind-Value="annonce.GenreAttendu">
+                            <option value="">Sélectionnez un genre</option>
+                            <option value="Femme">Femme</option>
+                            <option value="Homme">Homme</option>
+                            <option value="Non-spécifié">Non-spécifié</option>
+                        </InputSelect>
+                        <ValidationMessage For="@(() => annonce.GenreAttendu)" />
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-4">
+                    <div class="form-outline">
+                        <label class="form-label" for="dateHeureAnnonce">Date et Heure de l'Annonce</label>
+                        <InputDate id="dateHeureAnnonce" class="form-control" @bind-Value="annonce.DateHeureAnnonce" />
+                        <ValidationMessage For="@(() => annonce.DateHeureAnnonce)" />
+                    </div>
+
+                    <div class="form-outline">
+                        <label class="form-label" for="heureAnnonce">Heure de l'Annonce</label>
+                        <TimeInput id="heureAnnonce" class="form-control" @bind-Value="heureAnnonce" />
+                        <ValidationMessage For="@(() => annonce.DateHeureAnnonce)" />
+                    </div>
+                    <div class="form-outline">
+                        <label class="form-label" for="nombreParticipants">Nombre de Participants</label>
+                        <InputNumber id="nombreParticipants" class="form-control" @bind-Value="annonce.NombreParticipants" />
+                    </div>
+                    <div class="form-outline">
+                        <label class="form-label" for="sportId">Sport</label>
+                        <InputSelect id="sportId" class="form-control" @bind-Value="annonce.SportId">
+                            <option value="">Choisissez un sport</option>
+                            @foreach (var sport in sports)
+                            {
+                                <option value="@sport.SportsId">@sport.Nom</option>
+                            }
+                        </InputSelect>
+                    </div>
+                </div>
+            </div>
+        </div>
+    };
+
+    private RenderFragment Step2 => (__builder) =>
+    {
+        <div>
+            <h2>Étape 2: Images</h2>
+            <InputFile OnChange="HandleFileSelected" multiple accept="image/png, image/jpeg, image/gif" id="inputFile" />
+            @if (selectedImages.Any())
+            {
+                <div>
+                    <h3>Images sélectionnées:</h3>
+                    @foreach (var image in selectedImages)
+                    {
+                        <img src="@image.ImageUrl" alt="Selected Image" style="max-width: 100px; max-height: 100px; margin: 5px;" />
+                    }
+                </div>
+            }
+        </div>
+    };
+
+    private RenderFragment Step3 => (__builder) =>
+    {
+        annonceVue = new()
+            {
+                AnnoncesId = 0,
+                DateHeureAnnonce = annonce.DateHeureAnnonce,
+                Ville = annonce.Ville,
+                Auteur = utilisateurInfo.Pseudo,
+                GenreAttendu = annonce.GenreAttendu,
+                Description = annonce.Description,
+                AuteurId = utilisateurInfo.UtilisateursId,
+                NombreParticipants = annonce.NombreParticipants,
+                Titre = annonce.Titre,
+                Lieu = annonce.Lieu,
+                SportId = annonce.SportId
+            };
+        <div>
+            <div class="container-fluid">
+                <div class="row mt-3">
+                    <AnnonceCard annonceVue="@annonceVue" />
+                </div>
+            </div>
+        </div>
+    };
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        selectedImages.Clear(); // Clear existing images
+        selectedFiles = e.GetMultipleFiles().ToList();
+
+        foreach (var file in selectedFiles)
+        {
+            if (file.ContentType == "image/jpeg" || file.ContentType == "image/png")
+            {
+                var buffer = new byte[file.Size];
+                await file.OpenReadStream(10485760).ReadAsync(buffer); // 10 MB limit
+
+                selectedImages.Add(new SelectedImage
+                    {
+                        Name = file.Name,
+                        ContentType = file.ContentType,
+                        Data = buffer
+                    });
+            }
+            else
+            {
+                Console.WriteLine($"Type de fichier non supporté : {file.Name} ({file.ContentType})");
+            }
+        }
+
+        StateHasChanged(); // Refresh the UI to display the images
+    }
+
+    public class Ville
+    {
+        public string Nom { get; set; }
+        public string CodeDepartement { get; set; }
+    }
+
+    private void SelectionnerVille(Ville ville)
+    {
+        rechercheVille = ville.Nom;
+        annonce.Ville = ville.Nom;
+        villes.Clear(); // Cache les suggestions après la sélection
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetListOfSport();
+        utilisateurInfo = session.GetUserFromSession()!;
+        annonce.DateHeureAnnonce = DateTime.Now;
+        annonce.Auteur = utilisateurInfo.UtilisateursId;
+        annonce.AuteurNavigation = utilisateurInfo;
+    }
+
+    private async Task RechercherVilles(string recherche)
+    {
+        if (!string.IsNullOrEmpty(recherche) && recherche.Length >= 2) // Pour éviter des requêtes inutiles
+        {
+            if (!string.IsNullOrEmpty(recherche) && recherche.Length > 1) // Limite les requêtes pour les recherches de 2 caractères ou plus
+            {
+                try
+                {
+                    villes = await httpClient.GetFromJsonAsync<List<Ville>>($"https://geo.api.gouv.fr/communes?nom={recherche}&fields=nom,departement&boost=population&limit=5")!;
+                    StateHasChanged();
+                }
+                catch (Exception ex)
+                {
+                    // Gérez les exceptions, par exemple, en affichant un message d'erreur
+                    Console.WriteLine($"Erreur lors de la récupération des villes: {ex.Message}");
+                }
+            }
+        }
+    }
+
+    private async Task HandleCreateAnnonce()
+    {
+        try
+        {
+            annonce.DateHeureAnnonce = annonce.DateHeureAnnonce.Date.Add(heureAnnonce.ToTimeSpan());
+
+            var response = await httpClient.PostAsJsonAsync("Annonce/CreateAnnonce", annonce);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var createdAnnonce = await response.Content.ReadFromJsonAsync<Annonce>();
+                if (createdAnnonce != null)
+                {
+                    foreach (var image in selectedImages)
+                    {
+                        var content = new MultipartFormDataContent();
+                        var fileContent = new ByteArrayContent(image.Data);
+                        fileContent.Headers.ContentType = new MediaTypeHeaderValue(image.ContentType);
+                        content.Add(fileContent, "file", image.Name);
+                        var url = $"AnnonceImage/Upload/{createdAnnonce.AnnoncesId}";
+
+                        try
+                        {
+                            var uploadResponse = await httpClient.PostAsync(url, content);
+                            uploadResponse.EnsureSuccessStatusCode();
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Exception lors de l'upload de l'image: {ex.Message}");
+                        }
+                    }
+
+                    NavigationManager.NavigateTo($"SportTogether/Annonces");
+                }
+                else
+                {
+                    Console.WriteLine("Erreur lors de la création de l'annonce.");
+                }
+            }
+            else
+            {
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Erreur lors de la création de l'annonce: {errorMessage}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception lors de la création de l'annonce: {ex.Message}");
+        }
+    }
+
+    private async Task GetListOfSport()
+    {
+        try
+        {
+            var response = await httpClient.GetAsync("Sport");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var wrapper = await response.Content.ReadFromJsonAsync<SportsWrapper>();
+                sports = wrapper?.Sports ?? new List<Sport>();
+            }
+            else
+            {
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Erreur lors de de la récupération des sports: {errorMessage}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception lors de l'inscription: {ex.Message}");
+        }
+    }
+
+    public class SportsWrapper
+    {
+        [JsonPropertyName("$id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("$values")]
+        public List<Sport> Sports { get; set; }
+    }
+
+    public class SelectedImage
+    {
+        public string Name { get; set; }
+        public string ContentType { get; set; }
+        public byte[] Data { get; set; }
+        public string Base64Data => Convert.ToBase64String(Data);
+        public string ImageUrl => $"data:{ContentType};base64,{Base64Data}";
+    }
 }

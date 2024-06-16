@@ -39,43 +39,55 @@
         border-radius: 0.5rem;
 
     }
+
+    .validField {
+        border-color: lawngreen;
+    }
+
+    .invalidField {
+        background-color: tomato;
+    }
 </style>
-<div class="container-fluid justify-content-center">
-<section class="text-center col-lg-8 col-sm-12 col-md-10">
-        <div class="card mx-4 mx-md-5 shadow-5-strong text-white" style="background-color:#13222F  ;backdrop-filter: blur(30px);">
+<div class="container-fluid ">
+     <section class="row justify-content-center text-center">
+        <div class="col-lg-8 col-sm-12 col-md-10">
+            <div class="card mx-4 mx-md-5 shadow-5-strong text-white" style="background-color:#085f63  ;backdrop-filter: blur(30px);">
         <div class="card-body py-5 px-md-5">
             <div class="row d-flex justify-content-center">
                 <div class="col-lg-8">
                     <div class="text-center">
                         <h2 class="fw-bold mb-5">
                             <a href="https://localhost:7161/SportTogether">
-                                <img src="images/logo-transparent.png" class="img-fluid align-self-center" style="width:100px; height:100px;" />
+                                <img src="images/logo-blanc.png class="img-fluid align-self-center" style="width:100px; height:100px;" />
                             </a>
                            S'inscrire
                         </h2>
                     </div>
-                   
-                    <EditForm Model="@inscriptionModel" OnSubmit="@HandleInscription" FormName="InscriptionForm">
-                            <DataAnnotationsValidator />
-                            <ValidationSummary />
+
+                        <EditForm Model="@inscriptionModel" OnValidSubmit="@HandleInscription" FormName="InscriptionForm" autocomplete="off">
+                            <DataAnnotationsValidator  />
                         <div class="row">
                             <!-- Colonne de gauche -->
                             <div class="col-md-6">
                                 <div class="form-outline  mb-2">
                                     <label class="form-label" for="prenom">Prénom</label>
                                     <InputText id="prenom" class="form-control" @bind-Value="inscriptionModel.Prenom" />
+                                    <ValidationMessage For=@(() => inscriptionModel.Prenom) />
                                 </div>
                                 <div class="form-outline  mb-2">
                                     <label class="form-label" for="nom">Nom</label>
                                     <InputText id="nom" class="form-control" @bind-Value="inscriptionModel.Nom" />
+                                        <ValidationMessage For=@(() => inscriptionModel.Nom) />
                                 </div>
                                 <div class="form-outline mb-2">
                                     <label class="form-label" for="email">Adresse Email</label>
                                     <InputText id="email" class="form-control" @bind-Value="inscriptionModel.Email" />
+                                        <ValidationMessage For=@(() => inscriptionModel.Email) />
                                 </div>
                                 <div class="form-outline  mb-2">
                                         <label class="form-label" for="age">Âge</label>
                                     <InputNumber id="age" class="form-control" @bind-Value="inscriptionModel.Age" min="15" max="120" />
+                                        <ValidationMessage For=@(() => inscriptionModel.Age) />
                                 </div>
                             </div>
 
@@ -84,15 +96,18 @@
                                 <div class="form-outline  mb-2">
                                     <label class="form-label" for="pseudo">Pseudo</label>
                                     <InputText id="pseudo" class="form-control" @bind-Value="inscriptionModel.Pseudo" />
+                                        <ValidationMessage For=@(() => inscriptionModel.Pseudo) />
                                 </div>
                                     <!-- Colonne de droite ou gauche selon votre disposition -->
                                     <div class="form-outline mb-2">
                                         <label class="form-label" for="motDePasse">Mot de passe</label>
                                         <InputText id="motDePasse" type="password" class="form-control" @bind-Value="inscriptionModel.MotDePasse" />
+                                        <ValidationMessage For=@(() => inscriptionModel.MotDePasse) />
                                     </div>
                                     <div class="form-outline mb-2">
                                         <label class="form-label" for="confirmationMotDePasse">Confirmer le mot de passe</label>
                                         <InputText id="confirmationMotDePasse" type="password" class="form-control" @bind-Value="inscriptionModel.ConfirmationMotDePasse" />
+                                        <ValidationMessage For=@(() => inscriptionModel.ConfirmationMotDePasse) />
                                     </div>
 
                                 <div class="form-outline  mb-2">
@@ -145,18 +160,16 @@
                             </div>
                         </div>
                     </EditForm>
-                       
-                           
-
                         
                 </div>
             </div>
         </div>
     </div>
+    </div>
 </section>
     <Modal @ref="modal" title="Sélectionnez vos sports favoris" IsVerticallyCentered="true">
         <BodyTemplate>
-            <EditForm Model="@sportsList" OnValidSubmit="@HandleSportsFavorisSubmit">
+            <EditForm Model="@sportsList" OnValidSubmit="@HandleSportsFavorisSubmit" >
                 @foreach (var sport in sportsList)
                 {
                     <div class="form-check">
@@ -176,12 +189,13 @@
 
 @code {
     private Modal modal = default!;
-    public InscriptionModel? inscriptionModel { get; set; } = new InscriptionModel();
+    public InscriptionModel inscriptionModel = new InscriptionModel();
     private List<Ville> villes = new List<Ville>();
     private string rechercheVille { get; set; }
     private List<Sport> sportsList = new();
     private bool showModal = false;
     private UtilisateurInfo utilisateurInfo;
+
 
     private void SelectionnerVille(Ville ville)
     {
@@ -205,7 +219,7 @@
             {
                 try
                 {
-                    villes = await httpClient.GetFromJsonAsync<List<Ville>>($"https://geo.api.gouv.fr/communes?nom={recherche}&fields=nom,departement&boost=population&limit=5");
+                    villes = await httpClient.GetFromJsonAsync<List<Ville>>($"https://geo.api.gouv.fr/communes?nom={recherche}&fields=nom,departement&boost=population&limit=5")!;
                     StateHasChanged();
                 }
                 catch (Exception ex)
@@ -249,7 +263,7 @@
                 Console.WriteLine($"Pb d'ajout de sport en favori : {errorMessage}");
             }
         }
-        NavigationManager.NavigateTo("SportTogether/Annonces");
+        NavigationManager.NavigateTo($"SportTogether/Annonces");
 
 
 
@@ -258,6 +272,7 @@
     {
         try
         {
+
             inscriptionModel.Ville = rechercheVille;
             inscriptionModel.ConfirmationMotDePasse = string.Empty;
             var response = await httpClient.PostAsJsonAsync("Utilisateur/CreateUtilisateur", inscriptionModel);
@@ -326,38 +341,39 @@
     {
         [Required(ErrorMessage = "Le prénom est requis.")]
         [StringLength(100, ErrorMessage = "Le prénom ne peut pas dépasser 100 caractères.")]
-        public string Prenom { get; set; }
+        public string Prenom { get; set; } = null!;
 
         [Required(ErrorMessage = "Le nom est requis.")]
         [StringLength(100, ErrorMessage = "Le nom ne peut pas dépasser 100 caractères.")]
-        public string Nom { get; set; }
+        public string Nom { get; set; } = null!;
 
         [Required(ErrorMessage = "L'adresse email est requise.")]
         [EmailAddress(ErrorMessage = "L'adresse email n'est pas valide.")]
-        public string Email { get; set; }
+        public string Email { get; set; } = null!;
 
         [Required(ErrorMessage = "L'âge est requis.")]
         [Range(15, 120, ErrorMessage = "L'âge doit être compris entre 15 et 120 ans.")]
-        public int? Age { get; set; }
+        public int Age { get; set; } 
 
         [Required(ErrorMessage = "Le pseudo est requis.")]
         [StringLength(100, ErrorMessage = "Le pseudo ne peut pas dépasser 100 caractères.")]
-        public string Pseudo { get; set; }
+        public string Pseudo { get; set; } = null!;
 
         [Required(ErrorMessage = "Le genre est requis.")]
-        public string Genre { get; set; }
+        public string Genre { get; set; } = null!;
 
         public string? Description { get; set; }
         public string? Etat { get; set; }
         // La validation de la ville peut être plus complexe, dépendant de votre logique d'application.
-        public string Ville { get; set; }
+        public string Ville { get; set; } = null!;
 
         [Required(ErrorMessage = "Le mot de passe est requis.")]
         [RegularExpression("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^\\da-zA-Z]).{8,}$", ErrorMessage = "Le mot de passe doit contenir au moins 8 caractères, dont une majuscule, un chiffre, et un caractère spécial.")]
-        public string MotDePasse { get; set; }
+        public string MotDePasse { get; set; } = null!;
+
         [Required(ErrorMessage = "Le mot de passe est requis.")]
         [Compare("MotDePasse", ErrorMessage = "Les mots de passe ne correspondent pas.")]
-        public string ConfirmationMotDePasse { get; set; }
+        public string ConfirmationMotDePasse { get; set; } = null!;
     }
     public class Ville
     {

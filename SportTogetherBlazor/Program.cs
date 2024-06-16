@@ -7,6 +7,7 @@ builder.Services.AddSingleton<CircuitHandler, CustomCircuitHandler>();
 
 builder.Services.AddScoped<AuthServices>();
 builder.Services.AddScoped<SessionStorageServices>();
+builder.Services.AddScoped<AnnonceImageServices>();
 builder.Services.AddScoped(sp => new HttpClient
 {
     BaseAddress = new Uri("http://localhost:5000/ApiSportTogether/")

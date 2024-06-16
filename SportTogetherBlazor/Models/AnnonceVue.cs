@@ -16,7 +16,10 @@ namespace SportTogetherBlazor.Models;
         [JsonPropertyName("SportId")]
         public int? SportId { get; set; }
 
-        [JsonPropertyName("Titre")]
+    [JsonPropertyName("SportName")]
+    public string? SportName { get; set; }
+
+    [JsonPropertyName("Titre")]
         public string? Titre { get; set; }
 
         [JsonPropertyName("Description")]
@@ -27,11 +30,10 @@ namespace SportTogetherBlazor.Models;
 
         [JsonPropertyName("NombreParticipants")]
         public int? NombreParticipants { get; set; }
+    [JsonPropertyName("ListAnnonceImage")]
+    public List<AnnonceImage> ListAnnonceImage { get; set; } = null!;
 
-        [JsonPropertyName("ImageUrl")]
-        public string? ImageUrl { get; set; }
-
-        [JsonPropertyName("Ville")]
+    [JsonPropertyName("Ville")]
         public string Ville { get; set; } = null!;
 
         [JsonPropertyName("Lieu")]

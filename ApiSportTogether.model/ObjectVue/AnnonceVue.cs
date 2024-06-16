@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using ApiSportTogether.model.ObjectContext;
+using System.Text.Json.Serialization;
 
 namespace ApiSportTogether.model.ObjectVue
 {
@@ -16,6 +17,9 @@ namespace ApiSportTogether.model.ObjectVue
         [JsonPropertyName("SportId")]
         public int? SportId { get; set; }
 
+        [JsonPropertyName("SportName")]
+        public string? SportName { get; set; }
+
         [JsonPropertyName("Titre")]
         public string? Titre { get; set; }
 
@@ -28,8 +32,8 @@ namespace ApiSportTogether.model.ObjectVue
         [JsonPropertyName("NombreParticipants")]
         public int? NombreParticipants { get; set; }
 
-        [JsonPropertyName("ImageUrl")]
-        public string? ImageUrl { get; set; }
+        [JsonPropertyName("ListAnnonceImage")]
+        public List<AnnonceImage> ListAnnonceImage { get; set; } = null!;
 
         [JsonPropertyName("Ville")]
         public string Ville { get; set; } = null!;

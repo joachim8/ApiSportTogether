@@ -36,7 +36,9 @@ namespace ApiSportTogether.Controllers
         public ActionResult<ProfileImage> GetProfileImageByUtilisateurId(int UtilisateurId)
         {
             var profileImage = _context.ProfileImages.Where(i => i.UtilisateursId == UtilisateurId && i.Type == "Profil").FirstOrDefault();
-            return profileImage == null ? NotFound() : profileImage;
+            if(profileImage != null)
+            return Ok(profileImage);
+            else return NotFound("L'image not found.");
         }
 
         // GET: ApiSportTogether/ProfileImage/GetImageByPath

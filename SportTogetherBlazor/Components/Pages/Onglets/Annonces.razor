@@ -1,6 +1,9 @@
 ﻿@page "/SportTogether/Annonces"
+@using SportTogetherBlazor.Components.Pages.ComposantsReutilisables
 @using SportTogetherBlazor.Models
+@using SportTogetherBlazor.Services
 @inject NavigationManager navigation
+@inject SessionStorageServices session
 <PageTitle>Annonces | SportTogether</PageTitle>
 
 <nav class="navbar navbar-expand position-static" style="background-color:#eff7f4">
@@ -29,40 +32,13 @@
 <div class="container-fluid">
     <!-- Cards Section -->
     <div class="row mt-3">
-        @foreach (var annonce in annonces) {
+     
+        @foreach (AnnonceVue annonce in annonces) {
             <div class="col-md-4 mb-4 col-sm-6 col-xs-12">
-                <div class="card shadow p-3">
-                    <div class="card-header bg-transparent">
-                        <div class="row no-gutters">
-                            <div class="col-md-8">
-                                <img src="@annonce.ImageUrl" class="img-responsive" alt="image">
-                            </div>
-                            <div class="col-md-4">
-                                <div class="p-2">
-                                    <h5 class="card-title">@annonce.Titre</h5>
-                                    <p class="card-text">@annonce.Auteur</p>
-                                    <p class="card-text">@annonce.Lieu</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <p class="card-text">@annonce.Description</p>
-                        <details class="accordion">
-                            <summary>Plus de détails</summary>
-                            <p>@annonce.Ville</p>
-                            <p>@annonce.Ville</p>
-                            <p>@annonce.Ville</p>
-                        </details>
-                    </div>
-                    <div class="card-footer bg-transparent">
-                        <p class="text-muted">@annonce.DateHeureAnnonce.ToString("dd/MM/YYYY") à @annonce.DateHeureAnnonce.ToString("hh:mm")</p>
-                        <button class="btn btn-success">Participer</button>
-                        <button class="btn btn-info">Contacter</button>
-                    </div>
-                </div>
+           <AnnonceCard annonceVue="@annonce" />
             </div>
         }
+      
     </div> 
 </div>
 
@@ -84,6 +60,8 @@
     private bool bFirstFiltreAnnonces = false;
     [Inject] protected PreloadService PreloadService { get; set; }
     private RechercheModel rechercheModel = new RechercheModel();
+
+    public int utilisateurId { get; set; }
     public class RechercheModel
     {
         public string Titre { get; set; } = string.Empty;
@@ -106,17 +84,26 @@
                     Description = $"Description détaillée de l'annonce {i}. Voici plus de détails sur l'activité proposée, les compétences requises, etc.",
                     GenreAttendu = (i % 2 == 0) ? "Masculin" : "Féminin",
                     NombreParticipants = i % 10 + 5,
-                    ImageUrl = $"images/athletisme.jpg",
+                    ListAnnonceImage = new List<AnnonceImage>(){new AnnonceImage
+                    {
+                        AnnoncesId = 1,
+                        Url =  "images/Athletisme.jpg",
+                        ImageId = i
+                    }},
                     Ville = $"Ville {i}",
                     Lieu = $"Lieu {i}",
                     DateHeureAnnonce = DateTime.Now.AddDays(i)
                 });
+          
         }
+        Utilisateur utilisateurInfo = session.GetUserFromSession()!;
+        utilisateurId = utilisateurInfo.UtilisateursId;
+
     }
     private void AllerAAjoutAnnonce()
     {
         /* navigation.NavigateTo($"/SportTogether/Annonces/AjoutAnnonce/{utilisateurID}/{villeDeBase}"); */
-        navigation.NavigateTo("/SportTogether/Annonces/AjoutAnnonce");
+        navigation.NavigateTo($"/SportTogether/Annonces/AjoutAnnonce");
     }
     private async Task RechercheSubmit()
     {
@@ -139,7 +126,12 @@
                             Description = $"Description détaillée de l'annonce {i}. Voici plus de détails sur l'activité proposée, les compétences requises, etc.",
                             GenreAttendu = (i % 2 == 0) ? "Masculin" : "Féminin",
                             NombreParticipants = i % 10 + 5,
-                            ImageUrl = $"images/athletisme.jpg",
+                            ListAnnonceImage = new List<AnnonceImage>(){new AnnonceImage
+                    {
+                        AnnoncesId = 1,
+                        Url =  "images/Athletisme.jpg",
+                        ImageId = i
+                    }},
                             Ville = $"Ville {i}",
                             Lieu = $"Lieu {i}",
                             DateHeureAnnonce = DateTime.Now.AddDays(i)

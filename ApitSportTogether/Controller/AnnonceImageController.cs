@@ -32,10 +32,10 @@ namespace ApiSportTogether.Controllers
         }
 
         // GET: ApiSportTogether/AnnonceImage/5
-        [HttpGet("GetAnnonceImageByAnnonceId/{imageId}")]
-        public ActionResult<AnnonceImage> GetAnnonceImageByAnnonceId(int imageId)
+        [HttpGet("GetAnnonceImageByAnnonceId/{annonceId}")]
+        public ActionResult<List<AnnonceImage>> GetAnnonceImageByAnnonceId(int annonceId)
         {
-            var annonceImage = _context.AnnonceImages.FirstOrDefault(i => i.ImageId == imageId);
+            List<AnnonceImage> annonceImage = _context.AnnonceImages.Where(ai => ai.AnnoncesId == annonceId).ToList();
             return annonceImage == null ? NotFound() : annonceImage;
         }
 
@@ -57,9 +57,9 @@ namespace ApiSportTogether.Controllers
             return PhysicalFile(annonceImage.Url, "image/jpeg"); // Assuming the images are JPEGs
         }
 
-        // POST: ApiSportTogether/AnnonceImage/Upload
-        [HttpPost("Upload")]
-        public async Task<ActionResult> UploadAnnonceImage([FromForm] IFormFile file, [FromForm] int annoncesId)
+        // POST: ApiSportTogether/AnnonceImage/Upload/5
+        [HttpPost("Upload/{annoncesId}")]
+        public async Task<ActionResult> UploadAnnonceImage([FromBody] IFormFile file, int annoncesId)
         {
             if (file == null || file.Length == 0)
                 return BadRequest("No file uploaded.");
