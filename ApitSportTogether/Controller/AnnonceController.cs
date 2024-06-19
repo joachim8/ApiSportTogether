@@ -122,44 +122,192 @@ namespace ApiSportTogether.Controller
             return NoContent();
         }
 
+    
         // GET: ApiSportTogether/Annonce/vue/genre/ville
         [HttpGet("/vue/{genre}/{ville}")]
-        public ActionResult<List<AnnonceVue>> GetAnnonceVue(string genre, string ville)
+        public ActionResult<IEnumerable<AnnonceVue>> GetAnnonceVue(string genre, string ville)
         {
             List<Annonce> listAnnonce = new List<Annonce>();
             List<AnnonceVue> listAnnonceVue = new List<AnnonceVue>();
-            listAnnonce =  _context.Annonces.Where(a => a.GenreAttendu == genre || a.GenreAttendu == "Mixte" &&  a.Ville == ville).OrderBy(a => a.DateHeureAnnonce).Include(a => a.Sport).Include(a=> a.AnnonceImages).Include(a => a.AuteurNavigation).ToList();
+            listAnnonce =  _context.Annonces.Where(a => a.GenreAttendu == genre || a.GenreAttendu == "Mixte").Where(a => a.Ville == ville).OrderBy(a => a.DateHeureAnnonce).Include(a => a.Sport).Include(a => a.AuteurNavigation).ToList();
             if(listAnnonce.Count > 0)
             {
                 foreach(Annonce annonce in listAnnonce)
                 {
-                    AnnonceVue annonceVue = new()
+                    AnnonceVue annonceVue = new AnnonceVue
                     {
                         AnnoncesId = annonce.AnnoncesId,
                         DateHeureAnnonce = annonce.DateHeureAnnonce,
-                        Auteur =  annonce.AuteurNavigation.Pseudo!,
+                        Auteur = annonce.AuteurNavigation?.Pseudo ?? string.Empty,
                         AuteurId = annonce.Auteur,
                         Description = annonce.Description,
                         GenreAttendu = annonce.GenreAttendu,
-                       Lieu = annonce.Lieu,
-                       SportId = annonce.SportId,
-                       SportName = annonce.Sport!.Nom,
-                       NombreParticipants = annonce.NombreParticipants,
-                       ListAnnonceImage = (List<AnnonceImage>)annonce.AnnonceImages! ?? new List<AnnonceImage>(),
-                       Titre = annonce.Titre,
-                       Ville = annonce.Ville,
+                        Lieu = annonce.Lieu,
+                        SportId = annonce.SportId,
+                        SportName = annonce.Sport?.Nom ?? string.Empty,
+                        NombreParticipants = annonce.NombreParticipants,
+                        Titre = annonce.Titre,
+                        Ville = annonce.Ville
                     };
 
-              
+
                     listAnnonceVue.Add(annonceVue);
                 }
-                return listAnnonceVue;
+                return listAnnonceVue.ToArray();
             }
             else
             {
                 return NotFound();
             }
         }
+
+        // GET: ApiSportTogether/Annonce/vue/sports
+        [HttpGet("/vue/sports/{sports}")]
+        public ActionResult<IEnumerable<AnnonceVue>> GetAnnonceVueBySports(string sports)
+        {
+            List<string> sportsList = sports.Split(',').ToList();
+            List<Annonce> listAnnonce = _context.Annonces
+                                                 .Where(a => sportsList.Contains(a.Sport.Nom))
+                                                 .OrderBy(a => a.DateHeureAnnonce)
+                                                 .Include(a => a.Sport)
+                                                 .Include(a => a.AuteurNavigation)
+                                                 .ToList();
+
+            if (listAnnonce.Count > 0)
+            {
+                List<AnnonceVue> listAnnonceVue = listAnnonce.Select(annonce => new AnnonceVue
+                {
+                    AnnoncesId = annonce.AnnoncesId,
+                    DateHeureAnnonce = annonce.DateHeureAnnonce,
+                    Auteur = annonce.AuteurNavigation?.Pseudo ?? string.Empty,
+                    AuteurId = annonce.Auteur,
+                    Description = annonce.Description,
+                    GenreAttendu = annonce.GenreAttendu,
+                    Lieu = annonce.Lieu,
+                    SportId = annonce.SportId,
+                    SportName = annonce.Sport?.Nom ?? string.Empty,
+                    NombreParticipants = annonce.NombreParticipants,
+                    Titre = annonce.Titre,
+                    Ville = annonce.Ville
+                }).ToList();
+
+                return listAnnonceVue.ToArray();
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+        // GET: ApiSportTogether/Annonce/vue/genre
+        [HttpGet("/vue/genre/{genre}")]
+        public ActionResult<IEnumerable<AnnonceVue>> GetAnnonceVueByGenre(string genre)
+        {
+            List<Annonce> listAnnonce = _context.Annonces
+                                                 .Where(a => a.GenreAttendu == genre)
+                                                 .OrderBy(a => a.DateHeureAnnonce)
+                                                 .Include(a => a.Sport)
+                                                 .Include(a => a.AuteurNavigation)
+                                                 .ToList();
+
+            if (listAnnonce.Count > 0)
+            {
+                List<AnnonceVue> listAnnonceVue = listAnnonce.Select(annonce => new AnnonceVue
+                {
+                    AnnoncesId = annonce.AnnoncesId,
+                    DateHeureAnnonce = annonce.DateHeureAnnonce,
+                    Auteur = annonce.AuteurNavigation?.Pseudo ?? string.Empty,
+                    AuteurId = annonce.Auteur,
+                    Description = annonce.Description,
+                    GenreAttendu = annonce.GenreAttendu,
+                    Lieu = annonce.Lieu,
+                    SportId = annonce.SportId,
+                    SportName = annonce.Sport?.Nom ?? string.Empty,
+                    NombreParticipants = annonce.NombreParticipants,
+                    Titre = annonce.Titre,
+                    Ville = annonce.Ville
+                }).ToList();
+
+                return listAnnonceVue.ToArray();
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+        // GET: ApiSportTogether/Annonce/vue/villes
+        [HttpGet("/vue/villes/{villes}")]
+        public ActionResult<IEnumerable<AnnonceVue>> GetAnnonceVueByVilles(string villes)
+        {
+            List<string> villesList = villes.Split(',').ToList();
+            List<Annonce> listAnnonce = _context.Annonces
+                                                 .Where(a => villesList.Contains(a.Ville))
+                                                 .OrderBy(a => a.DateHeureAnnonce)
+                                                 .Include(a => a.Sport)
+                                                 .Include(a => a.AuteurNavigation)
+                                                 .ToList();
+
+            if (listAnnonce.Count > 0)
+            {
+                List<AnnonceVue> listAnnonceVue = listAnnonce.Select(annonce => new AnnonceVue
+                {
+                    AnnoncesId = annonce.AnnoncesId,
+                    DateHeureAnnonce = annonce.DateHeureAnnonce,
+                    Auteur = annonce.AuteurNavigation?.Pseudo ?? string.Empty,
+                    AuteurId = annonce.Auteur,
+                    Description = annonce.Description,
+                    GenreAttendu = annonce.GenreAttendu,
+                    Lieu = annonce.Lieu,
+                    SportId = annonce.SportId,
+                    SportName = annonce.Sport?.Nom ?? string.Empty,
+                    NombreParticipants = annonce.NombreParticipants,
+                    Titre = annonce.Titre,
+                    Ville = annonce.Ville
+                }).ToList();
+
+                return listAnnonceVue.ToArray();
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+        // GET: ApiSportTogether/Annonce/vue/titre
+        [HttpGet("/vue/titre/{motCle}")]
+        public ActionResult<IEnumerable<AnnonceVue>> GetAnnonceVueByTitre(string motCle)
+        {
+            List<Annonce> listAnnonce = _context.Annonces
+                                                 .Where(a => a.Titre.Contains(motCle))
+                                                 .OrderBy(a => a.DateHeureAnnonce)
+                                                 .Include(a => a.Sport)
+                                                 .Include(a => a.AuteurNavigation)
+                                                 .ToList();
+
+            if (listAnnonce.Count > 0)
+            {
+                List<AnnonceVue> listAnnonceVue = listAnnonce.Select(annonce => new AnnonceVue
+                {
+                    AnnoncesId = annonce.AnnoncesId,
+                    DateHeureAnnonce = annonce.DateHeureAnnonce,
+                    Auteur = annonce.AuteurNavigation?.Pseudo ?? string.Empty,
+                    AuteurId = annonce.Auteur,
+                    Description = annonce.Description,
+                    GenreAttendu = annonce.GenreAttendu,
+                    Lieu = annonce.Lieu,
+                    SportId = annonce.SportId,
+                    SportName = annonce.Sport?.Nom ?? string.Empty,
+                    NombreParticipants = annonce.NombreParticipants,
+                    Titre = annonce.Titre,
+                    Ville = annonce.Ville
+                }).ToList();
+
+                return listAnnonceVue.ToArray();
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+
     }
 }
 

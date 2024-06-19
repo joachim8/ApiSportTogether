@@ -1,0 +1,103 @@
+﻿@using SportTogetherBlazor.Models
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components
+
+<div class="dropdown">
+    <button class="btn btn-info dropdown" type="button" id="dropdownMenuButton" @onclick="ToggleDropdown" tooltip="Filtrer par sport">
+        <Icon Name="IconName.Filter" Color="IconColor.White" />
+    </button>
+    <div class="dropdown-menu" style="display:@(isDropdownOpen ? "block" : "none");max-height:200px; overflow-y:auto" aria-labelledby="dropdownMenuButton">
+        <div class="dropdown-item">
+            <input type="checkbox" @onchange="ToggleSelectAll" checked="@selectAll"> Tout
+        </div>
+        @foreach (var sport in sportsList)
+        {
+            <div class="dropdown-item">
+                <input type="checkbox" @onchange="e => UpdateSelectedSports(e, sport.Value)" value="@sport.Value" checked="@SportsSelected.Contains(sport.Value)">
+                @sport.Text
+            </div>
+        }
+        <div class="dropdown-item ">
+            <div class="d-flex justify-content-center">
+                <button class="btn btn-success " @onclick="OnApplyFilter">Appliquer</button>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public List<string> SportsSelected { get; set; } = new List<string>();
+
+    [Parameter]
+    public EventCallback<List<string>> OnFilterApplied { get; set; }
+
+    private List<SelectListItem> sportsList = new List<SelectListItem>
+    {
+        new SelectListItem { Value = "Football", Text = "Football" },
+        new SelectListItem { Value = "Basketball", Text = "Basketball" },
+        new SelectListItem { Value = "Tennis", Text = "Tennis" },
+        new SelectListItem { Value = "Athlétisme", Text = "Athlétisme" },
+        new SelectListItem { Value = "Gymnastique", Text = "Gymnastique" },
+        new SelectListItem { Value = "Natation", Text = "Natation" },
+        new SelectListItem { Value = "Baseball", Text = "Baseball" },
+        new SelectListItem { Value = "Cyclisme", Text = "Cyclisme" },
+        new SelectListItem { Value = "Volleyball", Text = "Volleyball" },
+        new SelectListItem { Value = "Rugby", Text = "Rugby" },
+        new SelectListItem { Value = "Boxe", Text = "Boxe" },
+        new SelectListItem { Value = "Hockey sur glace", Text = "Hockey sur glace" },
+        new SelectListItem { Value = "Tennis de table", Text = "Tennis de table" },
+        new SelectListItem { Value = "Badminton", Text = "Badminton" },
+        new SelectListItem { Value = "Arts martiaux mixtes", Text = "Arts martiaux mixtes" },
+        new SelectListItem { Value = "Pétanque", Text = "Pétanque" },
+        new SelectListItem { Value = "Yoga", Text = "Yoga" }
+    };
+
+    private bool selectAll = false;
+    private bool isDropdownOpen = false;
+
+    private void ToggleDropdown()
+    {
+        isDropdownOpen = !isDropdownOpen;
+    }
+
+    private void UpdateSelectedSports(ChangeEventArgs e, string sport)
+    {
+        if ((bool)e.Value)
+        {
+            SportsSelected.Add(sport);
+        }
+        else
+        {
+            SportsSelected.Remove(sport);
+        }
+
+        selectAll = SportsSelected.Count == sportsList.Count;
+    }
+
+    private void ToggleSelectAll(ChangeEventArgs e)
+    {
+        selectAll = !selectAll;
+        if (selectAll)
+        {
+            SportsSelected = sportsList.Select(s => s.Value).ToList();
+        }
+        else
+        {
+            SportsSelected.Clear();
+        }
+    }
+
+    private async Task OnApplyFilter()
+    {
+        await OnFilterApplied.InvokeAsync(SportsSelected);
+        isDropdownOpen = false;
+    }
+
+    private class SelectListItem
+    {
+        public string Value { get; set; }
+        public string Text { get; set; }
+    }
+}

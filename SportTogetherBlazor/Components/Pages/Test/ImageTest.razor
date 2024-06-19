@@ -1,0 +1,128 @@
+﻿@page "/image-uploader"
+@using System.Net.Http.Headers
+@using System.Text.Json
+@inject IHttpClientFactory ClientFactory
+@inject ILogger<ImageTest> Logger
+
+<PageTitle>File Upload</PageTitle>
+
+<h1>File Upload Example</h1>
+
+<p>
+    Upload up to @maxAllowedFiles files:
+    <InputFile OnChange="OnInputFileChange" multiple />
+</p>
+
+@if (files.Count > 0)
+{
+    <div class="card">
+        <div class="card-body">
+            <ul>
+                @foreach (var file in files)
+                {
+                    <li>
+                        File: @file.Name
+                        <br>
+                        @if (FileUpload(uploadResults, file.Name, Logger, out var result))
+                        {
+                            <span>Stored File Name: @result.StoredFileName</span>
+                        }
+                        else
+                        {
+                            <span>There was an error uploading the file (Error: @result.ErrorCode).</span>
+                        }
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int annonceId { get; set; }
+    private List<File> files = new();
+    private List<UploadResult> uploadResults = new();
+    private int maxAllowedFiles = 3;
+    private bool shouldRender;
+
+    protected override bool ShouldRender() => shouldRender;
+
+    private async Task OnInputFileChange(InputFileChangeEventArgs e)
+    {
+        shouldRender = false;
+        long maxFileSize = 10485760; // 10 MB
+        var upload = false;
+
+        using var content = new MultipartFormDataContent();
+
+        foreach (var file in e.GetMultipleFiles(maxAllowedFiles))
+        {
+            if (uploadResults.SingleOrDefault(f => f.FileName == file.Name) is null)
+            {
+                try
+                {
+                    files.Add(new() { Name = file.Name });
+
+                    var fileContent = new StreamContent(file.OpenReadStream(maxFileSize));
+                    fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
+
+                    content.Add(content: fileContent, name: "files", fileName: file.Name);
+                    upload = true;
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogInformation("{FileName} not uploaded (Err: 6): {Message}", file.Name, ex.Message);
+
+                    uploadResults.Add(new() { FileName = file.Name, ErrorCode = 6, Uploaded = false, StoredFileName= string.Empty });
+                }
+            }
+        }
+
+        if (upload)
+        {
+            var client = ClientFactory.CreateClient("ApiSportTogetherClient");
+
+            var response = await client.PostAsync("AnnonceImage/Upload/5", content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                using var responseStream = await response.Content.ReadAsStreamAsync();
+                var newUploadResults = await JsonSerializer.DeserializeAsync<IList<UploadResult>>(responseStream, options);
+
+                if (newUploadResults is not null)
+                {
+                    uploadResults = uploadResults.Concat(newUploadResults).ToList();
+                }
+            }
+        }
+
+        shouldRender = true;
+    }
+
+    private static bool FileUpload(IList<UploadResult> uploadResults, string? fileName, ILogger<ImageTest> logger, out UploadResult result)
+    {
+        result = uploadResults.SingleOrDefault(f => f.FileName == fileName) ?? new() { FileName = fileName, StoredFileName = string.Empty };
+
+        if (!result.Uploaded)
+        {
+            logger.LogInformation("{FileName} not uploaded (Err: 5)", fileName);
+            result.ErrorCode = 5;
+        }
+
+        return result.Uploaded;
+    }
+
+    private class File
+    {
+        public string? Name { get; set; }
+    }
+    public class UploadResult
+    {
+        public required string FileName { get; set; }
+        public int ErrorCode { get; set; }
+        public bool Uploaded { get; set; }
+        public required string StoredFileName { get; set; }
+    }
+}

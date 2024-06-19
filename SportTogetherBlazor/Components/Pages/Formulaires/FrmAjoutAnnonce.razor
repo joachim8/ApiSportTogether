@@ -7,7 +7,11 @@
 @using System.ComponentModel.DataAnnotations;
 @using System.Text.Json.Serialization;
 @using System.Net.Http.Headers
+@using System.Text.Json
 @inject NavigationManager NavigationManager
+@inject IHttpClientFactory ClientFactory
+@inject ILogger<FrmAjoutAnnonce> Logger
+
 
 @inject SessionStorageServices session
 <PageTitle>Nouvelle Annonce | SportTogether</PageTitle>
@@ -71,9 +75,6 @@
                     case 2:
                         @Step2
                         break;
-                    case 3:
-                        @Step3
-                        break;
                     default:
                         <p>Étape inconnue</p>
                         break;
@@ -85,7 +86,7 @@
                 {
                     <Button Type="ButtonType.Button" Color="ButtonColor.Primary" @onclick="PreviousStep">Précédent</Button>
                 }
-                @if (currentStep < 3)
+                @if (currentStep < 2)
                 {
                     <Button Type="ButtonType.Button" Color="ButtonColor.Secondary" @onclick="NextStep">Suivant</Button>
                 }
@@ -100,7 +101,6 @@
 </div>
 
 @code {
-
     private Annonce annonce = new Annonce();
     private List<Sport> sports = new List<Sport>();
     private List<Ville> villes = new List<Ville>();
@@ -108,16 +108,17 @@
     private List<Sport> sportsList = new();
     private AnnonceVue? annonceVue = null;
     private Utilisateur utilisateurInfo;
-    private string imageUrl;
+    [Inject] protected ToastService ToastService { get; set; } = default!;
     private int currentStep = 1;
-    private List<SelectedImage> selectedImages = new List<SelectedImage>();
 
+
+    private bool isLoading;
     private TimeOnly heureAnnonce = TimeOnly.FromDateTime(DateTime.Now);
-    private List<IBrowserFile> selectedFiles = new List<IBrowserFile>();
+
 
     private void NextStep()
     {
-        if (currentStep < 3)
+        if (currentStep < 2)
         {
             currentStep++;
         }
@@ -134,7 +135,7 @@
     private RenderFragment Step1 => (__builder) =>
     {
         <div>
-            <h2>Étape 1: Informations de base</h2>
+            <h2>Étape 1: Informations</h2>
             <div class="row">
                 <div class="col-md-6 mb-4">
                     <div class="form-outline">
@@ -179,7 +180,7 @@
                             <option value="">Sélectionnez un genre</option>
                             <option value="Femme">Femme</option>
                             <option value="Homme">Homme</option>
-                            <option value="Non-spécifié">Non-spécifié</option>
+                            <option value="Mixte">Mixte</option>
                         </InputSelect>
                         <ValidationMessage For="@(() => annonce.GenreAttendu)" />
                     </div>
@@ -216,25 +217,9 @@
         </div>
     };
 
-    private RenderFragment Step2 => (__builder) =>
-    {
-        <div>
-            <h2>Étape 2: Images</h2>
-            <InputFile OnChange="HandleFileSelected" multiple accept="image/png, image/jpeg, image/gif" id="inputFile" />
-            @if (selectedImages.Any())
-            {
-                <div>
-                    <h3>Images sélectionnées:</h3>
-                    @foreach (var image in selectedImages)
-                    {
-                        <img src="@image.ImageUrl" alt="Selected Image" style="max-width: 100px; max-height: 100px; margin: 5px;" />
-                    }
-                </div>
-            }
-        </div>
-    };
+   
 
-    private RenderFragment Step3 => (__builder) =>
+    private RenderFragment Step2 => (__builder) =>
     {
         annonceVue = new()
             {
@@ -251,6 +236,7 @@
                 SportId = annonce.SportId
             };
         <div>
+            <h2>Étape 2: Confirmations</h2>
             <div class="container-fluid">
                 <div class="row mt-3">
                     <AnnonceCard annonceVue="@annonceVue" />
@@ -259,33 +245,6 @@
         </div>
     };
 
-    private async Task HandleFileSelected(InputFileChangeEventArgs e)
-    {
-        selectedImages.Clear(); // Clear existing images
-        selectedFiles = e.GetMultipleFiles().ToList();
-
-        foreach (var file in selectedFiles)
-        {
-            if (file.ContentType == "image/jpeg" || file.ContentType == "image/png")
-            {
-                var buffer = new byte[file.Size];
-                await file.OpenReadStream(10485760).ReadAsync(buffer); // 10 MB limit
-
-                selectedImages.Add(new SelectedImage
-                    {
-                        Name = file.Name,
-                        ContentType = file.ContentType,
-                        Data = buffer
-                    });
-            }
-            else
-            {
-                Console.WriteLine($"Type de fichier non supporté : {file.Name} ({file.ContentType})");
-            }
-        }
-
-        StateHasChanged(); // Refresh the UI to display the images
-    }
 
     public class Ville
     {
@@ -334,39 +293,15 @@
         try
         {
             annonce.DateHeureAnnonce = annonce.DateHeureAnnonce.Date.Add(heureAnnonce.ToTimeSpan());
+            var client = ClientFactory.CreateClient("ApiSportTogetherClient");
 
-            var response = await httpClient.PostAsJsonAsync("Annonce/CreateAnnonce", annonce);
+            var response = await client.PostAsJsonAsync("Annonce/CreateAnnonce", annonce);
+
 
             if (response.IsSuccessStatusCode)
             {
                 var createdAnnonce = await response.Content.ReadFromJsonAsync<Annonce>();
-                if (createdAnnonce != null)
-                {
-                    foreach (var image in selectedImages)
-                    {
-                        var content = new MultipartFormDataContent();
-                        var fileContent = new ByteArrayContent(image.Data);
-                        fileContent.Headers.ContentType = new MediaTypeHeaderValue(image.ContentType);
-                        content.Add(fileContent, "file", image.Name);
-                        var url = $"AnnonceImage/Upload/{createdAnnonce.AnnoncesId}";
-
-                        try
-                        {
-                            var uploadResponse = await httpClient.PostAsync(url, content);
-                            uploadResponse.EnsureSuccessStatusCode();
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine($"Exception lors de l'upload de l'image: {ex.Message}");
-                        }
-                    }
-
-                    NavigationManager.NavigateTo($"SportTogether/Annonces");
-                }
-                else
-                {
-                    Console.WriteLine("Erreur lors de la création de l'annonce.");
-                }
+                ToastService.Notify(new(ToastType.Success, $"Votre annonce {createdAnnonce.Titre} du {createdAnnonce.DateHeureAnnonce.ToString("dd/MM")} à {createdAnnonce.DateHeureAnnonce.ToString("hh:mm")} à été publié."));
             }
             else
             {
@@ -379,6 +314,8 @@
             Console.WriteLine($"Exception lors de la création de l'annonce: {ex.Message}");
         }
     }
+
+    
 
     private async Task GetListOfSport()
     {
@@ -412,12 +349,6 @@
         public List<Sport> Sports { get; set; }
     }
 
-    public class SelectedImage
-    {
-        public string Name { get; set; }
-        public string ContentType { get; set; }
-        public byte[] Data { get; set; }
-        public string Base64Data => Convert.ToBase64String(Data);
-        public string ImageUrl => $"data:{ContentType};base64,{Base64Data}";
-    }
+   
 }
+

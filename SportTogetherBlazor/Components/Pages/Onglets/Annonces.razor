@@ -2,150 +2,218 @@
 @using SportTogetherBlazor.Components.Pages.ComposantsReutilisables
 @using SportTogetherBlazor.Models
 @using SportTogetherBlazor.Services
+@using System.Text.Json.Serialization
+@using System.Text.Json
 @inject NavigationManager navigation
 @inject SessionStorageServices session
+@inject HttpClient Http
 <PageTitle>Annonces | SportTogether</PageTitle>
 
 <nav class="navbar navbar-expand position-static" style="background-color:#eff7f4">
-       <div class="container-fluid">
-            <div class="collapse navbar-collapse" id="navbarText">
-                <Button Type="ButtonType.Link" Color="ButtonColor.Success" Size="Size.Medium" @onclick="AllerAAjoutAnnonce" TooltipTitle="Ajouter une annonce"> <Icon Name=" IconName.PlusCircle" Color="IconColor.White" /></Button>
-                 <EditForm Model="@rechercheModel" OnSubmit="@RechercheSubmit" FormName="RechercheForm">
-                     <DataAnnotationsValidator />
-                     <ValidationSummary />
-                     <div class="form-group d-flex flex-row">
-                        <InputText id="rechercheTitre" class="form-control"
-                                       @bind-Value="rechercheModel.Titre" placeholder="Recherche..." />
-                        <Button Type="ButtonType.Submit" Color="ButtonColor.Light" Size="Size.Medium" TooltipTitle="Rechercher"> <Icon Name=" IconName.Search" /></Button>
+    <div class="container-fluid">
+        <div class="collapse navbar-collapse" id="navbarText">
+           
+            <div class="p-2 col-3"
+            <Button Type="ButtonType.Link" Color="ButtonColor.Success" Size="Size.Medium" @onclick="AllerAAjoutAnnonce" TooltipTitle="Ajouter une annonce"> <Icon Name=" IconName.PlusCircle" Color="IconColor.White" /></Button>
+            </div>
+            <div class="p-2 col-4"
+            <EditForm Model="@rechercheModel" OnSubmit="@RechercheSubmit" FormName="RechercheForm">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <div class="form-group d-flex flex-row">
+                    <InputText id="rechercheTitre" class="form-control"
+                               @bind-Value="rechercheModel.Titre" placeholder="Recherche..." />
+                    <Button Type="ButtonType.Submit" Color="ButtonColor.Light" Size="Size.Medium" TooltipTitle="Rechercher"> <Icon Name=" IconName.Search" /></Button>
+                </div>
+            </EditForm>
+            </div
 
-                     </div>
-                 </EditForm>
-            <div class="btn-group">
-                <Button Type="ButtonType.Link" Color="ButtonColor.Info" Size="Size.Medium" @onclick="AllerAAjoutAnnonce" TooltipTitle="Filtrer par sport"> <Icon Name=" IconName.Filter" Color="IconColor.White" /></Button>
-                <Button Type="ButtonType.Link" Color="ButtonColor.Info" Size="Size.Medium" @onclick="AllerAAjoutAnnonce" TooltipTitle="Filtrer par ville"> <Icon Name=" IconName.PinMap" Color="IconColor.White" /></Button>
-                <Button Type="ButtonType.Link" Color="ButtonColor.Info" Size="Size.Medium" @onclick="AllerAAjoutAnnonce" TooltipTitle="Filtre par genre"> <Icon Name=" IconName.GenderAmbiguous" Color="IconColor.White" /></Button>
+            <div class="p-2 col-4">
+                <div class="btn-group">
+                    <div class="px-2">
+                        <FiltreParSports SportsSelected="@SportsSelected" OnFilterApplied="RechercherParSport" />
+                    </div>
+                    <div class="px-2">
+                         <FiltreParVille SelectedVilles="@SelectedVilles" OnFilterApplied="RechercherParVille" />
+                    </div>
+                    <div class="px-2">
+                        <Button Type="ButtonType.Link" Color="ButtonColor.Info" Size="Size.Medium" @onclick="AllerAAjoutAnnonce" TooltipTitle="Filtre par genre"> <Icon Name=" IconName.GenderAmbiguous" Color="IconColor.White" /></Button>
+                    </div>
+                </div>
             </div>
-            </div>
-       
-       </div>
-    </nav>
+ 
+        </div>
+    </div>
+</nav>
+
 <div class="container-fluid">
     <!-- Cards Section -->
     <div class="row mt-3">
-     
-        @foreach (AnnonceVue annonce in annonces) {
-            <div class="col-md-4 mb-4 col-sm-6 col-xs-12">
-           <AnnonceCard annonceVue="@annonce" />
-            </div>
+        @if (annonces != null)
+        {
+            @foreach (AnnonceVue annonce in annonces)
+            {
+                <div class="col-md-4 mb-4 col-sm-6 col-xs-12">
+                    <AnnonceCard annonceVue="@annonce" />
+                </div>
+            }
         }
-      
-    </div> 
+        else
+        {
+            <p>Loading...</p>
+        }
+    </div>
 </div>
 
-
-
-
 <style>
-    /* Existing styles */
     .card-header img {
         width: 100%; /* Adjust image width within card */
     }
-    .card{
 
+    .card {
     }
 </style>
 
 @code {
-    private List<AnnonceVue> annonces = new List<AnnonceVue>();
-    private bool bFirstFiltreAnnonces = false;
+    private List<AnnonceVue> annonces;
+    private bool bFirstFiltreAnnonces = true;
     [Inject] protected PreloadService PreloadService { get; set; }
     private RechercheModel rechercheModel = new RechercheModel();
+    private string? villeUtilisateur;
+    private string? genreUtilisateur;
 
     public int utilisateurId { get; set; }
     public class RechercheModel
     {
         public string Titre { get; set; } = string.Empty;
     }
-    protected override void OnAfterRender(bool firstRender)
-    {
+    [Parameter]
+    public List<string> SportsSelected { get; set; } = new List<string>();
+    [Parameter]
+    public List<string> SelectedVilles { get; set; } = new List<string>();
 
-    }
-    protected override void OnInitialized()
+    private bool showFilterSports = false;
+
+    private void ToggleFilterSports()
     {
-        for (int i = 1; i <= 20; i++)
+        showFilterSports = !showFilterSports;
+    }
+
+    private async Task RechercherParSport(List<string> selectedSports)
+    {
+        if (selectedSports.Count == 0)
         {
-            annonces.Add(new AnnonceVue
-                {
-                    AnnoncesId = i,
-                    AuteurId = i,
-                    Auteur = $"Auteur {i}",
-                    SportId = i % 5 + 1, // Five different sports
-                    Titre = $"Titre de l'annonce {i}",
-                    Description = $"Description détaillée de l'annonce {i}. Voici plus de détails sur l'activité proposée, les compétences requises, etc.",
-                    GenreAttendu = (i % 2 == 0) ? "Masculin" : "Féminin",
-                    NombreParticipants = i % 10 + 5,
-                    ListAnnonceImage = new List<AnnonceImage>(){new AnnonceImage
-                    {
-                        AnnoncesId = 1,
-                        Url =  "images/Athletisme.jpg",
-                        ImageId = i
-                    }},
-                    Ville = $"Ville {i}",
-                    Lieu = $"Lieu {i}",
-                    DateHeureAnnonce = DateTime.Now.AddDays(i)
-                });
-          
+            // Handle the case where no sports are selected, if needed
+            return;
         }
-        Utilisateur utilisateurInfo = session.GetUserFromSession()!;
-        utilisateurId = utilisateurInfo.UtilisateursId;
+
+        SportsSelected = selectedSports;
+        string sports = string.Join(",", SportsSelected);
+        try
+        {
+            annonces.Clear();
+            annonces = await Http.GetFromJsonAsync<List<AnnonceVue>>($"/vue/sports/{sports}");
+            PreloadService.Show(SpinnerColor.Light, "Recherche en cours...");
+            if (annonces.Any())
+            {
+                PreloadService.Hide();
+                StateHasChanged();
+            }
+            
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception lors de l'appel API: {ex.Message}");
+        }
+    }
+    private async Task RechercherParVille(List<string> selectedVilles)
+    {
+        if (selectedVilles.Count == 0)
+        {
+            return;
+        }
+
+        SelectedVilles = selectedVilles;
+        string villes = string.Join(",", SelectedVilles);
+        try
+        {
+            annonces.Clear();
+            PreloadService.Show(SpinnerColor.Light, "Recherche en cours...");
+            annonces = await Http.GetFromJsonAsync<List<AnnonceVue>>($"/vue/villes/{villes}");
+            PreloadService.Hide();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception lors de l'appel API: {ex.Message}");
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        if (bFirstFiltreAnnonces)
+        {
+            Utilisateur utilisateurInfo = session.GetUserFromSession()!;
+            villeUtilisateur = utilisateurInfo.Ville;
+            genreUtilisateur = utilisateurInfo.Genre;
+            utilisateurId = utilisateurInfo.UtilisateursId;
+            await LoadAnnonces();
+        }
 
     }
+
+    private async Task LoadAnnonces()
+    {
+
+        try
+        {
+            annonces = (await Http.GetFromJsonAsync<List<AnnonceVue>>($"/vue/{genreUtilisateur}/{villeUtilisateur}"))!;
+            if (annonces.Any())
+            {
+                bFirstFiltreAnnonces = false;
+            }
+            
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception lors de l'inscription: {ex.Message}");
+        }
+
+    }
+
     private void AllerAAjoutAnnonce()
     {
         /* navigation.NavigateTo($"/SportTogether/Annonces/AjoutAnnonce/{utilisateurID}/{villeDeBase}"); */
         navigation.NavigateTo($"/SportTogether/Annonces/AjoutAnnonce");
     }
+   
     private async Task RechercheSubmit()
     {
         if (!string.IsNullOrWhiteSpace(rechercheModel.Titre))
         {
             if (bFirstFiltreAnnonces)
             {
-                PreloadService.Show(SpinnerColor.Light,"Recherche en cours...");
-                await Task.Delay(10000);
-                annonces.Clear();
-                for (int i = 1; i <= 20; i++)
-                {
-                    annonces.Add(new AnnonceVue
-                        {
-                            AnnoncesId = i,
-                            AuteurId = i,
-                            Auteur = $"Auteur {i}",
-                            SportId = i % 5 + 1, // Five different sports
-                            Titre = $"Titre de l'annonce {i}",
-                            Description = $"Description détaillée de l'annonce {i}. Voici plus de détails sur l'activité proposée, les compétences requises, etc.",
-                            GenreAttendu = (i % 2 == 0) ? "Masculin" : "Féminin",
-                            NombreParticipants = i % 10 + 5,
-                            ListAnnonceImage = new List<AnnonceImage>(){new AnnonceImage
-                    {
-                        AnnoncesId = 1,
-                        Url =  "images/Athletisme.jpg",
-                        ImageId = i
-                    }},
-                            Ville = $"Ville {i}",
-                            Lieu = $"Lieu {i}",
-                            DateHeureAnnonce = DateTime.Now.AddDays(i)
-                        });
-                }
+                PreloadService.Show(SpinnerColor.Light, "Recherche en cours...");
+
+                annonces = await Http.GetFromJsonAsync<List<AnnonceVue>>($"/vue/{genreUtilisateur}/{rechercheModel.Titre}");
+                bFirstFiltreAnnonces = true;
+                PreloadService.Hide();
+                StateHasChanged();
             }
-            annonces = annonces.Where(a => a.Titre.Contains(rechercheModel.Titre, StringComparison.OrdinalIgnoreCase)).ToList();
-            bFirstFiltreAnnonces = true;
-            PreloadService.Hide();
-            StateHasChanged();
         }
         else
         {
-            annonces = annonces;
+            await LoadAnnonces();
         }
     }
- }
+
+    public class AnnonceVueWrapper
+    {
+        [JsonPropertyName("$id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("$values")]
+        public List<AnnonceVue> AnnonceVue { get; set; }
+    }
+}

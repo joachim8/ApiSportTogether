@@ -32,9 +32,6 @@ namespace ApiSportTogether.model.ObjectVue
         [JsonPropertyName("NombreParticipants")]
         public int? NombreParticipants { get; set; }
 
-        [JsonPropertyName("ListAnnonceImage")]
-        public List<AnnonceImage> ListAnnonceImage { get; set; } = null!;
-
         [JsonPropertyName("Ville")]
         public string Ville { get; set; } = null!;
 

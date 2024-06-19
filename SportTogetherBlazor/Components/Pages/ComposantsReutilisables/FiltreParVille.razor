@@ -1,0 +1,92 @@
+﻿@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+@using System.Net.Http.Json
+@inject HttpClient Http
+
+<div class="dropdown">
+    <button class="btn btn-info dropdown-toggle" type="button" id="dropdownVilleButton" @onclick="ToggleDropdown" ToolTip="Filtrer par ville">
+        <Icon Name=" IconName.PinMap" Color="IconColor.White" />
+    </button>
+    <div class="dropdown-menu" style="display:@(isDropdownOpen ? "block" : "none"); min-width:300px" aria-labelledby="dropdownVilleButton">
+        <div class="form-outline mb-2">
+            <div class="d-flex justify-content-center">
+                <label class="form-label" for="rechercheVille">Ville</label>
+               
+            </div>
+            <InputText id="rechercheVille" class="form-control" @bind-Value="rechercheVille" @oninput="@(async (ChangeEventArgs e) => await RechercherVilles(e.Value.ToString()))" />
+           
+        </div>
+        @if (villes.Any())
+        {
+            <div class="list-group">
+                @foreach (var ville in villes)
+                {
+                    <div class="dropdown-item">
+                        <input type="checkbox" @onchange="e => UpdateSelectedVilles(e, ville.Nom)" checked="@SelectedVilles.Contains(ville.Nom)">
+                        @ville.Nom
+                    </div>
+                }
+            </div>
+        }
+        <div class="dropdown-item">
+            <button class="btn btn-primary" @onclick="OnApplyFilter">Appliquer</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public List<string> SelectedVilles { get; set; } = new List<string>();
+
+    [Parameter]
+    public EventCallback<List<string>> OnFilterApplied { get; set; }
+
+    private string rechercheVille = string.Empty;
+    private List<Ville> villes = new List<Ville>();
+    private bool isDropdownOpen = false;
+
+    private void ToggleDropdown()
+    {
+        isDropdownOpen = !isDropdownOpen;
+    }
+
+    private void UpdateSelectedVilles(ChangeEventArgs e, string ville)
+    {
+        if ((bool)e.Value)
+        {
+            SelectedVilles.Add(ville);
+        }
+        else
+        {
+            SelectedVilles.Remove(ville);
+        }
+    }
+
+    private async Task RechercherVilles(string recherche)
+    {
+        if (!string.IsNullOrEmpty(recherche) && recherche.Length >= 2)
+        {
+            try
+            {
+                villes = await Http.GetFromJsonAsync<List<Ville>>($"https://geo.api.gouv.fr/communes?nom={recherche}&fields=nom,departement&boost=population&limit=5")!;
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur lors de la récupération des villes: {ex.Message}");
+            }
+        }
+    }
+
+    private async Task OnApplyFilter()
+    {
+        await OnFilterApplied.InvokeAsync(SelectedVilles);
+        isDropdownOpen = false;
+    }
+
+    private class Ville
+    {
+        public string Nom { get; set; }
+        public string CodeDepartement { get; set; }
+    }
+}

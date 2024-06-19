@@ -1,62 +1,69 @@
-﻿@using SportTogetherBlazor.Models 
+﻿@using SportTogetherBlazor.Models
+@inject IJSRuntime JSRuntime
 
 @code {
     [Parameter]
     public AnnonceVue annonceVue { get; set; }
+
+    private readonly Dictionary<int, (string color, string imageUrl)> sportStyles = new()
+    {
+        { 1, ("#6BDE2A", "ballon-foot.jpg") },
+        { 2, ("#391E67", "basketball.jpg") },
+        { 4, ("#6B1D4B", "tennis.jpg") },
+        { 5, ("#D8AC2C", "athletisme.jpg") },
+        { 6, ("#B36EDD", "gymnastique.jpg") },
+        { 8, ("#CCF3DB", "natation.jpg") },
+        { 9, ("#2C1707", "baseball.jpg") },
+        { 10, ("#2A87FD", "cyclisme.jpg") },
+        { 11, ("#C084BF", "volleyball.jpg") },
+        { 12, ("#A78DA3", "rugby.jpg") },
+        { 14, ("#A78DA3", "boxe.jpg") },
+        { 15, ("#927584", "hockey.jpg") },
+        { 16, ("#9A7C43", "tennis_table.jpg") },
+        { 17, ("#033786", "badminton.jpg") },
+        { 18, ("#6BDE2A", "poids-salles.jpg") },
+        { 21, ("#391E67", "pétanque.jpg") },
+        { 22, ("#6B1D4B", "yoga.jpg") },
+    };
+
+    private string GetSportColor(int sportId)
+    {
+        return sportStyles.ContainsKey(sportId) ? sportStyles[sportId].color : "#FFFFFF";
+    }
+
+    private string GetSportImageUrl(int sportId)
+    {
+        return sportStyles.ContainsKey(sportId) ? sportStyles[sportId].imageUrl : "default.jpg";
+    }
 }
 
-
- 
-        <div class="card shadow p-3">
-            <div class="card-header bg-transparent">
-                <div class="row no-gutters">
-                    <div class="col-md-8">
-                        <div id="carouselExampleFade_@annonceVue.AnnoncesId" class="carousel slide carousel-fade" data-ride="carousel">
-                            <div class="carousel-inner">
-                           @if(annonceVue.ListAnnonceImage != null)
-                            {
-                                @foreach (AnnonceImage annonceImage in annonceVue.ListAnnonceImage)
-                                {
-                                    <div class="carousel-item @(annonceVue.ListAnnonceImage.First() == annonceImage ? "active" : "")">
-                                        <img src="@annonceImage.Url" class="d-block w-100" alt="Image @(annonceImage.ImageId)">
-                                    </div>
-                                }
-                            }
-                            </div>
-                            <a class="carousel-control-prev" href="#carouselExampleFade_@annonceVue.AnnoncesId" role="button" data-slide="prev">
-                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                <span class="sr-only">Previous</span>
-                            </a>
-                            <a class="carousel-control-next" href="#carouselExampleFade_@annonceVue.AnnoncesId" role="button" data-slide="next">
-                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                <span class="sr-only">Next</span>
-                            </a>
-                        </div>
-
-                    </div>
-                    <div class="col-md-4">
-                        <div class="p-2">
-                            <h5 class="card-title">@annonceVue.Titre</h5>
-                            <p class="card-text">@annonceVue.Auteur</p>
-                            <p>@annonceVue.Ville</p>
-                            <p class="card-text">@annonceVue.GenreAttendu</p>
-                        </div>
-                    </div>
-                </div>
+<div class="card shadow p-3 text-white " style="background-color:@GetSportColor((int)annonceVue.SportId!); background-size:cover;">
+    <div class="card-header bg-transparent">
+        <h3 class="text-center">@annonceVue.Titre</h3>
+        <div class="container-fluid ">
+            <div class="row">
+            <div class="col-md-4">
+                <img class="img-fluid rounded-start" src="/images/@GetSportImageUrl((int)annonceVue.SportId!)" alt="image de sport">
+                
             </div>
-            <div class="card-body">
+            <div class="col-md-8 text-center">
+                    <p>@annonceVue.Auteur</p>
+                    <p>@annonceVue.Ville</p>
+                    <p class="card-text">@annonceVue.GenreAttendu</p>
 
-                <details class="accordion">
-                    <summary>Plus de détails</summary>
-                    <p class="card-text">La description :@annonceVue.Description</p>
-                    <p class="card-text">Lieu : @annonceVue.Lieu</p>
-                </details>
             </div>
-            <div class="card-footer bg-transparent">
-                <p class="text-muted">@annonceVue.DateHeureAnnonce.ToString("dd/MM/yyyy") à @annonceVue.DateHeureAnnonce.ToString("hh:mm")</p>
-                <p class="text-muted">Nombre de participants : @annonceVue.NombreParticipants</p>
             </div>
         </div>
-
-
-
+    </div>
+    <div class="card-body">
+        <details class="accordion">
+            <summary>Plus de détails</summary>
+            <p class="card-text">La description :@annonceVue.Description</p>
+            <p class="card-text">Lieu : @annonceVue.Lieu</p>
+        </details>
+    </div>
+    <div class="card-footer bg-transparent text-white">
+        <p >@annonceVue.DateHeureAnnonce.ToString("dd/MM/yyyy") à @annonceVue.DateHeureAnnonce.ToString("hh:mm")</p>
+        <p>Nombre de participants : @annonceVue.NombreParticipants</p>
+    </div>
+</div>

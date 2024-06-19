@@ -1,6 +1,7 @@
 //using ApiSportTogether.model.dbContext;
 using ApiSportTogether.model.dbContext;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
@@ -51,16 +52,17 @@ builder.Services.AddAuthentication(options =>
         ClockSkew = TimeSpan.FromMinutes(60)
     };
 });
-// Ajouter le contexte de base de données
-builder.Services.AddDbContext<SportTogetherContext>(options =>
-    options.UseMySql(connectionString, new MySqlServerVersion("8.0.35"), mysqlOptions => mysqlOptions.EnableRetryOnFailure(
-                maxRetryCount: 5,
-                maxRetryDelay: TimeSpan.FromSeconds(10),
-                errorNumbersToAdd: null)));
+
 // Ajout des services pour les contrôleurs
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+});
+// Configuration pour augmenter la taille maximale des fichiers
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 10485760; // 10 MB
+    options.BufferBodyLengthLimit = 10485760; // 10 MB buffer limit
 });
 WebApplication app = builder.Build();
 if(app.Environment.IsDevelopment())

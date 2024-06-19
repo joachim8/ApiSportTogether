@@ -14,14 +14,8 @@
     <main>
         <Preload LoadingText="Chargemant..." />
         @Body
-        <Modal @ref="modal" title="@titreErreur" IsVerticallyCentered="true">
-            <BodyTemplate>
-                @errorMessage
-            </BodyTemplate>
-            <FooterTemplate>
-                <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Ok</Button>
-            </FooterTemplate>
-        </Modal>
+        <Toasts class="p-3" AutoHide="true" Delay="4000" Placement="ToastsPlacement.BottomRight" />
+       
     </main>
 </div>
 
@@ -31,11 +25,11 @@
     <a class="dismiss">🗙</a>
 </div>
 @code{
-
+    
     private bool showErrorModal = false;
     public string errorMessage = "";
     public string titreErreur = "";
-    private Modal modal = default!;
+   
     protected override void OnInitialized()
     {
         NavigationManager.LocationChanged += HandleLocationChanged;
@@ -50,14 +44,6 @@
     {
         NavigationManager.LocationChanged -= HandleLocationChanged;
     }
-    public async Task OnShowModalClick()
-    {
-        await modal.ShowAsync();
-    }
-
-    public async Task OnHideModalClick()
-    {
-        await modal.HideAsync();
-    }
+ 
  
 }

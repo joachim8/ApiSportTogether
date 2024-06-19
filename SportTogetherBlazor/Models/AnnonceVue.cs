@@ -1,7 +1,8 @@
-﻿using System.Text.Json.Serialization;
+﻿
+using System.Text.Json.Serialization;
 
-namespace SportTogetherBlazor.Models;
-
+namespace SportTogetherBlazor.Models
+{
     public class AnnonceVue
     {
         [JsonPropertyName("AnnoncesId")]
@@ -16,10 +17,10 @@ namespace SportTogetherBlazor.Models;
         [JsonPropertyName("SportId")]
         public int? SportId { get; set; }
 
-    [JsonPropertyName("SportName")]
-    public string? SportName { get; set; }
+        [JsonPropertyName("SportName")]
+        public string? SportName { get; set; }
 
-    [JsonPropertyName("Titre")]
+        [JsonPropertyName("Titre")]
         public string? Titre { get; set; }
 
         [JsonPropertyName("Description")]
@@ -30,10 +31,9 @@ namespace SportTogetherBlazor.Models;
 
         [JsonPropertyName("NombreParticipants")]
         public int? NombreParticipants { get; set; }
-    [JsonPropertyName("ListAnnonceImage")]
-    public List<AnnonceImage> ListAnnonceImage { get; set; } = null!;
+        
 
-    [JsonPropertyName("Ville")]
+        [JsonPropertyName("Ville")]
         public string Ville { get; set; } = null!;
 
         [JsonPropertyName("Lieu")]
@@ -42,4 +42,4 @@ namespace SportTogetherBlazor.Models;
         public DateTime DateHeureAnnonce { get; set; }
 
     }
-
+}
