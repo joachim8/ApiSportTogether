@@ -1,5 +1,42 @@
-﻿<h3>FiltreParGenre</h3>
+﻿@using Microsoft.AspNetCore.Components
+
+<Button Type="ButtonType.Link" Color="ButtonColor.Info" Size="Size.Medium" @onclick="ToggleDropdown" TooltipTitle="Filtre par genre">
+    <Icon Name="IconName.GenderAmbiguous" Color="IconColor.White" />
+</Button>
+<div class="dropdown-menu" style="display:@(isDropdownOpen ? "block" : "none"); max-height: 200px; overflow-y: auto;" aria-labelledby="dropdownGenreButton">
+    @foreach (var genre in genres)
+    {
+        <div class="dropdown-item">
+            <input type="radio" id="@genre" name="genre" @onchange="() => UpdateSelectedGenre(genre)" checked="@((SelectedGenre == genre).ToString())">
+            <label for="@genre">@genre</label>
+        </div>
+    }
+</div>
 
 @code {
+    [Parameter]
+    public string SelectedGenre { get; set; }
 
+    [Parameter]
+    public EventCallback<string> OnFilterApplied { get; set; }
+
+    [Parameter]
+    public List<string> genres { get; set; } = new List<string>();
+
+    private bool isDropdownOpen = false;
+    
+
+
+    private void ToggleDropdown()
+    {
+        isDropdownOpen = !isDropdownOpen;
+     
+    }
+
+    private async Task UpdateSelectedGenre(string genre)
+    {
+        SelectedGenre = genre;
+        await OnFilterApplied.InvokeAsync(SelectedGenre);
+        isDropdownOpen = false;
+    }
 }

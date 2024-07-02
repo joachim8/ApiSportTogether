@@ -127,12 +127,14 @@ namespace ApiSportTogether.Controller
         [HttpGet("/vue/{genre}/{ville}")]
         public ActionResult<IEnumerable<AnnonceVue>> GetAnnonceVue(string genre, string ville)
         {
+            DateTime dateDuJour = DateTime.Now;
             List<Annonce> listAnnonce = new List<Annonce>();
             List<AnnonceVue> listAnnonceVue = new List<AnnonceVue>();
-            listAnnonce =  _context.Annonces.Where(a => a.GenreAttendu == genre || a.GenreAttendu == "Mixte").Where(a => a.Ville == ville).OrderBy(a => a.DateHeureAnnonce).Include(a => a.Sport).Include(a => a.AuteurNavigation).ToList();
+            listAnnonce =  _context.Annonces.Where(a => a.Ville == ville && a.DateHeureAnnonce > dateDuJour).OrderBy(a => a.DateHeureAnnonce).Include(a => a.Sport).Include(a => a.AuteurNavigation).ToList();
             if(listAnnonce.Count > 0)
             {
-                foreach(Annonce annonce in listAnnonce)
+                listAnnonce = listAnnonce.Where(la => la.GenreAttendu == genre || la.GenreAttendu == "Mixte").ToList();
+                foreach (Annonce annonce in listAnnonce)
                 {
                     AnnonceVue annonceVue = new AnnonceVue
                     {
@@ -162,12 +164,14 @@ namespace ApiSportTogether.Controller
         }
 
         // GET: ApiSportTogether/Annonce/vue/sports
-        [HttpGet("/vue/sports/{sports}")]
-        public ActionResult<IEnumerable<AnnonceVue>> GetAnnonceVueBySports(string sports)
+        [HttpGet("/vue/sports/{sports}/{ville}/{genreUtilisateur}")]
+        public ActionResult<IEnumerable<AnnonceVue>> GetAnnonceVueBySports(string sports,string ville, string  genreUtilisateur)
         {
+            DateTime dateDuJour = DateTime.Now;
             List<string> sportsList = sports.Split(',').ToList();
             List<Annonce> listAnnonce = _context.Annonces
-                                                 .Where(a => sportsList.Contains(a.Sport.Nom))
+                                                 .Where(a => sportsList.Contains(a.Sport.Nom) && a.DateHeureAnnonce > dateDuJour)
+                                                 .Where(a => a.Ville == ville)
                                                  .OrderBy(a => a.DateHeureAnnonce)
                                                  .Include(a => a.Sport)
                                                  .Include(a => a.AuteurNavigation)
@@ -175,6 +179,7 @@ namespace ApiSportTogether.Controller
 
             if (listAnnonce.Count > 0)
             {
+                listAnnonce = listAnnonce.Where(la => la.GenreAttendu == genreUtilisateur || la.GenreAttendu == "Mixte").ToList();
                 List<AnnonceVue> listAnnonceVue = listAnnonce.Select(annonce => new AnnonceVue
                 {
                     AnnoncesId = annonce.AnnoncesId,
@@ -197,13 +202,13 @@ namespace ApiSportTogether.Controller
             {
                 return NotFound();
             }
-        }
-        // GET: ApiSportTogether/Annonce/vue/genre
-        [HttpGet("/vue/genre/{genre}")]
-        public ActionResult<IEnumerable<AnnonceVue>> GetAnnonceVueByGenre(string genre)
+        } // GET: ApiSportTogether/Annonce/vue/genre
+        [HttpGet("/vue/genre/{genreUtilisateur}/{ville}")]
+        public ActionResult<IEnumerable<AnnonceVue>> GetAnnonceVueByGenre(string ville, string  genreUtilisateur)
         {
+            DateTime dateDuJour = DateTime.Now;
             List<Annonce> listAnnonce = _context.Annonces
-                                                 .Where(a => a.GenreAttendu == genre)
+                                                 .Where(a => a.Ville == ville && a.DateHeureAnnonce > dateDuJour)
                                                  .OrderBy(a => a.DateHeureAnnonce)
                                                  .Include(a => a.Sport)
                                                  .Include(a => a.AuteurNavigation)
@@ -211,6 +216,7 @@ namespace ApiSportTogether.Controller
 
             if (listAnnonce.Count > 0)
             {
+                listAnnonce = listAnnonce.Where(a => a.GenreAttendu == genreUtilisateur).ToList();
                 List<AnnonceVue> listAnnonceVue = listAnnonce.Select(annonce => new AnnonceVue
                 {
                     AnnoncesId = annonce.AnnoncesId,
@@ -235,12 +241,13 @@ namespace ApiSportTogether.Controller
             }
         }
         // GET: ApiSportTogether/Annonce/vue/villes
-        [HttpGet("/vue/villes/{villes}")]
-        public ActionResult<IEnumerable<AnnonceVue>> GetAnnonceVueByVilles(string villes)
+        [HttpGet("/vue/villes/{villes}/{genreUtilisateur}")]
+        public ActionResult<IEnumerable<AnnonceVue>> GetAnnonceVueByVilles(string villes, string genreUtilisateur)
         {
+            DateTime dateDuJour = DateTime.Now;
             List<string> villesList = villes.Split(',').ToList();
             List<Annonce> listAnnonce = _context.Annonces
-                                                 .Where(a => villesList.Contains(a.Ville))
+                                                 .Where(a => villesList.Contains(a.Ville) && a.DateHeureAnnonce > dateDuJour)
                                                  .OrderBy(a => a.DateHeureAnnonce)
                                                  .Include(a => a.Sport)
                                                  .Include(a => a.AuteurNavigation)
@@ -248,6 +255,7 @@ namespace ApiSportTogether.Controller
 
             if (listAnnonce.Count > 0)
             {
+                listAnnonce =  listAnnonce.Where(la => la.GenreAttendu == genreUtilisateur || la.GenreAttendu == "Mixte").ToList();
                 List<AnnonceVue> listAnnonceVue = listAnnonce.Select(annonce => new AnnonceVue
                 {
                     AnnoncesId = annonce.AnnoncesId,
@@ -271,12 +279,15 @@ namespace ApiSportTogether.Controller
                 return NotFound();
             }
         }
+        
         // GET: ApiSportTogether/Annonce/vue/titre
-        [HttpGet("/vue/titre/{motCle}")]
-        public ActionResult<IEnumerable<AnnonceVue>> GetAnnonceVueByTitre(string motCle)
+        [HttpGet("/vue/titre/{motCle}/{genreUtilisateur}/{ville}")]
+        public ActionResult<IEnumerable<AnnonceVue>> GetAnnonceVueByTitre(string motCle, string ville, string genreUtilisateur)
         {
+            DateTime dateDuJour = DateTime.Now;
             List<Annonce> listAnnonce = _context.Annonces
-                                                 .Where(a => a.Titre.Contains(motCle))
+                                                 .Where(a => a.Titre.Contains(motCle) && a.DateHeureAnnonce > dateDuJour )
+                                                 .Where(a => a.Ville == ville)
                                                  .OrderBy(a => a.DateHeureAnnonce)
                                                  .Include(a => a.Sport)
                                                  .Include(a => a.AuteurNavigation)
@@ -284,6 +295,7 @@ namespace ApiSportTogether.Controller
 
             if (listAnnonce.Count > 0)
             {
+                listAnnonce = listAnnonce.Where(la => la.GenreAttendu == genreUtilisateur || la.GenreAttendu == "Mixte").ToList();
                 List<AnnonceVue> listAnnonceVue = listAnnonce.Select(annonce => new AnnonceVue
                 {
                     AnnoncesId = annonce.AnnoncesId,

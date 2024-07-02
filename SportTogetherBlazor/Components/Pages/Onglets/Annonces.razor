@@ -37,7 +37,8 @@
                          <FiltreParVille SelectedVilles="@SelectedVilles" OnFilterApplied="RechercherParVille" />
                     </div>
                     <div class="px-2">
-                        <Button Type="ButtonType.Link" Color="ButtonColor.Info" Size="Size.Medium" @onclick="AllerAAjoutAnnonce" TooltipTitle="Filtre par genre"> <Icon Name=" IconName.GenderAmbiguous" Color="IconColor.White" /></Button>
+                        <FiltreParGenre SelectedGenre="@SelectedGenre" OnFilterApplied="RechercherParGenre" genres="listGenre" />
+                       
                     </div>
                 </div>
             </div>
@@ -49,7 +50,7 @@
 <div class="container-fluid">
     <!-- Cards Section -->
     <div class="row mt-3">
-        @if (annonces != null)
+        @if (annonces != null && annonces.Any())
         {
             @foreach (AnnonceVue annonce in annonces)
             {
@@ -58,10 +59,13 @@
                 </div>
             }
         }
-        else
-        {
-            <p>Loading...</p>
-        }
+        else if (annonces != null && !annonces.Any())
+            {
+                <div class="col-12">
+                    <p>Aucune annonce trouvée.</p>
+                </div>
+            }
+           
     </div>
 </div>
 
@@ -91,7 +95,10 @@
     public List<string> SportsSelected { get; set; } = new List<string>();
     [Parameter]
     public List<string> SelectedVilles { get; set; } = new List<string>();
+    [Parameter]
+    public string SelectedGenre { get; set; } = string.Empty;
 
+    public List<string> listGenre = new();
     private bool showFilterSports = false;
 
     private void ToggleFilterSports()
@@ -112,17 +119,16 @@
         try
         {
             annonces.Clear();
-            annonces = await Http.GetFromJsonAsync<List<AnnonceVue>>($"/vue/sports/{sports}");
+            annonces = ((await Http.GetFromJsonAsync<List<AnnonceVue>>($"/vue/sports/{sports}/{villeUtilisateur}/{genreUtilisateur}"))!);
             PreloadService.Show(SpinnerColor.Light, "Recherche en cours...");
-            if (annonces.Any())
-            {
+         
                 PreloadService.Hide();
                 StateHasChanged();
-            }
-            
+
         }
         catch (Exception ex)
         {
+            PreloadService.Hide();
             Console.WriteLine($"Exception lors de l'appel API: {ex.Message}");
         }
     }
@@ -139,15 +145,39 @@
         {
             annonces.Clear();
             PreloadService.Show(SpinnerColor.Light, "Recherche en cours...");
-            annonces = await Http.GetFromJsonAsync<List<AnnonceVue>>($"/vue/villes/{villes}");
+            annonces = ((await Http.GetFromJsonAsync<List<AnnonceVue>>($"/vue/villes/{villes}/{genreUtilisateur}"))!);
             PreloadService.Hide();
             StateHasChanged();
         }
         catch (Exception ex)
         {
+            PreloadService.Hide();
             Console.WriteLine($"Exception lors de l'appel API: {ex.Message}");
         }
     }
+    private async Task RechercherParGenre(string selectedGenre)
+    {
+        if (string.IsNullOrEmpty(selectedGenre))
+        {
+            return;
+        }
+
+        SelectedGenre = selectedGenre;
+        try
+        {
+            annonces.Clear();
+            PreloadService.Show(SpinnerColor.Light, "Recherche en cours...");
+            annonces = ((await Http.GetFromJsonAsync<List<AnnonceVue>>($"/vue/genre/{selectedGenre}/{villeUtilisateur}"))!);
+            PreloadService.Hide();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            PreloadService.Hide();
+            Console.WriteLine($"Exception lors de l'appel API: {ex.Message}");
+        }
+    }
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -158,6 +188,19 @@
             villeUtilisateur = utilisateurInfo.Ville;
             genreUtilisateur = utilisateurInfo.Genre;
             utilisateurId = utilisateurInfo.UtilisateursId;
+            if (listGenre.Any()) listGenre.Clear();
+            switch (genreUtilisateur)
+            {
+                case "Homme":
+                    listGenre.Add("Homme");
+                    listGenre.Add("Mixte");
+                    break; 
+                case "Femme":
+                    listGenre.Add("Femme");
+                    listGenre.Add("Mixte");
+                    break;
+
+            }
             await LoadAnnonces();
         }
 
@@ -173,7 +216,7 @@
             {
                 bFirstFiltreAnnonces = false;
             }
-            
+
         }
         catch (Exception ex)
         {
@@ -187,19 +230,26 @@
         /* navigation.NavigateTo($"/SportTogether/Annonces/AjoutAnnonce/{utilisateurID}/{villeDeBase}"); */
         navigation.NavigateTo($"/SportTogether/Annonces/AjoutAnnonce");
     }
-   
+
     private async Task RechercheSubmit()
     {
         if (!string.IsNullOrWhiteSpace(rechercheModel.Titre))
         {
-            if (bFirstFiltreAnnonces)
+            if (!bFirstFiltreAnnonces)
             {
-                PreloadService.Show(SpinnerColor.Light, "Recherche en cours...");
-
-                annonces = await Http.GetFromJsonAsync<List<AnnonceVue>>($"/vue/{genreUtilisateur}/{rechercheModel.Titre}");
-                bFirstFiltreAnnonces = true;
-                PreloadService.Hide();
-                StateHasChanged();
+                try
+                {
+                    annonces.Clear();
+                    PreloadService.Show(SpinnerColor.Light, "Recherche en cours...");
+                    annonces = ((await Http.GetFromJsonAsync<List<AnnonceVue>>($"/vue/titre/{rechercheModel.Titre}/{genreUtilisateur}/{villeUtilisateur}"))!);
+                    PreloadService.Hide();
+                    StateHasChanged();
+                }
+                catch (Exception ex)
+                {
+                    PreloadService.Hide();
+                    Console.WriteLine($"Exception lors de l'appel API: {ex.Message}");
+                }
             }
         }
         else
