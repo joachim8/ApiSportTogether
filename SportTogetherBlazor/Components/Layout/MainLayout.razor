@@ -1,6 +1,7 @@
 ﻿@inject NavigationManager NavigationManager
 @inherits LayoutComponentBase
 @using BlazorBootstrap
+@inject HttpClient HttpClient
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
 <link href="_content/Blazor.Bootstrap/blazor.bootstrap.css" rel="stylesheet" />
@@ -18,10 +19,17 @@
        
     </main>
 </div>
-
+@if (showErrorModal)
+{
+    <div class="alert alert-danger" role="alert">
+        <h4 class="alert-heading">@titreErreur</h4>
+        <p>@errorMessage</p>
+        <button type="button" class="btn btn-danger" @onclick="ReloadPage">Reload</button>
+    </div>
+}
 <div id="blazor-error-ui">
-    Nous tentons de se reconnecter au serveur. Veuillez patientez...
-    <a href="" class="reload">Reload</a>
+    Problème d'affichage veuillez recharger la page.
+    <a href="" class="reload">Recharger</a>
     <a class="dismiss">🗙</a>
 </div>
 @code{
@@ -30,11 +38,47 @@
     public string errorMessage = "";
     public string titreErreur = "";
    
-    protected override void OnInitialized()
+    protected override async Task  OnInitializedAsync()
     {
         NavigationManager.LocationChanged += HandleLocationChanged;
+        await TestApiConnection();
+    }
+    private async Task TestApiConnection()
+    {
+        try
+        {
+            var response = await HttpClient.GetAsync("TestConnexion/Test");
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadAsStringAsync();
+                // Logique si l'API répond bien
+            }
+            else
+            {
+                ShowError("Erreur de connexion", "L'API a répondu avec une erreur.");
+            }
+        }
+        catch (HttpRequestException ex)
+        {
+            ShowError("Erreur de connexion", ex.Message);
+        }
+        catch (Exception ex)
+        {
+            ShowError("Erreur du serveur", ex.Message);
+        }
+    }
+    private void ShowError(string title, string message)
+    {
+        titreErreur = title;
+        errorMessage = message;
+        showErrorModal = true;
+        StateHasChanged();
     }
 
+    private void ReloadPage()
+    {
+        NavigationManager.NavigateTo(NavigationManager.Uri, true);
+    }
     private  void HandleLocationChanged(object sender, LocationChangedEventArgs e)
     {
         StateHasChanged();

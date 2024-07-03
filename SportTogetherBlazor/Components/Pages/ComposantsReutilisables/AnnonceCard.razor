@@ -1,9 +1,180 @@
 ﻿@using SportTogetherBlazor.Models
+@using System.Net.Http.Json
+@inject IHttpClientFactory HttpClientFactory
 @inject IJSRuntime JSRuntime
+
+<div class="card shadow p-3 text-white" style="background-color:@GetSportColor((int)annonceVue.SportId!); background-size:cover;">
+    <div class="card-header bg-transparent">
+        <h3 class="text-center">@annonceVue.Titre</h3>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-4">
+                    <img class="img-fluid rounded-start" src="/images/@GetSportImageUrl((int)annonceVue.SportId!)" alt="image de sport">
+                </div>
+                <div class="col-md-8 text-center">
+                    <div class="d-flex align-items-center justify-content-center">
+                        <Button Color="ButtonColor.None" Type="ButtonType.Link" Class="text-light d-flex align-items-center">
+                            <Icon Name="IconName.Person" Color="IconColor.Light" Size="IconSize.x3" class="me-1"></Icon>
+                            <span>@annonceVue.Auteur</span>
+                        </Button>
+                    </div>
+                    <hr class="my-2" />
+                    <div class="d-flex align-items-center justify-content-center">
+                        <Icon Name="IconName.PinMap" Color="IconColor.Light" Size="IconSize.x4" class="me-1"></Icon>
+                        <p class="m-0">@annonceVue.Ville</p>
+                    </div>
+                    <hr class="my-2" />
+                    <div class="d-flex align-items-center justify-content-center mb-3">
+                        <Icon Name="IconName.GenderAmbiguous" Color="IconColor.Light" Size="IconSize.x4" class="me-1"></Icon>
+                        <p class="m-0">@annonceVue.GenreAttendu</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <details class="accordion">
+            <summary>Plus de détails</summary>
+            <p class="card-text">La description : @annonceVue.Description</p>
+            <p class="card-text">Lieu : @annonceVue.Lieu</p>
+        </details>
+    </div>
+    <div class="card-footer bg-transparent text-white">
+        <p> Le @annonceVue.DateHeureAnnonce.ToString("dd/MM/yyyy") à @annonceVue.DateHeureAnnonce.ToString("HH:mm")</p>
+        <div class="d-flex justify-content-between align-items-center">
+            <p class="m-0">Nombre de participants : @nombreDeParticipants / @annonceVue.NombreParticipants</p>
+            @if (isParticipant)
+            {
+                <Button Color="ButtonColor.Danger" @onclick="ShowRemoveParticipationModal" TooltipTitle="Se désinscrire">
+                    <Icon Name="IconName.X" Size="IconSize.x4"></Icon>
+                </Button>
+            }
+            else
+            {
+                <Button Color="ButtonColor.Success" @onclick="ShowAddParticipationModal" TooltipTitle="Participer">
+                    <Icon Name="IconName.Check" Size="IconSize.x4"></Icon>
+                </Button>
+            }
+        </div>
+    </div>
+</div>
+
+<Modal @ref="addParticipationModal" title="Confirmer la participation" IsVerticallyCentered="true">
+    <BodyTemplate>
+        <p>Voulez-vous vraiment participer à l'annonce '@annonceVue.Titre' ?</p>
+    </BodyTemplate>
+    <FooterTemplate>
+        <Button Color="ButtonColor.Secondary" @onclick="HideAddParticipationModal">Annuler</Button>
+        <Button Color="ButtonColor.Success" @onclick="AddParticipation">Confirmer</Button>
+    </FooterTemplate>
+</Modal>
+
+<Modal @ref="removeParticipationModal" title="Confirmer la désinscription" IsVerticallyCentered="true">
+    <BodyTemplate>
+        <p>Voulez-vous vraiment vous désinscrire de l'annonce '@annonceVue.Titre' ?</p>
+    </BodyTemplate>
+    <FooterTemplate>
+        <Button Color="ButtonColor.Secondary" @onclick="HideRemoveParticipationModal">Annuler</Button>
+        <Button Color="ButtonColor.Danger" @onclick="RemoveParticipation">Confirmer</Button>
+    </FooterTemplate>
+</Modal>
 
 @code {
     [Parameter]
     public AnnonceVue annonceVue { get; set; }
+    [Parameter]
+    public int utilisateur { get; set; }
+    private int nombreDeParticipants;
+    [Inject] protected ToastService ToastService { get; set; } = default!;
+    private bool isParticipant = false;
+    private HttpClient httpClient;
+
+    private Modal addParticipationModal = default!;
+    private Modal removeParticipationModal = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        httpClient = HttpClientFactory.CreateClient("ApiSportTogetherClient");
+        nombreDeParticipants = await httpClient.GetFromJsonAsync<int>($"Participation/Annonce/{annonceVue.AnnoncesId}/count");
+        isParticipant = await CheckIfParticipant();
+    }
+
+    private async Task ShowAddParticipationModal()
+    {
+        await addParticipationModal.ShowAsync();
+    }
+
+    private async Task HideAddParticipationModal()
+    {
+        await addParticipationModal.HideAsync();
+    }
+
+    private async Task ShowRemoveParticipationModal()
+    {
+        await removeParticipationModal.ShowAsync();
+    }
+
+    private async Task HideRemoveParticipationModal()
+    {
+        await removeParticipationModal.HideAsync();
+    }
+
+    private async Task AddParticipation()
+    {
+        await HideAddParticipationModal();
+
+        Participation participation = new Participation
+            {
+                AnnonceId = annonceVue.AnnoncesId,
+                UtilisateurId = utilisateur,
+                DateParticipation = DateTime.Now
+            };
+
+        var response = await httpClient.PostAsJsonAsync("Participation/CreateParticipation", participation);
+        if (response.IsSuccessStatusCode)
+        {
+            nombreDeParticipants++;
+            ToastService.Notify(new(ToastType.Success, $"Votre participation à l'annonce '{annonceVue.Titre}' est bien enregistrée"));
+            isParticipant = true;
+            StateHasChanged();
+        }
+        else
+        {
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            ToastService.Notify(new(ToastType.Danger, $"Votre participation à l'annonce '{annonceVue.Titre}' n'a pas pu s'enregistrer. Veuillez réessayer."));
+        }
+    }
+
+    private async Task RemoveParticipation()
+    {
+        await HideRemoveParticipationModal();
+
+        Participation participation = new Participation
+            {
+                AnnonceId = annonceVue.AnnoncesId,
+                UtilisateurId = utilisateur
+            };
+
+        var response = await httpClient.PostAsJsonAsync("Participation/DeleteParticipation", participation);
+        if (response.IsSuccessStatusCode)
+        {
+            nombreDeParticipants--;
+            isParticipant = false;
+            ToastService.Notify(new(ToastType.Success, $"Participation pour l'annonce '{annonceVue.Titre}' retirée avec succès !"));
+            StateHasChanged();
+        }
+        else
+        {
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            ToastService.Notify(new(ToastType.Danger, $"Erreur lors du retrait de la participation : {errorMessage}"));
+        }
+    }
+
+    private async Task<bool> CheckIfParticipant()
+    {
+        var participe = await httpClient.GetFromJsonAsync<bool>($"Participation/CheckParticipation/{utilisateur}/{annonceVue.AnnoncesId}");
+        return participe;
+    }
 
     private readonly Dictionary<int, (string color, string imageUrl)> sportStyles = new()
     {
@@ -36,34 +207,3 @@
         return sportStyles.ContainsKey(sportId) ? sportStyles[sportId].imageUrl : "default.jpg";
     }
 }
-
-<div class="card shadow p-3 text-white " style="background-color:@GetSportColor((int)annonceVue.SportId!); background-size:cover;">
-    <div class="card-header bg-transparent">
-        <h3 class="text-center">@annonceVue.Titre</h3>
-        <div class="container-fluid ">
-            <div class="row">
-            <div class="col-md-4">
-                <img class="img-fluid rounded-start" src="/images/@GetSportImageUrl((int)annonceVue.SportId!)" alt="image de sport">
-                
-            </div>
-            <div class="col-md-8 text-center">
-                    <p>@annonceVue.Auteur</p>
-                    <p>@annonceVue.Ville</p>
-                    <p class="card-text">@annonceVue.GenreAttendu</p>
-
-            </div>
-            </div>
-        </div>
-    </div>
-    <div class="card-body">
-        <details class="accordion">
-            <summary>Plus de détails</summary>
-            <p class="card-text">La description :@annonceVue.Description</p>
-            <p class="card-text">Lieu : @annonceVue.Lieu</p>
-        </details>
-    </div>
-    <div class="card-footer bg-transparent text-white">
-        <p >@annonceVue.DateHeureAnnonce.ToString("dd/MM/yyyy") à @annonceVue.DateHeureAnnonce.ToString("HH:mm")</p>
-        <p>Nombre de participants : @annonceVue.NombreParticipants</p>
-    </div>
-</div>

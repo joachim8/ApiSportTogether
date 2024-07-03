@@ -55,7 +55,7 @@
             @foreach (AnnonceVue annonce in annonces)
             {
                 <div class="col-md-4 mb-4 col-sm-6 col-xs-12">
-                    <AnnonceCard annonceVue="@annonce" />
+                    <AnnonceCard annonceVue="@annonce" utilisateur="@utilisateurId" />
                 </div>
             }
         }
