@@ -92,6 +92,10 @@
     private Modal addParticipationModal = default!;
     private Modal removeParticipationModal = default!;
 
+    /// <summary>
+    /// Initialisation de la page
+    /// </summary>
+    /// <returns></returns>
     protected override async Task OnInitializedAsync()
     {
         httpClient = HttpClientFactory.CreateClient("ApiSportTogetherClient");
@@ -99,26 +103,46 @@
         isParticipant = await CheckIfParticipant();
     }
 
+    /// <summary>
+    /// Ajout d'un participant
+    /// </summary>
+    /// <returns></returns>
     private async Task ShowAddParticipationModal()
     {
         await addParticipationModal.ShowAsync();
     }
 
+    /// <summary>
+    /// Cache le boutton d'ajout de participant
+    /// </summary>
+    /// <returns></returns>
     private async Task HideAddParticipationModal()
     {
         await addParticipationModal.HideAsync();
     }
 
+    /// <summary>
+    /// Affiche le btton se déconnecter
+    /// </summary>
+    /// <returns></returns>
     private async Task ShowRemoveParticipationModal()
     {
         await removeParticipationModal.ShowAsync();
     }
 
+    /// <summary>
+    /// Cache le button se déconnecter
+    /// </summary>
+    /// <returns></returns>
     private async Task HideRemoveParticipationModal()
     {
         await removeParticipationModal.HideAsync();
     }
 
+    /// <summary>
+    /// Fonction d'ajout de participant
+    /// </summary>
+    /// <returns></returns>
     private async Task AddParticipation()
     {
         await HideAddParticipationModal();
@@ -145,6 +169,10 @@
         }
     }
 
+    /// <summary>
+    /// Fonction de suppression de participant
+    /// </summary>
+    /// <returns></returns>
     private async Task RemoveParticipation()
     {
         await HideRemoveParticipationModal();
@@ -170,6 +198,10 @@
         }
     }
 
+    /// <summary>
+    /// Check si il y a un participant
+    /// </summary>
+    /// <returns></returns>
     private async Task<bool> CheckIfParticipant()
     {
         var participe = await httpClient.GetFromJsonAsync<bool>($"Participation/CheckParticipation/{utilisateur}/{annonceVue.AnnoncesId}");
@@ -197,11 +229,22 @@
         { 22, ("#6B1D4B", "yoga.jpg") },
     };
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="sportId"></param>
+    /// <returns></returns>
     private string GetSportColor(int sportId)
     {
         return sportStyles.ContainsKey(sportId) ? sportStyles[sportId].color : "#FFFFFF";
     }
 
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="sportId"></param>
+    /// <returns></returns>
     private string GetSportImageUrl(int sportId)
     {
         return sportStyles.ContainsKey(sportId) ? sportStyles[sportId].imageUrl : "default.jpg";

@@ -130,6 +130,7 @@ public partial class SportTogetherContext : DbContext
             entity.HasKey(e => e.GroupesId).HasName("PRIMARY");
 
             entity.ToTable("groupes");
+            entity.HasIndex(e => e.ChefDuGroupe, "fk_chef_du_groupe");
 
             entity.HasIndex(e => e.AnnonceId, "fk_groupes_AnnonceID");
 
@@ -137,11 +138,16 @@ public partial class SportTogetherContext : DbContext
             entity.Property(e => e.AnnonceId).HasColumnName("AnnonceID");
             entity.Property(e => e.DateCreation).HasColumnType("datetime");
             entity.Property(e => e.DateSuppression).HasColumnType("datetime");
-
+            entity.Property(e => e.Nom).HasColumnName("Nom");
             entity.HasOne(d => d.Annonce).WithMany(p => p.Groupes)
-                .HasForeignKey(d => d.AnnonceId)
-                .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("fk_groupes_AnnonceID");
+               .HasForeignKey(d => d.AnnonceId)
+               .OnDelete(DeleteBehavior.Cascade)
+               .HasConstraintName("fk_groupes_AnnonceID");
+
+            entity.HasOne(d => d.ChefDuGroupeNavigation).WithMany(p => p.Groupes)
+                           .HasForeignKey(d => d.ChefDuGroupe)
+                           .OnDelete(DeleteBehavior.ClientSetNull)
+                           .HasConstraintName("fk_chef_du_groupe");
         });
 
         modelBuilder.Entity<Message>(entity =>

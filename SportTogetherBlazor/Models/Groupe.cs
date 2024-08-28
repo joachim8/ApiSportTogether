@@ -16,5 +16,12 @@ public partial class Groupe
 
     [JsonPropertyName("Annonce")]
     public virtual Annonce? Annonce { get; set; }
+    [JsonPropertyName("ChefDuGroupe")]
+    public int ChefDuGroupe { get; set; }
+    [JsonPropertyName("Nom")]
+    public string Nom { get; set; } = string.Empty;
+
+    [JsonPropertyName("ChefDuGroupeNavigation")]
+    public virtual Utilisateur ChefDuGroupeNavigation { get; set; } = null!;
 }
 

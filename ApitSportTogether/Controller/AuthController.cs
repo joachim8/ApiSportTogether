@@ -1,12 +1,15 @@
 ﻿using ApiSportTogether.model.dbContext;
 using ApiSportTogether.model.ObjectContext;
+using ApiSportTogether.SignalR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+
 
 namespace ApiSportTogether.Controller
 {
@@ -16,22 +19,21 @@ namespace ApiSportTogether.Controller
     {
         private readonly SportTogetherContext _context;
         private readonly IConfiguration _configuration;
-
+       
         public AuthController(IConfiguration configuration, SportTogetherContext context)
         {
             _context = context;
             _configuration = configuration;
+            
         }
         // POST ApiSportTogether/auth/login
         [HttpPost("login")]
-        public ActionResult Login([FromBody] UserCredentials credentials)
+        public async Task<ActionResult> Login([FromBody] UserCredentials credentials)
         {
             Utilisateur? utili = _context.Utilisateurs.Where(u => u.Pseudo == credentials.Pseudo).FirstOrDefault();
 
-            // Méthode pour trouver l'utilisateur
             if (utili != null)
             {
-
                 bool bConnect = ValidateUser(credentials);
                 if (bConnect)
                 {
@@ -41,7 +43,8 @@ namespace ApiSportTogether.Controller
                     _context.Entry(utili).State = EntityState.Modified;
                     try
                     {
-                        _context.SaveChanges();
+                        await _context.SaveChangesAsync();
+                        
                     }
                     catch (DbUpdateConcurrencyException)
                     {
@@ -65,7 +68,6 @@ namespace ApiSportTogether.Controller
             {
                 return NotFound("Votre login ou mot de passe n'est pas valide.");
             }
-
         }
 
         private bool ValidateUser(UserCredentials credentials)

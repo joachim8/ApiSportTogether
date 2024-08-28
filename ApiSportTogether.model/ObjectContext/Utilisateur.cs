@@ -39,7 +39,9 @@ public partial class Utilisateur
     [JsonIgnore]
     [JsonPropertyName("ProfileImages")]
     public virtual ICollection<ProfileImage> ProfileImages { get; set; } = new List<ProfileImage>();
-
+    [JsonIgnore]
+    [JsonPropertyName("Groupes")]
+    public virtual ICollection<Groupe> Groupes { get; set; } = new List<Groupe>();
     [JsonIgnore]
     [JsonPropertyName("Publications")]
     public virtual ICollection<Publication> Publications { get; set; } = new List<Publication>();

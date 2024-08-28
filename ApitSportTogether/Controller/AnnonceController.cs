@@ -68,10 +68,32 @@ namespace ApiSportTogether.Controller
                 return BadRequest("La date de l'annonce doit être égale ou supérieure à la date actuelle.");
             }
 
-            // Ajoutez d'autres vérifications nécessaires
+            
 
             _context.Annonces.Add(annonce);
             _context.SaveChanges();
+
+            Annonce? annoncePourVerif = _context.Annonces.Find(annonce.AnnoncesId);
+            
+            if(annoncePourVerif != null)
+            {
+                if (!annoncePourVerif.Groupes.Any())
+                {
+                    Groupe groupe = new()
+                    {
+                        Annonce = annoncePourVerif,
+                        AnnonceId = annoncePourVerif.AnnoncesId,
+                        DateCreation = DateTime.Now,
+                        ChefDuGroupe = annoncePourVerif.Auteur,
+                        ChefDuGroupeNavigation =  annoncePourVerif.AuteurNavigation!,
+                        Nom = annoncePourVerif.Titre!
+
+                    };
+                    _context.Groupes.Add(groupe);
+                    _context.SaveChanges();
+                }
+            
+            }
 
             return CreatedAtAction(nameof(GetAnnonceById), new { id = annonce.AnnoncesId }, annonce);
         }

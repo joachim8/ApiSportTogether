@@ -11,7 +11,6 @@ public partial class Annonce
     [JsonPropertyName("SportId")]
     public int? SportId { get; set; } 
 
-
     [JsonPropertyName("Titre")]
     public string? Titre { get; set; }
 
@@ -40,7 +39,7 @@ public partial class Annonce
     [JsonIgnore]
     [JsonPropertyName("AnnonceImages")]
     public virtual ICollection<AnnonceImage> AnnonceImages { get; set; } = new List<AnnonceImage>();
-
+    
 
     [JsonPropertyName("Sport")]
     public virtual Sport? Sport { get; set; }

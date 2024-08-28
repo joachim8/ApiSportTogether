@@ -21,6 +21,10 @@
                 <Icon Name="IconName.Messenger" Color="IconColor.Light" Size="IconSize.x4" class="p-2" />
                 Messagerie
             </a>
+            @if (messageCount)
+            {
+                <Badge Color="BadgeColor.Danger" Placement="BadgePlacement.MiddleRight">@nbrMessages</Badge>
+            }
         </li>
     </ul>
 
@@ -60,6 +64,8 @@
     private Dictionary<string, bool> linkClickedStates = new Dictionary<string, bool>();
 
     bool isClicked = false;
+    bool messageCount = false;
+    int nbrMessages = 0;
 
     protected override async Task OnInitializedAsync()
     {
@@ -88,9 +94,7 @@
         {
             NavigationManager.NavigateTo("/SportTogether/Connexion");
         }
-        // urlPhotoProfil =  await
 
-        // Utiliser cette information pour lier aux éléments du HTML ci-dessus
 
     }
 

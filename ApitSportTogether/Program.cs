@@ -1,5 +1,6 @@
 //using ApiSportTogether.model.dbContext;
 using ApiSportTogether.model.dbContext;
+using ApiSportTogether.SignalR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
@@ -26,6 +27,7 @@ builder.Services.AddDbContext<SportTogetherContext>(options =>
                 errorNumbersToAdd: null)));
 
 builder.Services.AddSignalR();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("MyCorsPolicy", builder =>

@@ -93,5 +93,27 @@ namespace ApiSportTogether.Controller
 
             return NoContent();
         }
+        // GET: ApiSportTogether/Groupe/GetGroupePourMessagerie/{UtilisateurID}
+        [HttpGet("GetGroupePourMessagerie/{UtilisateurID}")]
+        public ActionResult<IEnumerable<Groupe>> GetGroupePourMessagerie(int UtilisateurID )
+        {
+            List<Groupe>? listGroupe = [.. _context.Groupes.Where(g => g.ChefDuGroupe == UtilisateurID).ToList()];
+            List<Participation> listParticipation = new();
+            listParticipation = _context.Participations.Where(p => p.UtilisateurId == UtilisateurID).ToList();
+            if(listParticipation.Any())
+            {
+                foreach(Participation participe in listParticipation)
+                {
+                    listGroupe.Add(_context.Groupes.Find(participe.GroupeId)!);
+                }
+            }
+           
+
+            if (!listGroupe.Any())
+            {
+                return NoContent();
+            }
+            return listGroupe.OrderByDescending(lg => lg.DateCreation).ToArray();
+        }
     }
 }

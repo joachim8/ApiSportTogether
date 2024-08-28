@@ -46,4 +46,7 @@ public partial class Utilisateur
     [JsonIgnore]
     [JsonPropertyName("SportFavoris")]
     public virtual ICollection<SportFavori> SportFavoris { get; set; } = new List<SportFavori>();
+    [JsonIgnore]
+    [JsonPropertyName("Groupes")]
+    public virtual ICollection<Groupe> Groupes { get; set; } = new List<Groupe>();
 }

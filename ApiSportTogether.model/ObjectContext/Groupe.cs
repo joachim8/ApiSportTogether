@@ -13,8 +13,13 @@ public partial class Groupe
 
     [JsonPropertyName("DateSuppression")]
     public DateTime? DateSuppression { get; set; }
-
+    [JsonPropertyName("ChefDuGroupe")]
+    public int ChefDuGroupe { get; set; }
+    [JsonPropertyName("Nom")]
+    public string Nom { get; set; } = string.Empty;
     [JsonPropertyName("Annonce")]
     public virtual Annonce? Annonce { get; set; }
+    [JsonPropertyName("ChefDuGroupeNavigation")]
+    public virtual Utilisateur ChefDuGroupeNavigation { get; set; } = null!;
 }
 
