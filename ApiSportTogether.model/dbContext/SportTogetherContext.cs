@@ -24,7 +24,7 @@ public partial class SportTogetherContext : DbContext
     public virtual DbSet<Annonce> Annonces { get; set; }
 
     public virtual DbSet<Groupe> Groupes { get; set; }
-
+    public virtual DbSet<MembreGroupe> MembreGroupes { get; set; }
     public virtual DbSet<Message> Messages { get; set; }
 
     public virtual DbSet<Participation> Participations { get; set; }
@@ -37,7 +37,7 @@ public partial class SportTogetherContext : DbContext
 
     public virtual DbSet<Utilisateur> Utilisateurs { get; set; }
 
-
+    public virtual DbSet<VuMessage> VuMessages { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -139,6 +139,7 @@ public partial class SportTogetherContext : DbContext
             entity.Property(e => e.DateCreation).HasColumnType("datetime");
             entity.Property(e => e.DateSuppression).HasColumnType("datetime");
             entity.Property(e => e.Nom).HasColumnName("Nom");
+            entity.Property(e => e.LastMessage).HasColumnName("LastMessage");
             entity.HasOne(d => d.Annonce).WithMany(p => p.Groupes)
                .HasForeignKey(d => d.AnnonceId)
                .OnDelete(DeleteBehavior.Cascade)
@@ -148,6 +149,33 @@ public partial class SportTogetherContext : DbContext
                            .HasForeignKey(d => d.ChefDuGroupe)
                            .OnDelete(DeleteBehavior.ClientSetNull)
                            .HasConstraintName("fk_chef_du_groupe");
+        });
+        modelBuilder.Entity<MembreGroupe>(entity =>
+        {
+            entity.HasKey(e => e.IdMembreGroupe).HasName("PRIMARY");
+
+            entity.ToTable("membre_groupe");
+
+            entity.HasIndex(e => e.GroupeId, "fk_groupe_membre_groupe");
+
+            entity.HasIndex(e => e.UtilisateurId, "fk_utilisateur_membre_groupe");
+
+            entity.Property(e => e.IdMembreGroupe).HasColumnName("id_membre_groupe");
+            entity.Property(e => e.GroupeId).HasColumnName("groupe_id");
+            entity.Property(e => e.Role)
+                .HasColumnType("enum('Admin','Membre')")
+                .HasColumnName("role");
+            entity.Property(e => e.UtilisateurId).HasColumnName("utilisateur_id");
+
+            entity.HasOne(d => d.Groupe).WithMany(p => p.MembreGroupes)
+                .HasForeignKey(d => d.GroupeId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_groupe_membre_groupe");
+
+            entity.HasOne(d => d.Utilisateur).WithMany(p => p.MembreGroupes)
+                .HasForeignKey(d => d.UtilisateurId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_utilisateur_membre_groupe");
         });
 
         modelBuilder.Entity<Message>(entity =>
@@ -304,6 +332,31 @@ public partial class SportTogetherContext : DbContext
             entity.Property(e => e.Pseudo).HasMaxLength(25);
             entity.Property(e => e.Ville).HasMaxLength(255);
 
+        });
+        modelBuilder.Entity<VuMessage>(entity =>
+        {
+            entity.HasKey(e => e.IdMessageVu).HasName("PRIMARY");
+
+            entity.ToTable("vu_message");
+
+            entity.HasIndex(e => e.IdMessage, "fk_messages_vu_message");
+
+            entity.HasIndex(e => e.UtilisateurId, "fk_utilisateurs_vu_message");
+
+            entity.Property(e => e.IdMessageVu).HasColumnName("id_message_vu");
+            entity.Property(e => e.IdMessage).HasColumnName("id_message");
+            entity.Property(e => e.UtilisateurId).HasColumnName("utilisateur_id");
+            entity.Property(e => e.Vu).HasColumnName("vu");
+
+            entity.HasOne(d => d.IdMessageNavigation).WithMany(p => p.VuMessages)
+                .HasForeignKey(d => d.IdMessage)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_messages_vu_message");
+
+            entity.HasOne(d => d.Utilisateur).WithMany(p => p.VuMessages)
+                .HasForeignKey(d => d.UtilisateurId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_utilisateurs_vu_message");
         });
 
         OnModelCreatingPartial(modelBuilder);

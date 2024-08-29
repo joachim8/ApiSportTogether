@@ -39,6 +39,15 @@ public partial class Utilisateur
     [JsonIgnore]
     [JsonPropertyName("ProfileImages")]
     public virtual ICollection<ProfileImage> ProfileImages { get; set; } = new List<ProfileImage>();
+    [JsonIgnore]
+    [JsonPropertyName("VuMessages")]
+    public virtual ICollection<VuMessage> VuMessages { get; set; } = new List<VuMessage>();
+    [JsonIgnore]
+    [JsonPropertyName("MembreGroupes")]
+    public virtual ICollection<MembreGroupe> MembreGroupes { get; set; } = new List<MembreGroupe>();
+    [JsonIgnore]
+    [JsonPropertyName("Groupes")]
+    public virtual ICollection<Groupe> Groupes { get; set; } = new List<Groupe>();
 
     [JsonIgnore]
     [JsonPropertyName("Publications")]
@@ -46,7 +55,5 @@ public partial class Utilisateur
     [JsonIgnore]
     [JsonPropertyName("SportFavoris")]
     public virtual ICollection<SportFavori> SportFavoris { get; set; } = new List<SportFavori>();
-    [JsonIgnore]
-    [JsonPropertyName("Groupes")]
-    public virtual ICollection<Groupe> Groupes { get; set; } = new List<Groupe>();
+
 }

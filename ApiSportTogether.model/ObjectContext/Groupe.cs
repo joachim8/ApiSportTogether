@@ -17,9 +17,14 @@ public partial class Groupe
     public int ChefDuGroupe { get; set; }
     [JsonPropertyName("Nom")]
     public string Nom { get; set; } = string.Empty;
+    [JsonPropertyName("LastMessage")]
+    public string? LastMessage { get; set; }
     [JsonPropertyName("Annonce")]
     public virtual Annonce? Annonce { get; set; }
     [JsonPropertyName("ChefDuGroupeNavigation")]
     public virtual Utilisateur ChefDuGroupeNavigation { get; set; } = null!;
+    [JsonIgnore]
+    [JsonPropertyName("ChefDuGroupeNavigation")]
+    public virtual ICollection<MembreGroupe> MembreGroupes { get; set; } = new List<MembreGroupe>();
 }
 

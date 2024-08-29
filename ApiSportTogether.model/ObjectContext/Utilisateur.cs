@@ -43,6 +43,12 @@ public partial class Utilisateur
     [JsonPropertyName("Groupes")]
     public virtual ICollection<Groupe> Groupes { get; set; } = new List<Groupe>();
     [JsonIgnore]
+    [JsonPropertyName("VuMessages")]
+    public virtual ICollection<VuMessage> VuMessages { get; set; } = new List<VuMessage>();
+    [JsonIgnore]
+    [JsonPropertyName("MembreGroupes")]
+    public virtual ICollection<MembreGroupe> MembreGroupes { get; set; } = new List<MembreGroupe>();
+    [JsonIgnore]
     [JsonPropertyName("Publications")]
     public virtual ICollection<Publication> Publications { get; set; } = new List<Publication>();
     [JsonIgnore]

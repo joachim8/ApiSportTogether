@@ -16,4 +16,7 @@ public partial class Message
 
     [JsonPropertyName("Timestamp")]
     public DateTime? Timestamp { get; set; }
+    [JsonIgnore]
+    [JsonPropertyName("VuMessages")]
+    public virtual ICollection<VuMessage> VuMessages { get; set; } = new List<VuMessage>();
 }
