@@ -13,6 +13,8 @@ public partial class Message
 
     [JsonPropertyName("Contenu")]
     public string? Contenu { get; set; }
+    [JsonPropertyName("NomUtilisateur")]
+    public string? NomUtilisateur { get; set; }
 
     [JsonPropertyName("Timestamp")]
     public DateTime? Timestamp { get; set; }

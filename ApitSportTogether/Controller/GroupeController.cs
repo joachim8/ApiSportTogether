@@ -95,7 +95,7 @@ namespace ApiSportTogether.Controller
         }
         // GET: ApiSportTogether/Groupe/GetGroupePourMessagerie/{UtilisateurID}
         [HttpGet("GetGroupePourMessagerie/{UtilisateurID}")]
-        public ActionResult<IEnumerable<Groupe>> GetGroupePourMessagerie(int UtilisateurID )
+        public ActionResult<IEnumerable<Groupe>> GetGroupePourMessagerie(int UtilisateurID)
         {
             List<Groupe>? listGroupe = [.. _context.Groupes.Where(g => g.ChefDuGroupe == UtilisateurID).ToList()];
             List<Participation> listParticipation = new();

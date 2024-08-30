@@ -191,8 +191,10 @@ public partial class SportTogetherContext : DbContext
             entity.Property(e => e.MessagesId).HasColumnName("messages_id");
             entity.Property(e => e.Contenu).HasColumnType("text");
             entity.Property(e => e.GroupeId).HasColumnName("GroupeID");
+
             entity.Property(e => e.Timestamp).HasColumnType("datetime");
             entity.Property(e => e.UtilisateurId).HasColumnName("UtilisateurID");
+            entity.Property(e => e.NomUtilisateur).HasColumnName("nom_utilisateur");
         });
 
         modelBuilder.Entity<Participation>(entity =>

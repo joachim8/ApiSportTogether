@@ -16,8 +16,8 @@
                 Annonces
             </a>
         </li>
-        <li class="nav-item h-auto @(linkClickedStates["MessagerieInstantane"] ? "clicked-style" : "")" @onclick="@(() => ToggleClick("MessagerieInstantane"))">
-            <a href="/SportTogether/MessagerieInstantane" class="nav-link text-white text-center text-capitalize" aria-current="page">
+        <li class="nav-item h-auto @(linkClickedStates["Messagerie-instantane"] ? "clicked-style" : "")" @onclick="@(() => ToggleClick("Messagerie-instantane"))">
+            <a href="/SportTogether/Messagerie-instantane" class="nav-link text-white text-center text-capitalize" aria-current="page">
                 <Icon Name="IconName.Messenger" Color="IconColor.Light" Size="IconSize.x4" class="p-2" />
                 Messagerie
             </a>
@@ -70,7 +70,7 @@
     protected override async Task OnInitializedAsync()
     {
         linkClickedStates.Add("Annonces", false);
-        linkClickedStates.Add("MessagerieInstantane", false);
+        linkClickedStates.Add("Messagerie-instantane", false);
 
         await LoadUserInfo();
 

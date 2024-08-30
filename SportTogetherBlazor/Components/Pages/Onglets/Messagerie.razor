@@ -1,62 +1,106 @@
-﻿@page "/SportTogether/MessagerieInstantane"
+﻿@page "/SportTogether/Messagerie-instantane"
 @using SportTogetherBlazor.Models
 @using System.Net.Http.Json
 @inject IHttpClientFactory HttpClientFactory
 @using SportTogetherBlazor.Services
 @inject SessionStorageServices session
-
 <div class="container">
     <div class="row clearfix">
-        <div class="col-lg-12">
+        <div class="col-lg-4">
             <div class="card chat-app">
                 <div id="plist" class="people-list">
-                    <div class="input-group">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text"><i class="fa fa-search"></i></span>
+                    <EditForm Model="@rechercheModel" OnSubmit="@RechercheSubmit" FormName="RechercheForm">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <div class="form-group d-flex flex-row">
+                            <InputText id="rechercheTitre" class="form-control"
+                                       @bind-Value="rechercheModel.Titre" placeholder="Recherche..." />
+                            <Button Type="ButtonType.Submit" Color="ButtonColor.Light" Size="Size.Medium" TooltipTitle="Rechercher">
+                                <Icon Name="IconName.Search" />
+                            </Button>
                         </div>
-                        <input type="text" class="form-control" placeholder="Search...">
-                    </div>
+                    </EditForm>
                     <div class="list-group" id="list-tab" role="tablist">
                         @if (listGroupe.Any())
                         {
-                                @foreach (Groupe groupe in listGroupe )
-                                {
-                                    if(groupe == listGroupe.First())
-                                    {
-                                        <a class="list-group-item list-group-item-action active" id="list-@groupe.Nom-list" data-toggle="list" href="#list-home" role="tab" aria-controls="@groupe.Nom">
-                                            @groupe.Nom
-
-                                        <span class="badge badge-primary badge-pill">14</span>
-                                        </a>
-                                       <small>@groupe.LastMessage</small>
-                                    }
-                                    else{
-                                         <a class="list-group-item list-group-item-action" id="list-@groupe.Nom-list" data-toggle="list" href="#list-home" role="tab" aria-controls="@groupe.Nom">
-                                            @groupe.Nom
-                                        </a>
+                            @foreach (Groupe groupe in listGroupe)
+                            {
+                                <a class="list-group-item list-group-item-action @(groupe == selectedGroupe ? "active" : "")"
+                                   id="list-@groupe.Nom-list" @onclick="() => SelectGroupe(groupe)">
+                                    @groupe.Nom
+                                    <span class="badge badge-primary badge-pill">14</span>
                                     <small>@groupe.LastMessage</small>
-                                    }
-
-
+                                </a>
+                                
                             }
-                            
-
-                        }else{
-                            <p> veuillez participer ou ajouter une annonce</p>
+                        }
+                        else
+                        {
+                            <p>Veuillez participer ou ajouter une annonce</p>
                         }
                     </div>
-                   
                 </div>
-               
-                   
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="chat">
+                @if (selectedGroupe != null)
+                {
+                    <div class="chat-header clearfix">
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <h5 class="mb-0">@selectedGroupe.Nom</h5>
+                            </div>
+                        </div>
+                    </div>
+                    @if (listMessage != null && listMessage.Any())
+                    {
+                        <div class="chat-history">
+                            <ul class="m-b-0">
+                                @foreach (var message in listMessage)
+                                {
+                                    <li class="clearfix">
+                                        <div class="message-data @((message.UtilisateurId == selectedGroupe.ChefDuGroupe ? "text-right" : "text-left"))">
+                                            <span class="message-data-time">@message.Timestamp!.Value.ToString("HH:mm")</span>
+                                            <span class="message-data-name">@message.NomUtilisateur</span>
+                                        </div>
+                                        <div class="message @((message.UtilisateurId == selectedGroupe.ChefDuGroupe ? "my-message" : "other-message"))">
+                                            @message.Contenu
+                                        </div>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    }
+
+                    <div class="chat-message clearfix position-absolute bottom-0 w-50" style="background-color: white; padding: 10px;">
+                        <div class="input-group mb-0">
+                            <InputText class="form-control" placeholder="Tapez votre message..." @bind-Value="nouveauMessage" />
+                            <div class="input-group-append">
+                                <Button class="btn btn-primary" @onclick="EnvoyerMessage">Envoyer</Button>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-center">Veuillez sélectionner un groupe pour afficher les messages.</p>
+                }
             </div>
         </div>
     </div>
 </div>
+
 @code {
+    private RechercheModel rechercheModel = new RechercheModel();
     private List<Groupe> listGroupe = new();
     private HttpClient httpClient;
     private int utilisateurID = 0;
+    private Groupe selectedGroupe;
+    private string nouveauMessage;
+    private List<Message> listMessage;
+    private string nomUtilisateur; 
     /// <summary>
     /// Initialisation de la page
     /// </summary>
@@ -66,15 +110,49 @@
         httpClient = HttpClientFactory.CreateClient("ApiSportTogetherClient");
 
         Utilisateur utilisateurInfo = session.GetUserFromSession()!;
-        if(utilisateurInfo != null) utilisateurID = utilisateurInfo.UtilisateursId;
-        
+        if (utilisateurInfo != null) { utilisateurID = utilisateurInfo.UtilisateursId;
+            nomUtilisateur = utilisateurInfo.Pseudo!;
+        }
+
 
         await GetGroupes();
+        await GetMessages();
     }
     private async Task GetGroupes()
     {
+        try
+        {
+            listGroupe = await httpClient.GetFromJsonAsync<List<Groupe>>($"Groupe/GetGroupePourMessagerie/{utilisateurID}")!;
+            if (listGroupe.Any())
+            {
+                selectedGroupe = listGroupe.First();
+            }
+        }
+        catch (Exception ex)
+        {
+
+        }
+
+    } 
+    private async Task SelectGroupe(Groupe groupe)
+    {
+        selectedGroupe = groupe;
+        if(listMessage != null)
+        listMessage.Clear();
+        await GetMessages(); // Charger les messages pour le groupe sélectionné
+        StateHasChanged(); // Re-render the component
+    }
+    private async Task GetMessages()
+    {
+        try
+        {
+            listMessage = await httpClient.GetFromJsonAsync<List<Message>>($"Message/GetMessagesByGroupe/{selectedGroupe.GroupesId}")!;
+        }catch(Exception ex)
+        {
+            
+        }
         
-        listGroupe = await httpClient.GetFromJsonAsync<List<Groupe>>($"Groupe/GetGroupePourMessagerie/{utilisateurID}")!;
+        
 
     }
     private readonly Dictionary<int, (string color, string imageUrl)> sportStyles = new()
@@ -108,6 +186,69 @@
         return sportStyles.ContainsKey(sportId) ? sportStyles[sportId].color : "#FFFFFF";
     }
 
+    private async Task EnvoyerMessage()
+    {
+        if (!string.IsNullOrEmpty(nouveauMessage) && selectedGroupe != null)
+        {
+            Message message = new Message
+                {
+                    Contenu = nouveauMessage,
+                    UtilisateurId = utilisateurID,
+                    GroupeId = selectedGroupe.GroupesId,
+                    Timestamp = DateTime.Now,
+                    NomUtilisateur = nomUtilisateur
+                };
+
+            // Envoyer le message au serveur
+            var response = await httpClient.PostAsJsonAsync("Message", message);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Ajouter le message à la liste des messages localement après un enregistrement réussi
+                var savedMessage = await response.Content.ReadFromJsonAsync<Message>();
+                listMessage.Add(savedMessage);
+
+                // Mettre à jour l'affichage
+                StateHasChanged();
+            }
+            else
+            {
+                // Gérer l'erreur si l'envoi échoue
+                Console.WriteLine("Erreur lors de l'envoi du message.");
+            }
+
+            // Réinitialiser le champ de saisie
+            nouveauMessage = string.Empty;
+        }
+    }
+
+
+    private async Task RechercheSubmit()
+    {
+        // if (!string.IsNullOrWhiteSpace(rechercheModel.Titre))
+        // {
+        //     if (!bFirstFiltreAnnonces)
+        //     {
+        //         try
+        //         {
+        //             annonces.Clear();
+        //             PreloadService.Show(SpinnerColor.Light, "Recherche en cours...");
+        //             annonces = ((await Http.GetFromJsonAsync<List<AnnonceVue>>($"/vue/titre/{rechercheModel.Titre}/{genreUtilisateur}/{villeUtilisateur}"))!);
+        //             PreloadService.Hide();
+        //             StateHasChanged();
+        //         }
+        //         catch (Exception ex)
+        //         {
+        //             PreloadService.Hide();
+        //             Console.WriteLine($"Exception lors de l'appel API: {ex.Message}");
+        //         }
+        //     }
+        // }
+        // else
+        // {
+        //     await LoadAnnonces();
+        // }
+    }
 
     /// <summary>
     ///
@@ -117,5 +258,9 @@
     private string GetSportImageUrl(int sportId)
     {
         return sportStyles.ContainsKey(sportId) ? sportStyles[sportId].imageUrl : "default.jpg";
+    }
+    public class RechercheModel
+    {
+        public string Titre { get; set; } = string.Empty;
     }
 }
