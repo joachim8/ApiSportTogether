@@ -26,5 +26,6 @@ public partial class Groupe
     [JsonIgnore]
     [JsonPropertyName("ChefDuGroupeNavigation")]
     public virtual ICollection<MembreGroupe> MembreGroupes { get; set; } = new List<MembreGroupe>();
+    
 }
 

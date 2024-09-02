@@ -20,11 +20,11 @@ namespace ApiSportTogether.Controller
 
         // GET: ApiSportTogether/Groupe
         [HttpGet]
-        public ActionResult<List<Groupe>> GetGroupes()
+        public ActionResult<IEnumerable<Groupe>> GetGroupes()
         {
             return _context.Groupes
                            .Include(g => g.Annonce)
-                           .ToList();
+                           .ToArray();
         }
 
         // GET: ApiSportTogether/Groupe/5
@@ -112,6 +112,13 @@ namespace ApiSportTogether.Controller
             if (!listGroupe.Any())
             {
                 return NoContent();
+            }
+            else
+            {
+                foreach(Groupe groupe in listGroupe)
+                {
+                    groupe.Annonce = _context.Annonces.Find(groupe.AnnonceId);
+                }
             }
             return listGroupe.OrderByDescending(lg => lg.DateCreation).ToArray();
         }

@@ -20,12 +20,11 @@ namespace ApiSportTogether.Controller
 
         // GET: ApiSportTogether/VuMessage
         [HttpGet]
-        public ActionResult<List<VuMessage>> GetVuMessages()
+        public ActionResult<IEnumerable<VuMessage>> GetVuMessages()
         {
             return _context.VuMessages
                            .Include(vm => vm.IdMessageNavigation)
-                           .Include(vm => vm.Utilisateur)
-                           .ToList();
+                           .Include(vm => vm.Utilisateur).ToArray();
         }
 
         // GET: ApiSportTogether/VuMessage/5
@@ -105,7 +104,7 @@ namespace ApiSportTogether.Controller
                                       .Where(vm => vm.UtilisateurId == utilisateurId)
                                       .ToList();
 
-            return !messagesVus.Any() ? NoContent() : Ok(messagesVus);
+            return !messagesVus.Any() ? NoContent() : Ok(messagesVus.ToArray());
         }
 
         // GET: ApiSportTogether/VuMessage/GetVuMessagesByMessage/5
@@ -117,7 +116,24 @@ namespace ApiSportTogether.Controller
                                       .Where(vm => vm.IdMessage == messageId)
                                       .ToList();
 
-            return !messagesVus.Any() ? NoContent() : Ok(messagesVus);
+            return !messagesVus.Any() ? NoContent() : Ok(messagesVus.ToArray());
+        }
+        // GET: ApiSportTogether/VuMessage/GetVuMessagesCount/1
+        [HttpGet("GetVuMessagesCount/{groupeId}")]
+        public ActionResult<int> GetVuMessagesCount(int groupeId)
+        {
+            int vuMessage = _context.VuMessages
+                                      .Where(vm => vm.IdMessageNavigation.GroupeId == groupeId && vm.Vu == false)
+                                      .Count();
+            if(vuMessage > 0)
+            {
+                return Ok(vuMessage);
+            }
+            else
+            {
+                return NoContent();
+            }
+           
         }
     }
 }

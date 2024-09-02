@@ -20,12 +20,12 @@ namespace ApiSportTogether.Controller
 
         // GET: ApiSportTogether/MembreGroupe
         [HttpGet]
-        public ActionResult<List<MembreGroupe>> GetMembreGroupes()
+        public ActionResult<IEnumerable<MembreGroupe>> GetMembreGroupes()
         {
             return _context.MembreGroupes
                            .Include(mg => mg.Groupe)
                            .Include(mg => mg.Utilisateur)
-                           .ToList();
+                           .ToArray();
         }
 
         // GET: ApiSportTogether/MembreGroupe/5
@@ -105,7 +105,7 @@ namespace ApiSportTogether.Controller
                                   .Where(mg => mg.GroupeId == groupeId)
                                   .ToList();
 
-            return !membres.Any() ? NoContent() : Ok(membres);
+            return !membres.Any() ? NoContent() : Ok(membres.ToArray());
         }
 
         // GET: ApiSportTogether/MembreGroupe/GetGroupesByUtilisateur/5
@@ -117,7 +117,7 @@ namespace ApiSportTogether.Controller
                                   .Where(mg => mg.UtilisateurId == utilisateurId)
                                   .ToList();
 
-            return !groupes.Any() ? NoContent() : Ok(groupes);
+            return !groupes.Any() ? NoContent() : Ok(groupes.ToArray());
         }
     }
 }

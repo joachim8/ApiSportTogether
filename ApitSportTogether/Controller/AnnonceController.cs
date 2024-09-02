@@ -21,14 +21,14 @@ namespace ApiSportTogether.Controller
 
         // GET: ApiSportTogether/Annonce
         [HttpGet]
-        public ActionResult<List<Annonce>> GetAnnonces()
+        public ActionResult<IEnumerable<Annonce>> GetAnnonces()
         {
 
 
             return _context.Annonces
                            .Include(a => a.AuteurNavigation)
                            .Include(a => a.Sport)
-                           .ToList();
+                           .ToArray();
         }
 
         // GET: ApiSportTogether/Annonce/5
@@ -90,11 +90,11 @@ namespace ApiSportTogether.Controller
 
                     };
                     _context.Groupes.Add(groupe);
-                    _context.SaveChanges();
+
                 }
             
             }
-
+            _context.SaveChanges();
             return CreatedAtAction(nameof(GetAnnonceById), new { id = annonce.AnnoncesId }, annonce);
         }
 

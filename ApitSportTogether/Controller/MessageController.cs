@@ -20,11 +20,11 @@ namespace ApiSportTogether.Controller
 
         // GET: ApiSportTogether/Message
         [HttpGet]
-        public ActionResult<List<Message>> GetMessages()
+        public ActionResult<IEnumerable<Message>> GetMessages()
         {
             return _context.Messages
                            .Include(m => m.VuMessages)
-                           .ToList();
+                           .ToArray();
         }
 
         // GET: ApiSportTogether/Message/5
@@ -38,17 +38,16 @@ namespace ApiSportTogether.Controller
             return message == null ? NotFound() : message;
         }
 
-        // POST: ApiSportTogether/Message
-        [HttpPost]
+        // POST: ApiSportTogether/Message/CreateMessage
+        [HttpPost("CreateMessage")]
         public ActionResult<Message> PostMessage([FromBody] Message message)
         {
             if( message == null) return NotFound();
             if(message.GroupeId == 0) return NotFound();
             Groupe groupe = _context.Groupes.Include(g => g.MembreGroupes).Where(g => g.GroupesId == message.GroupeId).First()!;
             if( groupe == null ) return NotFound();
-            Message messageApresEnregistrement = new();
 
-
+            message.urlProfilImage = _context.ProfileImages.Where(pi => pi.UtilisateursId == message.UtilisateurId).FirstOrDefault()!.Url!;
             _context.Messages.Add(message);
             
             groupe.LastMessage = message.Contenu;
@@ -70,6 +69,7 @@ namespace ApiSportTogether.Controller
                 
 
             }
+
             _context.SaveChanges();
             return CreatedAtAction(nameof(GetMessageById), new { id = message.MessagesId }, message);
         }

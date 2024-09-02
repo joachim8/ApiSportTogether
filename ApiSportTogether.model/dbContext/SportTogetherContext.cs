@@ -195,6 +195,11 @@ public partial class SportTogetherContext : DbContext
             entity.Property(e => e.Timestamp).HasColumnType("datetime");
             entity.Property(e => e.UtilisateurId).HasColumnName("UtilisateurID");
             entity.Property(e => e.NomUtilisateur).HasColumnName("nom_utilisateur");
+            entity.Property(e => e.urlProfilImage).HasColumnName("url_profil_image");
+            entity.HasOne(d => d.UtilisateurNavigation).WithMany(e => e.Messages)
+               .HasForeignKey(d => d.UtilisateurId)
+               .OnDelete(DeleteBehavior.Cascade)
+               .HasConstraintName("fk_messages_UtilisateurID");
         });
 
         modelBuilder.Entity<Participation>(entity =>

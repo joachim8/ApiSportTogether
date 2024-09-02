@@ -84,6 +84,36 @@ namespace ApiSportTogether.Controller
             }
 
             return NoContent();
+        } 
+        // PUT: ApiSportTogether/Utilisateur/ModifierMotDePasse/1
+        [HttpPut("ModifierMotDePasse/{id}")]
+        public ActionResult ModifierMotDePasse(int id, [FromBody] string password)
+        {
+            Utilisateur utilisateur = _context.Utilisateurs.Find(id);
+            if (utilisateur == null)
+            {
+                return NoContent();
+            }
+            utilisateur.MotDePasse = HashPassword(password);
+            _context.Entry(utilisateur).State = EntityState.Modified;
+
+            try
+            {
+                _context.SaveChanges();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!_context.Utilisateurs.Any(u => u.UtilisateursId == id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
         }
 
         private string HashPassword(string password)

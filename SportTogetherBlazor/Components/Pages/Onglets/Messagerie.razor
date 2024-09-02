@@ -27,9 +27,24 @@
                             {
                                 <a class="list-group-item list-group-item-action @(groupe == selectedGroupe ? "active" : "")"
                                    id="list-@groupe.Nom-list" @onclick="() => SelectGroupe(groupe)">
-                                    @groupe.Nom
-                                    <span class="badge badge-primary badge-pill">14</span>
-                                    <small>@groupe.LastMessage</small>
+                                    <div class="card" >
+                                        <div class="row no-gutters">
+                                            <div class="col-sm-5">
+                                                <img class="card-img img-fluid img-thumbnail" src="/images/@GetSportImageUrl((int)groupe.Annonce!.SportId!)" alt="groupe">
+                                            </div>
+                                            <div class="col-sm-7">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">@groupe.Nom</h5>
+                                                    <small>@groupe.LastMessage</small>
+                                                    @if(groupe.nbreMessageVu != null)
+                                                    {
+                                                        <small><Badge Color="BadgeColor.Danger" Placement="BadgePlacement.MiddleRight">@groupe.nbreMessageVu</Badge></small>
+                                                    }
+                                                    
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </a>
                                 
                             }
@@ -56,21 +71,24 @@
                     </div>
                     @if (listMessage != null && listMessage.Any())
                     {
-                        <div class="chat-history">
-                            <ul class="m-b-0">
+                        <div class="chat-history position-relative">
+                           
                                 @foreach (var message in listMessage)
                                 {
-                                    <li class="clearfix">
-                                        <div class="message-data @((message.UtilisateurId == selectedGroupe.ChefDuGroupe ? "text-right" : "text-left"))">
-                                            <span class="message-data-time">@message.Timestamp!.Value.ToString("HH:mm")</span>
-                                            <span class="message-data-name">@message.NomUtilisateur</span>
-                                        </div>
-                                        <div class="message @((message.UtilisateurId == selectedGroupe.ChefDuGroupe ? "my-message" : "other-message"))">
+                                <div class="d-flex flex-row @((message.UtilisateurId == utilisateurID ? "justify-content-end" : "justify-content-start"))">
+                                    <img src="@message.urlProfilImage" class="avatar">
+                                    <div>
+                                        <p class="small p-2 ms-3 mb-1 rounded-3 @((message.UtilisateurId == utilisateurID ? "bg-custom-user" : "bg-body-tertiary"))">
                                             @message.Contenu
-                                        </div>
-                                    </li>
+                                        </p>
+                                        <p class="small ms-3 mb-3 rounded-3 text-muted float-end">
+                                            @message.Timestamp!.Value.ToString("HH:mm") | @message.NomUtilisateur
+                                        </p>
+                                    </div>
+                                </div>
+
                                 }
-                            </ul>
+                           
                         </div>
                     }
 
@@ -78,7 +96,7 @@
                         <div class="input-group mb-0">
                             <InputText class="form-control" placeholder="Tapez votre message..." @bind-Value="nouveauMessage" />
                             <div class="input-group-append">
-                                <Button class="btn btn-primary" @onclick="EnvoyerMessage">Envoyer</Button>
+                                <Button Color="ButtonColor.Success" @onclick="EnvoyerMessage">Envoyer</Button>
                             </div>
                         </div>
                     </div>
@@ -91,7 +109,36 @@
         </div>
     </div>
 </div>
+<style>
+    .avatar {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+    }
 
+    .bg-custom-user {
+        background-color: #49beb7; /* Couleur personnalisée pour les messages de l'utilisateur connecté */
+        color: white; /* Texte blanc pour un meilleur contraste */
+    }
+
+    .bg-body-tertiary {
+        background-color: #f1f1f1; /* Couleur de fond pour les autres messages */
+        color: black; /* Texte noir */
+    }
+
+    .message-bubble {
+        padding: 10px;
+        border-radius: 15px;
+        max-width: 400px; /* Limite la largeur des bulles de message */
+        word-wrap: break-word; /* Pour que le texte reste à l'intérieur de la bulle */
+    }
+
+    .timestamp {
+        font-size: 0.8rem;
+        color: #6c757d; /* Couleur gris clair pour le timestamp */
+    }
+
+</style>
 @code {
     private RechercheModel rechercheModel = new RechercheModel();
     private List<Groupe> listGroupe = new();
@@ -126,6 +173,15 @@
             if (listGroupe.Any())
             {
                 selectedGroupe = listGroupe.First();
+                foreach (Groupe groupe in listGroupe)
+                {
+                    int? nbreVu = await GetNombreMessageVu(groupe.GroupesId);
+                    if (nbreVu != null)
+                    {
+                        groupe.nbreMessageVu = nbreVu;
+                    }
+
+                }
             }
         }
         catch (Exception ex)
@@ -134,11 +190,27 @@
         }
 
     } 
+    private async Task<int?> GetNombreMessageVu(int groupeId)
+    {
+        try
+        {
+            int nbre = await httpClient.GetFromJsonAsync<int>($"GetVuMessagesCount/{groupeId}")!;
+            return nbre;
+        }
+        catch (Exception ex)
+        {
+            return null;
+        }
+
+
+
+    }
+
     private async Task SelectGroupe(Groupe groupe)
     {
         selectedGroupe = groupe;
         if(listMessage != null)
-        listMessage.Clear();
+            listMessage.Clear();
         await GetMessages(); // Charger les messages pour le groupe sélectionné
         StateHasChanged(); // Re-render the component
     }
@@ -149,10 +221,10 @@
             listMessage = await httpClient.GetFromJsonAsync<List<Message>>($"Message/GetMessagesByGroupe/{selectedGroupe.GroupesId}")!;
         }catch(Exception ex)
         {
-            
+
         }
-        
-        
+
+
 
     }
     private readonly Dictionary<int, (string color, string imageUrl)> sportStyles = new()
@@ -198,27 +270,35 @@
                     Timestamp = DateTime.Now,
                     NomUtilisateur = nomUtilisateur
                 };
-
-            // Envoyer le message au serveur
-            var response = await httpClient.PostAsJsonAsync("Message", message);
-
-            if (response.IsSuccessStatusCode)
+            try
             {
-                // Ajouter le message à la liste des messages localement après un enregistrement réussi
-                var savedMessage = await response.Content.ReadFromJsonAsync<Message>();
-                listMessage.Add(savedMessage);
+                var client = HttpClientFactory.CreateClient("ApiSportTogetherClient");
+                // Envoyer le message au serveur
+                var response = await client.PostAsJsonAsync("Message/CreateMessage", message);
+                if (response.IsSuccessStatusCode)
+                {
+                    // Ajouter le message à la liste des messages localement après un enregistrement réussi
+                    var savedMessage = await response.Content.ReadFromJsonAsync<Message>();
+                    listMessage.Add(savedMessage);
 
-                // Mettre à jour l'affichage
-                StateHasChanged();
-            }
-            else
+                    // Mettre à jour l'affichage
+                    StateHasChanged();
+                }
+                else
+                {
+                    // Gérer l'erreur si l'envoi échoue
+                    Console.WriteLine("Erreur lors de l'envoi du message.");
+                }
+
+                // Réinitialiser le champ de saisie
+                nouveauMessage = string.Empty;
+            }catch(Exception ex)
             {
-                // Gérer l'erreur si l'envoi échoue
-                Console.WriteLine("Erreur lors de l'envoi du message.");
+                
             }
+           
 
-            // Réinitialiser le champ de saisie
-            nouveauMessage = string.Empty;
+            
         }
     }
 

@@ -293,15 +293,15 @@
         try
         {
             annonce.DateHeureAnnonce = annonce.DateHeureAnnonce.Date.Add(heureAnnonce.ToTimeSpan());
-            var client = ClientFactory.CreateClient("ApiSportTogetherClient");
 
-            var response = await client.PostAsJsonAsync("Annonce/CreateAnnonce", annonce);
+            var response = await httpClient.PostAsJsonAsync("Annonce/CreateAnnonce", annonce);
 
 
             if (response.IsSuccessStatusCode)
             {
                 var createdAnnonce = await response.Content.ReadFromJsonAsync<Annonce>();
                 ToastService.Notify(new(ToastType.Success, $"Votre annonce {createdAnnonce.Titre} du {createdAnnonce.DateHeureAnnonce.ToString("dd/MM")} à {createdAnnonce.DateHeureAnnonce.ToString("hh:mm")} à été publié."));
+                NavigationManager.NavigateTo($"/SportTogether/Annonces/AjoutAnnonce");
             }
             else
             {

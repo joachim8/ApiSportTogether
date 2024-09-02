@@ -64,6 +64,8 @@ namespace ApiSportTogether.Controller
             }
 
             var annonce = _context.Annonces.Find(participation.AnnonceId);
+            var groupe = _context.Groupes.Where(g => g.AnnonceId == participation.AnnonceId).FirstOrDefault();
+
             if (annonce == null)
             {
                 return NotFound("Annonce non trouvée.");
@@ -74,8 +76,15 @@ namespace ApiSportTogether.Controller
             {
                 return BadRequest("Le nombre maximum de participants est atteint.");
             }
-
+            participation.GroupeId = groupe.GroupesId;
             _context.Participations.Add(participation);
+            MembreGroupe mg = new()
+            {
+                GroupeId = (int)participation.GroupeId,
+                Role = "Admin",
+                UtilisateurId = (int)participation.UtilisateurId
+            };
+            _context.MembreGroupes.Add(mg);
             _context.SaveChanges();
 
             return CreatedAtAction(nameof(GetParticipationsByAnnonceId), new { annonceId = participation.AnnonceId }, participation);

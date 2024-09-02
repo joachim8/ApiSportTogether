@@ -20,10 +20,10 @@ namespace ApiSportTogether.Controller
 
         // GET: ApiSportTogether/Ami
         [HttpGet]
-        public ActionResult<List<Ami>> GetAmis()
+        public ActionResult<IEnumerable<Ami>> GetAmis()
         {
             return _context.Amis.Include(a => a.UtilisateurId1Navigation)
-                                .Include(a => a.UtilisateurId2Navigation).ToList();
+                                .Include(a => a.UtilisateurId2Navigation).ToArray();
         }
 
         // GET: ApiSportTogether/Ami/5

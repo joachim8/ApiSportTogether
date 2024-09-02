@@ -55,5 +55,8 @@ public partial class Utilisateur
     [JsonIgnore]
     [JsonPropertyName("SportFavoris")]
     public virtual ICollection<SportFavori> SportFavoris { get; set; } = new List<SportFavori>();
+    [JsonIgnore]
+    [JsonPropertyName("Messages")]
+    public virtual ICollection<Message> Messages { get; set; } = new List<Message>();
 
 }

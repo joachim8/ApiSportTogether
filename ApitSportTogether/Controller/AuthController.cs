@@ -113,6 +113,7 @@ namespace ApiSportTogether.Controller
             var result = hasher.VerifyHashedPassword(null, hashedPassword, providedPassword);
             return result == PasswordVerificationResult.Success;
         }
+        
     }
 
     public class UserCredentials
