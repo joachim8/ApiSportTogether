@@ -48,6 +48,7 @@ namespace ApiSportTogether.Controller
         [HttpPost("CreateAnnonce")]
         public ActionResult<Annonce> PostAnnonce([FromBody] Annonce annonce)
         {
+            Groupe? groupe = null;
             if (annonce == null)
             {
                 return BadRequest("L'annonce ne peut pas être nulle.");
@@ -79,14 +80,14 @@ namespace ApiSportTogether.Controller
             {
                 if (!annoncePourVerif.Groupes.Any())
                 {
-                    Groupe groupe = new()
+                     groupe = new()
                     {
                         Annonce = annoncePourVerif,
                         AnnonceId = annoncePourVerif.AnnoncesId,
                         DateCreation = DateTime.Now,
                         ChefDuGroupe = annoncePourVerif.Auteur,
                         ChefDuGroupeNavigation =  annoncePourVerif.AuteurNavigation!,
-                        Nom = annoncePourVerif.Titre!
+                        Nom = annoncePourVerif.Titre,
 
                     };
                     _context.Groupes.Add(groupe);
@@ -95,6 +96,20 @@ namespace ApiSportTogether.Controller
             
             }
             _context.SaveChanges();
+
+
+            if (groupe != null)
+            {
+                MembreGroupe mg = new()
+                {
+                    GroupeId = groupe.GroupesId,
+                    Role = "Admin",
+                    UtilisateurId = groupe.ChefDuGroupe
+                };
+                _context.MembreGroupes.Add(mg);
+            }
+            _context.SaveChanges();
+
             return CreatedAtAction(nameof(GetAnnonceById), new { id = annonce.AnnoncesId }, annonce);
         }
 

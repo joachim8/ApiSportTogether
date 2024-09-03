@@ -4,6 +4,7 @@
 @inject IHttpClientFactory HttpClientFactory
 @using SportTogetherBlazor.Services
 @inject SessionStorageServices session
+@using Microsoft.AspNetCore.SignalR.Client
 <div class="container">
     <div class="row clearfix">
         <div class="col-lg-4">
@@ -147,7 +148,9 @@
     private Groupe selectedGroupe;
     private string nouveauMessage;
     private List<Message> listMessage;
-    private string nomUtilisateur; 
+    private string nomUtilisateur;
+    private HubConnection _hubConnection;
+    [Inject] protected ToastService ToastService { get; set; } = default!;
     /// <summary>
     /// Initialisation de la page
     /// </summary>
@@ -156,13 +159,36 @@
     {
         httpClient = HttpClientFactory.CreateClient("ApiSportTogetherClient");
 
+        _hubConnection = new HubConnectionBuilder()
+    .WithUrl($"http://localhost:5000/chatHubSportTogether")
+    .Build();
         Utilisateur utilisateurInfo = session.GetUserFromSession()!;
         if (utilisateurInfo != null) { utilisateurID = utilisateurInfo.UtilisateursId;
             nomUtilisateur = utilisateurInfo.Pseudo!;
         }
 
+        await _hubConnection.StartAsync();
+        _hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
+       {
+           if (user != nomUtilisateur)
+           {
+               listMessage.Add(new Message
+                   {
+                       NomUtilisateur = user,
+                       Contenu = message,
+                       Timestamp = DateTime.Now
+                   });
+               ToastService.Notify(new(ToastType.Success, $"Vous avez un nouveau message de {user} ,{DateTime.Now.ToString("hh:mm")}"));
+               InvokeAsync(StateHasChanged);
+           }
+
+       });
+
+
 
         await GetGroupes();
+        // Récupérer les informations utilisateur et rejoindre les groupes correspondants
+        await RejoindreGroupesUtilisateur();
         await GetMessages();
     }
     private async Task GetGroupes()
@@ -190,6 +216,15 @@
         }
 
     } 
+     private async Task RejoindreGroupesUtilisateur()
+    {
+     
+
+        foreach (var groupe in listGroupe)
+        {
+            await _hubConnection.SendAsync("JoinGroup", $"{groupe.GroupesId}¤{groupe.Nom}");
+      }
+    }
     private async Task<int?> GetNombreMessageVu(int groupeId)
     {
         try
@@ -208,17 +243,26 @@
 
     private async Task SelectGroupe(Groupe groupe)
     {
+        if (selectedGroupe != null)
+        {
+            await _hubConnection.SendAsync("LeaveGroup", selectedGroupe.Nom);
+         }
+
         selectedGroupe = groupe;
+
+        await _hubConnection.SendAsync("JoinGroup", selectedGroupe.Nom);
         if(listMessage != null)
             listMessage.Clear();
+       
         await GetMessages(); // Charger les messages pour le groupe sélectionné
-        StateHasChanged(); // Re-render the component
+       
     }
     private async Task GetMessages()
     {
         try
         {
             listMessage = await httpClient.GetFromJsonAsync<List<Message>>($"Message/GetMessagesByGroupe/{selectedGroupe.GroupesId}")!;
+            StateHasChanged(); // Re-render the component
         }catch(Exception ex)
         {
 
@@ -278,7 +322,7 @@
                 if (response.IsSuccessStatusCode)
                 {
                     // Ajouter le message à la liste des messages localement après un enregistrement réussi
-                    var savedMessage = await response.Content.ReadFromJsonAsync<Message>();
+                    Message savedMessage = await response.Content.ReadFromJsonAsync<Message>()!;
                     listMessage.Add(savedMessage);
 
                     // Mettre à jour l'affichage

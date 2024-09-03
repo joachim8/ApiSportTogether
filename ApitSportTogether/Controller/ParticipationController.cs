@@ -81,7 +81,7 @@ namespace ApiSportTogether.Controller
             MembreGroupe mg = new()
             {
                 GroupeId = (int)participation.GroupeId,
-                Role = "Admin",
+                Role = "Membre",
                 UtilisateurId = (int)participation.UtilisateurId
             };
             _context.MembreGroupes.Add(mg);

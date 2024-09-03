@@ -346,23 +346,21 @@ public partial class SportTogetherContext : DbContext
 
             entity.ToTable("vu_message");
 
-            entity.HasIndex(e => e.IdMessage, "fk_messages_vu_message");
+            entity.HasIndex(e => e.messages_id, "fk_messages_vu_message");
 
             entity.HasIndex(e => e.UtilisateurId, "fk_utilisateurs_vu_message");
 
             entity.Property(e => e.IdMessageVu).HasColumnName("id_message_vu");
-            entity.Property(e => e.IdMessage).HasColumnName("id_message");
+            entity.Property(e => e.messages_id).HasColumnName("messages_id");
             entity.Property(e => e.UtilisateurId).HasColumnName("utilisateur_id");
             entity.Property(e => e.Vu).HasColumnName("vu");
 
             entity.HasOne(d => d.IdMessageNavigation).WithMany(p => p.VuMessages)
-                .HasForeignKey(d => d.IdMessage)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("fk_messages_vu_message");
+                .HasForeignKey(d => d.messages_id)
+                .HasConstraintName("fk_messages_vuMessage");
 
             entity.HasOne(d => d.Utilisateur).WithMany(p => p.VuMessages)
                 .HasForeignKey(d => d.UtilisateurId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_utilisateurs_vu_message");
         });
 

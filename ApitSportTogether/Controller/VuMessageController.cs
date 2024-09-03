@@ -113,7 +113,7 @@ namespace ApiSportTogether.Controller
         {
             var messagesVus = _context.VuMessages
                                       .Include(vm => vm.Utilisateur)
-                                      .Where(vm => vm.IdMessage == messageId)
+                                      .Where(vm => vm.messages_id == messageId)
                                       .ToList();
 
             return !messagesVus.Any() ? NoContent() : Ok(messagesVus.ToArray());

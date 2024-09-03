@@ -1,6 +1,8 @@
 ﻿using ApiSportTogether.model.dbContext;
 using ApiSportTogether.model.ObjectContext;
+using ApiSportTogether.SignalR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace ApiSportTogether.Controller
@@ -11,11 +13,13 @@ namespace ApiSportTogether.Controller
     {
         private readonly SportTogetherContext _context;
         private readonly IConfiguration _configuration;
+        private readonly IHubContext<ChatHubSportTogether> _hubContext;
 
-        public MessageController(IConfiguration configuration, SportTogetherContext context)
+        public MessageController(IConfiguration configuration, SportTogetherContext context, IHubContext<ChatHubSportTogether> hubContext)
         {
             _context = context;
             _configuration = configuration;
+            _hubContext = hubContext;
         }
 
         // GET: ApiSportTogether/Message
@@ -49,22 +53,28 @@ namespace ApiSportTogether.Controller
 
             message.urlProfilImage = _context.ProfileImages.Where(pi => pi.UtilisateursId == message.UtilisateurId).FirstOrDefault()!.Url!;
             _context.Messages.Add(message);
-            
+            _context.SaveChanges();
+            // Récupérer le groupe pour envoyer la notification
+
+            if (groupe != null)
+            {
+                // Envoyer une notification à tous les membres du groupe via SignalR
+                _hubContext.Clients.Group($"{groupe.GroupesId}¤{groupe.Nom}").SendAsync("ReceiveMessage", message.NomUtilisateur, message.Contenu);
+            }
             groupe.LastMessage = message.Contenu;
             _context.Entry(groupe).State = EntityState.Modified;
+            
             foreach (MembreGroupe mg in groupe.MembreGroupes)
             {
                 if(mg.UtilisateurId != message.UtilisateurId)
                 {
                     VuMessage vuMessage = new VuMessage()
                     {
-                        IdMessage = message.MessagesId,
+                        messages_id = message.MessagesId,
                         UtilisateurId = mg.UtilisateurId,
                         Vu = false
                     };
                     _context.VuMessages.Add(vuMessage);
-
-                    
                 }
                 
 

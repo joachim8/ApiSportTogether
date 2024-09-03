@@ -93,6 +93,7 @@ app.UseForwardedHeaders();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapHub<ChatHubSportTogether>("/chatHubSportTogether");
 
 // Si les images sont dans un dossier spécifique à l'intérieur de wwwroot ou à un autre emplacement :
 app.UseStaticFiles(new StaticFileOptions
