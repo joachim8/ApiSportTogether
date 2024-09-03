@@ -21,5 +21,11 @@ namespace ApiSportTogether.SignalR
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
         }
+
+        public async Task SupprimerMessageClient(string groupName,string user, int messageId)
+        {
+            await Clients.Group(groupName).SendAsync("SupprimerMessageClient", user ,messageId);
+        }
+
     }
 }

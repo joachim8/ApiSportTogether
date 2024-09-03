@@ -6,7 +6,7 @@
 @inject SessionStorageServices session
 @using Microsoft.AspNetCore.SignalR.Client
 <div class="container">
-    <div class="row clearfix">
+    <div class="row m-0">
         <div class="col-lg-4">
             <div class="card chat-app">
                 <div id="plist" class="people-list">
@@ -63,35 +63,66 @@
             <div class="chat">
                 @if (selectedGroupe != null)
                 {
-                    <div class="chat-header clearfix">
-                        <div class="row">
-                            <div class="col-lg-6">
-                                <h5 class="mb-0">@selectedGroupe.Nom</h5>
-                            </div>
-                        </div>
-                    </div>
-                    @if (listMessage != null && listMessage.Any())
-                    {
-                        <div class="chat-history position-relative">
+                     <div class="container">
+
+                        @if (selectedGroupe != null)
+                        {
                            
-                                @foreach (var message in listMessage)
-                                {
-                                <div class="d-flex flex-row @((message.UtilisateurId == utilisateurID ? "justify-content-end" : "justify-content-start"))">
-                                    <img src="@message.urlProfilImage" class="avatar">
-                                    <div>
-                                        <p class="small p-2 ms-3 mb-1 rounded-3 @((message.UtilisateurId == utilisateurID ? "bg-custom-user" : "bg-body-tertiary"))">
-                                            @message.Contenu
-                                        </p>
-                                        <p class="small ms-3 mb-3 rounded-3 text-muted float-end">
-                                            @message.Timestamp!.Value.ToString("HH:mm") | @message.NomUtilisateur
-                                        </p>
+                           <div class="chat-header position-sticky" style="background-color:#49beb7; margin-bottom:5px; margin-top: 5px; border-radius:revert">
+                                <div class="row align-items-center text-white">
+                                    <div class="col-lg-6">
+                                        <h5 class="mb-0">@selectedGroupe.Nom</h5>
+                                    </div>
+                                    <div class="col-lg-6 text-end">
+                                        <Button Color="ButtonColor.None"  @onclick="OpenSettings" TooltipTitle="Paramètre"><Icon Name="IconName.GearFill" Color="IconColor.White"/> </Button>
                                     </div>
                                 </div>
+                            </div>
+                       
+                            @if (listMessage != null && listMessage.Any())
+                            {
+                                <div class="chat-history overflow-auto" style="max-height: calc(100vh - 150px);">
+                                    @foreach (var message in listMessage)
+                                    {
+                                        <div class="d-flex flex-column @((message.UtilisateurId == utilisateurID ? "align-items-end" : "align-items-start"))">
+                                        
+                                        <div class="dropdown">
+                                            <img src="@message.urlProfilImage" class="avatar mb-2">
+                                            <button class="p-2 rounded-3 btn-sm  @((message.UtilisateurId == utilisateurID ? "bg-custom-user" : "bg-body-tertiary"))" style="border:none;" data-bs-toggle="dropdown" aria-expanded="false">
+                                                @message.Contenu
+                                            </Button>
+                                                @if(message.UtilisateurId == utilisateurID)
+                                                {
+                                                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton-@message.MessagesId">
+                                                        <li><a class="dropdown-item" @onclick="() => SupprimerMessage(message.MessagesId)">Supprimer</a></li>
+                                                        <li><a class="dropdown-item" @onclick="() => Reaction(message.MessagesId)">Réagir</a></li>
+                                                    </ul>
+                                                }
+                                                
+                                        </div>
+                                        <p class="small mt-2 text-muted">
+                                            @message.Timestamp!.Value.ToString("HH:mm") | @message.NomUtilisateur
+                                        </p>
+                                        </div>
+                                    }
+                                </div>
+                                
+                            }
 
-                                }
-                           
-                        </div>
-                    }
+                            <div class="chat-message clearfix position-fixed w-50" style="bottom: 0; background-color: white; padding: 10px;">
+                                <div class="input-group mb-0">
+                                    <InputText class="form-control" placeholder="Tapez votre message..." @bind-Value="nouveauMessage" />
+                                    <div class="input-group-append">
+                                        <Button Color="ButtonColor.Success" @onclick="EnvoyerMessage">Envoyer</Button>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-center">Veuillez sélectionner un groupe pour afficher les messages.</p>
+                        }
+                    </div>
 
                     <div class="chat-message clearfix position-absolute bottom-0 w-50" style="background-color: white; padding: 10px;">
                         <div class="input-group mb-0">
@@ -111,6 +142,25 @@
     </div>
 </div>
 <style>
+    
+    .chat-history {
+        height: calc(100vh - 150px); /* Adjust according to your header and footer size */
+        overflow-y: auto;
+        padding-bottom: 60px; /* Leave space for the fixed chat message form */
+    }
+
+    .chat-message {
+        z-index: 1000;
+    }
+    .container {
+        padding-left: 0;
+    }
+
+    .row.m-0 {
+        margin-left: 0;
+        margin-right: 0;
+    }
+
     .avatar {
         width: 45px;
         height: 45px;
@@ -141,6 +191,7 @@
 
 </style>
 @code {
+    #region "Variables"
     private RechercheModel rechercheModel = new RechercheModel();
     private List<Groupe> listGroupe = new();
     private HttpClient httpClient;
@@ -151,6 +202,46 @@
     private string nomUtilisateur;
     private HubConnection _hubConnection;
     [Inject] protected ToastService ToastService { get; set; } = default!;
+    #endregion
+    #region "ContextMenu"
+
+    private async Task SupprimerMessage(int MessagesId)
+    {
+        if (MessagesId != 0)
+        {
+            try
+            {
+                var response = await httpClient.DeleteAsync($"Message/{MessagesId}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    listMessage.RemoveAll(m => m.MessagesId == MessagesId);
+
+                    // Mettre à jour l'état de l'interface utilisateur
+                    StateHasChanged();
+                }
+                else
+                {
+                    Console.WriteLine($"Échec de la suppression du message ID {MessagesId}.");
+                }
+            }catch(Exception ex)
+            {
+                ToastService.Notify(new(ToastType.Danger, $"Échec de la suppression du message ID {MessagesId}. Exception : {ex.Message}"));
+            }
+
+        }
+    }
+
+    private void Reaction(int MessagesId)
+    {
+        // Logique pour Action 2
+        Console.WriteLine($"Action 2 exécutée sur le message ID: {MessagesId}");
+
+    }
+
+
+    #endregion
+    #region "Initialisation"
     /// <summary>
     /// Initialisation de la page
     /// </summary>
@@ -158,7 +249,16 @@
     protected override async Task OnInitializedAsync()
     {
         httpClient = HttpClientFactory.CreateClient("ApiSportTogetherClient");
-
+        if (listGroupe != null)
+        {
+            listGroupe.Clear();
+        }
+        if(listMessage != null)
+        {
+             listMessage.Clear();
+        }
+       
+        
         _hubConnection = new HubConnectionBuilder()
     .WithUrl($"http://localhost:5000/chatHubSportTogether")
     .Build();
@@ -168,33 +268,59 @@
         }
 
         await _hubConnection.StartAsync();
-        _hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
-       {
-           if (user != nomUtilisateur)
-           {
-               listMessage.Add(new Message
-                   {
-                       NomUtilisateur = user,
-                       Contenu = message,
-                       Timestamp = DateTime.Now
-                   });
-               ToastService.Notify(new(ToastType.Success, $"Vous avez un nouveau message de {user} ,{DateTime.Now.ToString("hh:mm")}"));
-               InvokeAsync(StateHasChanged);
-           }
 
-       });
+        _hubConnection.On<string, string>("ReceiveMessage", async (user, message) =>
+         {
+             string[] messageInfo = message.Split('¤');
+             await InvokeAsync(() =>
+             {
+                 if (user != nomUtilisateur)
+                 {
+                     listMessage.Add(new Message
+                         {
+                             NomUtilisateur = user,
+                             Contenu = messageInfo[0],
+                             Timestamp = DateTime.Now,
+                             urlProfilImage = messageInfo[1]
+                         });
+                     ToastService.Notify(new(ToastType.Success, $" Vous avez un nouveau message de {user} sur le groupe {messageInfo[2]} ,{DateTime.Now.ToLocalTime().ToString("hh:mm")}"));
+                     StateHasChanged();
 
+                 }
+             });
+         });
+        // Écouter l'événement SupprimerMessageClient
+        _hubConnection.On<string, int>("SupprimerMessageClient", async (user, messageId) =>
+        {
+            await InvokeAsync(() =>
+            {
+                if (user != nomUtilisateur)
+                {
+                    listMessage.RemoveAll(m => m.MessagesId == messageId);
+                    StateHasChanged();
+                }
+            });
+        });
 
 
         await GetGroupes();
         // Récupérer les informations utilisateur et rejoindre les groupes correspondants
         await RejoindreGroupesUtilisateur();
         await GetMessages();
+
     }
+    // Dispose method to stop the SignalR connection
+    public void Dispose()
+    {
+        _hubConnection?.DisposeAsync().AsTask().Wait();
+    }
+
+
     private async Task GetGroupes()
     {
         try
         {
+            listGroupe.Clear();
             listGroupe = await httpClient.GetFromJsonAsync<List<Groupe>>($"Groupe/GetGroupePourMessagerie/{utilisateurID}")!;
             if (listGroupe.Any())
             {
@@ -218,12 +344,10 @@
     } 
      private async Task RejoindreGroupesUtilisateur()
     {
-     
-
         foreach (var groupe in listGroupe)
         {
             await _hubConnection.SendAsync("JoinGroup", $"{groupe.GroupesId}¤{groupe.Nom}");
-      }
+        }
     }
     private async Task<int?> GetNombreMessageVu(int groupeId)
     {
@@ -240,7 +364,27 @@
 
 
     }
+     private async Task GetMessages()
+    {
+        try
+        {
+            listMessage = await httpClient.GetFromJsonAsync<List<Message>>($"Message/GetMessagesByGroupe/{selectedGroupe.GroupesId}")!;
+            StateHasChanged(); // Re-render the component
+        }catch(Exception ex)
+        {
 
+        }
+
+
+
+    }
+    #endregion
+    #region "Task et méthodes"
+     private void OpenSettings()
+    {
+        // Logique pour ouvrir les paramètres
+        Console.WriteLine("Paramètres ouverts");
+    }
     private async Task SelectGroupe(Groupe groupe)
     {
         if (selectedGroupe != null)
@@ -257,20 +401,7 @@
         await GetMessages(); // Charger les messages pour le groupe sélectionné
        
     }
-    private async Task GetMessages()
-    {
-        try
-        {
-            listMessage = await httpClient.GetFromJsonAsync<List<Message>>($"Message/GetMessagesByGroupe/{selectedGroupe.GroupesId}")!;
-            StateHasChanged(); // Re-render the component
-        }catch(Exception ex)
-        {
-
-        }
-
-
-
-    }
+   
     private readonly Dictionary<int, (string color, string imageUrl)> sportStyles = new()
     {
         { 1, ("#6BDE2A", "ballon-foot.jpg") },
@@ -387,4 +518,5 @@
     {
         public string Titre { get; set; } = string.Empty;
     }
+    #endregion
 }

@@ -55,11 +55,11 @@ namespace ApiSportTogether.Controller
             _context.Messages.Add(message);
             _context.SaveChanges();
             // Récupérer le groupe pour envoyer la notification
-
-            if (groupe != null)
+            string? urlPhoto = _context.ProfileImages.Where(pi => pi.UtilisateursId == message.UtilisateurId).FirstOrDefault()?.Url!;
+            if (groupe != null && urlPhoto != null)
             {
                 // Envoyer une notification à tous les membres du groupe via SignalR
-                _hubContext.Clients.Group($"{groupe.GroupesId}¤{groupe.Nom}").SendAsync("ReceiveMessage", message.NomUtilisateur, message.Contenu);
+                _hubContext.Clients.Group($"{groupe.GroupesId}¤{groupe.Nom}").SendAsync("ReceiveMessage", message.NomUtilisateur, $"{ message.Contenu}¤{ urlPhoto}¤{groupe.Nom}");
             }
             groupe.LastMessage = message.Contenu;
             _context.Entry(groupe).State = EntityState.Modified;
@@ -119,13 +119,34 @@ namespace ApiSportTogether.Controller
         public IActionResult DeleteMessage(int id)
         {
             var message = _context.Messages.Find(id);
+            Groupe? groupe = null;
+            string? user = null;
             if (message == null)
             {
                 return NotFound();
             }
+            else
+            {
+                user = message.NomUtilisateur;
+                groupe = _context.Groupes.Where(g => g.GroupesId == message.GroupeId).FirstOrDefault();
+                List<VuMessage> vuMessages = _context.VuMessages.Where(vm => vm.messages_id == message.MessagesId).ToList();
+                if(vuMessages.Any())
+                {
+                    foreach(VuMessage vm in vuMessages)
+                    {
+                        _context.VuMessages.Remove(vm);
+                        _context.SaveChanges();
+                    }
+                }
+            }
 
             _context.Messages.Remove(message);
             _context.SaveChanges();
+            if(groupe != null)
+            {
+                // Notifier les autres clients via SignalR
+                 _hubContext.Clients.Group($"{groupe.GroupesId}¤{groupe.Nom}").SendAsync("SupprimerMessageClient", user,id);
+            }
 
             return NoContent();
         }
