@@ -1,9 +1,11 @@
 ﻿@using SportTogetherBlazor.Models
 @using System.Net.Http.Json
 @inject IHttpClientFactory HttpClientFactory
-@inject IJSRuntime JSRuntime
 
-<div class="card shadow p-3 text-white" style="background-color:@GetSportColor((int)annonceVue.SportId!); background-size:cover;">
+
+<div class="card shadow p-3 position-relative" style="background-color #f1f1f1; background-size:cover; color: #34495e; border-color:@GetSportColor((int)annonceVue.SportId!); border-width:medium;">
+   
+   
     <div class="card-header bg-transparent">
         <h3 class="text-center">@annonceVue.Titre</h3>
         <div class="container-fluid">
@@ -13,19 +15,19 @@
                 </div>
                 <div class="col-md-8 text-center">
                     <div class="d-flex align-items-center justify-content-center">
-                        <Button Color="ButtonColor.None" Type="ButtonType.Link" Class="text-light d-flex align-items-center">
-                            <Icon Name="IconName.Person" Color="IconColor.Light" Size="IconSize.x3" class="me-1"></Icon>
+                        <Button Color="ButtonColor.None" Type="ButtonType.Link" Class="d-flex align-items-center">
+                            <Icon Name="IconName.Person"  Size="IconSize.x3" class="me-1" Style="color:#34495e"></Icon>
                             <span>@annonceVue.Auteur</span>
                         </Button>
                     </div>
                     <hr class="my-2" />
                     <div class="d-flex align-items-center justify-content-center">
-                        <Icon Name="IconName.PinMap" Color="IconColor.Light" Size="IconSize.x4" class="me-1"></Icon>
+                        <Icon Name="IconName.PinMap" Size="IconSize.x4" class="me-1" Style="color:#34495e"></Icon>
                         <p class="m-0">@annonceVue.Ville</p>
                     </div>
                     <hr class="my-2" />
                     <div class="d-flex align-items-center justify-content-center mb-3">
-                        <Icon Name="IconName.GenderAmbiguous" Color="IconColor.Light" Size="IconSize.x4" class="me-1"></Icon>
+                        <Icon Name="IconName.GenderAmbiguous" Style="color:#34495e" Size="IconSize.x4" class="me-1"></Icon>
                         <p class="m-0">@annonceVue.GenreAttendu</p>
                     </div>
                 </div>
@@ -39,7 +41,7 @@
             <p class="card-text">Lieu : @annonceVue.Lieu</p>
         </details>
     </div>
-    <div class="card-footer bg-transparent text-white">
+    <div class="card-footer bg-transparent">
         <p> Le @annonceVue.DateHeureAnnonce.ToString("dd/MM/yyyy") à @annonceVue.DateHeureAnnonce.ToString("HH:mm")</p>
         <div class="d-flex justify-content-between align-items-center">
             <p class="m-0">Nombre de participants : @nombreDeParticipants / @annonceVue.NombreParticipants</p>
@@ -78,7 +80,14 @@
         <Button Color="ButtonColor.Danger" @onclick="RemoveParticipation">Confirmer</Button>
     </FooterTemplate>
 </Modal>
-
+<style>
+    .badge {
+        font-size: 14px;
+        font-weight: bold;
+        color: white;
+        z-index: 1;
+    }
+</style>
 @code {
     [Parameter]
     public AnnonceVue annonceVue { get; set; }
@@ -210,7 +219,7 @@
 
     private readonly Dictionary<int, (string color, string imageUrl)> sportStyles = new()
     {
-        { 1, ("#6BDE2A", "ballon-foot.jpg") },
+        { 1, ("#bfd960", "ballon-foot.jpg") },
         { 2, ("#391E67", "basketball.jpg") },
         { 4, ("#6B1D4B", "tennis.jpg") },
         { 5, ("#D8AC2C", "athletisme.jpg") },

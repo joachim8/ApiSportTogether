@@ -40,9 +40,12 @@
                         <FiltreParGenre SelectedGenre="@SelectedGenre" OnFilterApplied="RechercherParGenre" genres="listGenre" />
                        
                     </div>
+                    <div class="px-2">
+                        <SportButton />
+                    </div>
                 </div>
             </div>
- 
+            
         </div>
     </div>
 </nav>
@@ -257,7 +260,26 @@
             await LoadAnnonces();
         }
     }
-
+    private readonly Dictionary<int, (string color, string imageUrl)> sportStyles = new()
+    {
+        { 1, ("#bfd960", "Football") },
+        { 2, ("#391E67", "Basketball") },
+        { 4, ("#6B1D4B", "Tennis") },
+        { 5, ("#D8AC2C", "Athletisme") },
+        { 6, ("#B36EDD", "Gymnastique") },
+        { 8, ("#CCF3DB", "Natation") },
+        { 9, ("#2C1707", "Baseball") },
+        { 10, ("#2A87FD", "Cyclisme") },
+        { 11, ("#C084BF", "Volleyball") },
+        { 12, ("#A78DA3", "Rugby") },
+        { 14, ("#A78DA3", "Boxe") },
+        { 15, ("#927584", "Hockey") },
+        { 16, ("#9A7C43", "Tennis de table") },
+        { 17, ("#033786", "Badminton") },
+        { 18, ("#6BDE2A", "Salle de sport") },
+        { 21, ("#391E67", "Pétanque") },
+        { 22, ("#6B1D4B", "Yoga") },
+    };
     public class AnnonceVueWrapper
     {
         [JsonPropertyName("$id")]

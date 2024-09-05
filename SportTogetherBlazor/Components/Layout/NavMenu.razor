@@ -26,6 +26,12 @@
                 <Badge Color="BadgeColor.Danger" Placement="BadgePlacement.MiddleRight">@nbrMessages</Badge>
             }
         </li>
+        <li class="nav-item h-auto @(linkClickedStates["Mes-annonces"] ? "clicked-style" : "")" @onclick="@(() => ToggleClick("Mes-annonces"))">
+            <a href="/SportTogether/Annonces" class="nav-link text-white text-center text-capitalize" aria-current="page">
+                <Icon Name="IconName.Calendar2Week" Color="IconColor.Light" Size="IconSize.x4" class="p-2" />
+                Mes annonces
+            </a>
+        </li>
     </ul>
 
     <hr>
@@ -71,6 +77,7 @@
     {
         linkClickedStates.Add("Annonces", false);
         linkClickedStates.Add("Messagerie-instantane", false);
+        linkClickedStates.Add("Mes-annonces", false);
 
         await LoadUserInfo();
 

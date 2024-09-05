@@ -1,0 +1,66 @@
+﻿@using System.Collections.Generic
+@using Microsoft.AspNetCore.Components
+
+
+<Modal @ref="modal" title="Couleurs des Sports" IsVerticallyCentered="true">
+    <BodyTemplate>
+        <div class="container">
+            <div class="row">
+                @foreach (var sport in sportStyles)
+                {
+
+                    <div class="col-md-12 mb-2">
+                        <div class="d-flex align-items-center p-2" style="background-color: @sport.Value.color; color: white; border-radius: 5px;">
+                            <div class="flex-shrink-0" style="width: 20px; height: 20px; background-color: @sport.Value.color; border-radius: 50%;"></div>
+                            <div class="ms-2">
+                                <strong>@sport.Value.imageUrl</strong>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </BodyTemplate>
+    <FooterTemplate>
+        <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Fermer</Button>
+    </FooterTemplate>
+</Modal>
+
+<Button Color="ButtonColor.None" @onclick="OnShowModalClick" TooltipTitle="Découvrez les couleurs de chaque sport" Size="Size.Medium">
+    <Icon Name="IconName.InfoCircleFill"  Color="IconColor.Dark" />
+</Button>
+
+@code {
+    private Modal modal = default!;
+    private readonly Dictionary<int, (string color, string imageUrl)> sportStyles = new()
+    {
+        { 1, ("#bfd960", "Football") },
+        { 2, ("#391E67", "Basketball") },
+        { 4, ("#6B1D4B", "Tennis") },
+        { 5, ("#D8AC2C", "Athletisme") },
+        { 6, ("#B36EDD", "Gymnastique") },
+        { 8, ("#CCF3DB", "Natation") },
+        { 9, ("#2C1707", "Baseball") },
+        { 10, ("#2A87FD", "Cyclisme") },
+        { 11, ("#C084BF", "Volleyball") },
+        { 12, ("#A78DA3", "Rugby") },
+        { 14, ("#A78DA3", "Boxe") },
+        { 15, ("#927584", "Hockey") },
+        { 16, ("#9A7C43", "Tennis de table") },
+        { 17, ("#033786", "Badminton") },
+        { 18, ("#6BDE2A", "Salle de sport") },
+        { 21, ("#391E67", "Pétanque") },
+        { 22, ("#6B1D4B", "Yoga") },
+    };
+
+
+    private async Task OnShowModalClick()
+    {
+        await modal.ShowAsync();
+    }
+
+    private async Task OnHideModalClick()
+    {
+        await modal.HideAsync();
+    }
+}

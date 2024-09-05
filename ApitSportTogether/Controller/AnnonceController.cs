@@ -356,6 +356,85 @@ namespace ApiSportTogether.Controller
                 return NotFound();
             }
         }
+        [HttpGet("/annonces/auteur/{utilisateurId}")]
+        public ActionResult<IEnumerable<AnnonceVue>> GetAnnoncesByAuteur(int utilisateurId)
+        {
+            DateTime dateDuJour = DateTime.Now;
+            List<Annonce> listAnnonce = _context.Annonces
+                                                 .Where(a => a.Auteur == utilisateurId && a.DateHeureAnnonce > dateDuJour)
+                                                 .OrderBy(a => a.DateHeureAnnonce)
+                                                 .Include(a => a.Sport)
+                                                 .Include(a => a.AuteurNavigation)
+                                                 .ToList();
+
+            if (listAnnonce.Count > 0)
+            {
+                List<AnnonceVue> listAnnonceVue = listAnnonce.Select(annonce => new AnnonceVue
+                {
+                    AnnoncesId = annonce.AnnoncesId,
+                    DateHeureAnnonce = annonce.DateHeureAnnonce,
+                    Auteur = annonce.AuteurNavigation?.Pseudo ?? string.Empty,
+                    AuteurId = annonce.Auteur,
+                    Description = annonce.Description,
+                    GenreAttendu = annonce.GenreAttendu,
+                    Lieu = annonce.Lieu,
+                    SportId = annonce.SportId,
+                    SportName = annonce.Sport?.Nom ?? string.Empty,
+                    NombreParticipants = annonce.NombreParticipants,
+                    Titre = annonce.Titre,
+                    Ville = annonce.Ville
+                }).ToList();
+
+                return listAnnonceVue.ToArray();
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+        [HttpGet("/annonces/participant/{utilisateurId}")]
+        public ActionResult<IEnumerable<AnnonceVue>> GetAnnoncesByParticipant(int utilisateurId)
+        {
+            DateTime dateDuJour = DateTime.Now;
+
+            // Obtenez toutes les participations de l'utilisateur
+            List<int> annonceIds = (List<int>)_context.Participations
+                                           .Where(p => p.UtilisateurId == utilisateurId)
+                                           .ToList().Select(p => p.AnnonceId);
+
+            List<Annonce> listAnnonce = _context.Annonces
+                                                 .Where(a => annonceIds.Contains(a.AnnoncesId) && a.DateHeureAnnonce > dateDuJour)
+                                                 .OrderBy(a => a.DateHeureAnnonce)
+                                                 .Include(a => a.Sport)
+                                                 .Include(a => a.AuteurNavigation)
+                                                 .ToList();
+
+            if (listAnnonce.Count > 0)
+            {
+                List<AnnonceVue> listAnnonceVue = listAnnonce.Select(annonce => new AnnonceVue
+                {
+                    AnnoncesId = annonce.AnnoncesId,
+                    DateHeureAnnonce = annonce.DateHeureAnnonce,
+                    Auteur = annonce.AuteurNavigation?.Pseudo ?? string.Empty,
+                    AuteurId = annonce.Auteur,
+                    Description = annonce.Description,
+                    GenreAttendu = annonce.GenreAttendu,
+                    Lieu = annonce.Lieu,
+                    SportId = annonce.SportId,
+                    SportName = annonce.Sport?.Nom ?? string.Empty,
+                    NombreParticipants = annonce.NombreParticipants,
+                    Titre = annonce.Titre,
+                    Ville = annonce.Ville
+                }).ToList();
+
+                return listAnnonceVue.ToArray();
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+
 
     }
 }

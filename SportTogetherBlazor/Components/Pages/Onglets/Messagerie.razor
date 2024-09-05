@@ -28,7 +28,7 @@
                             {
                                 <a class="list-group-item list-group-item-action @(groupe == selectedGroupe ? "active" : "")"
                                    id="list-@groupe.Nom-list" @onclick="() => SelectGroupe(groupe)">
-                                    <div class="card" >
+                                    <div class="card">
                                         <div class="row no-gutters">
                                             <div class="col-sm-5">
                                                 <img class="card-img img-fluid img-thumbnail" src="/images/@GetSportImageUrl((int)groupe.Annonce!.SportId!)" alt="groupe">
@@ -37,17 +37,15 @@
                                                 <div class="card-body">
                                                     <h5 class="card-title">@groupe.Nom</h5>
                                                     <small>@groupe.LastMessage</small>
-                                                    @if(groupe.nbreMessageVu != null)
+                                                    @if (groupe.nbreMessageVu != null)
                                                     {
                                                         <small><Badge Color="BadgeColor.Danger" Placement="BadgePlacement.MiddleRight">@groupe.nbreMessageVu</Badge></small>
                                                     }
-                                                    
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </a>
-                                
                             }
                         }
                         else
@@ -60,55 +58,56 @@
         </div>
 
         <div class="col-lg-8">
-            <div class="chat">
+            <div class="chat border rounded">
                 @if (selectedGroupe != null)
                 {
-                     <div class="container">
+                    <div class="container">
 
                         @if (selectedGroupe != null)
                         {
-                           
-                           <div class="chat-header position-sticky" style="background-color:#49beb7; margin-bottom:5px; margin-top: 5px; border-radius:revert">
-                                <div class="row align-items-center text-white">
+                            <!-- Header avec des bords arrondis -->
+                            <div class="chat-header position-sticky rounded-top" >
+                                <div class="row align-items-center text-white" style="background-color:#49beb7; margin-bottom:5px; margin-top:5px;">
                                     <div class="col-lg-6">
                                         <h5 class="mb-0">@selectedGroupe.Nom</h5>
                                     </div>
                                     <div class="col-lg-6 text-end">
-                                        <Button Color="ButtonColor.None"  @onclick="OpenSettings" TooltipTitle="Paramètre"><Icon Name="IconName.GearFill" Color="IconColor.White"/> </Button>
+                                        <Button Color="ButtonColor.None" @onclick="OpenSettings" TooltipTitle="Paramètre">
+                                            <Icon Name="IconName.GearFill" Color="IconColor.White" />
+                                        </Button>
                                     </div>
                                 </div>
                             </div>
-                       
+
                             @if (listMessage != null && listMessage.Any())
                             {
-                                <div class="chat-history overflow-auto" style="max-height: calc(100vh - 150px);">
+                                <!-- Historique des messages avec scrollbar externe -->
+                                <div class="chat-history overflow-auto chat-scroll" style="max-height: calc(100vh - 150px);">
                                     @foreach (var message in listMessage)
                                     {
                                         <div class="d-flex flex-column @((message.UtilisateurId == utilisateurID ? "align-items-end" : "align-items-start"))">
-                                        
-                                        <div class="dropdown">
-                                            <img src="@message.urlProfilImage" class="avatar mb-2">
-                                            <button class="p-2 rounded-3 btn-sm  @((message.UtilisateurId == utilisateurID ? "bg-custom-user" : "bg-body-tertiary"))" style="border:none;" data-bs-toggle="dropdown" aria-expanded="false">
-                                                @message.Contenu
-                                            </Button>
-                                                @if(message.UtilisateurId == utilisateurID)
+                                            <div class="dropdown">
+                                                <img src="@message.urlProfilImage" class="avatar mb-2">
+                                                <button class="p-2 rounded-3 btn-sm @((message.UtilisateurId == utilisateurID ? "bg-custom-user" : "bg-body-tertiary"))" style="border:none;" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    @message.Contenu
+                                                </button>
+                                                @if (message.UtilisateurId == utilisateurID)
                                                 {
                                                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton-@message.MessagesId">
                                                         <li><a class="dropdown-item" @onclick="() => SupprimerMessage(message.MessagesId)">Supprimer</a></li>
                                                         <li><a class="dropdown-item" @onclick="() => Reaction(message.MessagesId)">Réagir</a></li>
                                                     </ul>
                                                 }
-                                                
-                                        </div>
-                                        <p class="small mt-2 text-muted">
-                                            @message.Timestamp!.Value.ToString("HH:mm") | @message.NomUtilisateur
-                                        </p>
+                                            </div>
+                                            <p class="small mt-2 text-muted">
+                                                @message.Timestamp!.Value.ToString("HH:mm") | @message.NomUtilisateur
+                                            </p>
                                         </div>
                                     }
                                 </div>
-                                
                             }
 
+                            <!-- Formulaire pour envoyer un message -->
                             <div class="chat-message clearfix position-fixed w-50" style="bottom: 0; background-color: white; padding: 10px;">
                                 <div class="input-group mb-0">
                                     <InputText class="form-control" placeholder="Tapez votre message..." @bind-Value="nouveauMessage" />
@@ -123,15 +122,6 @@
                             <p class="text-center">Veuillez sélectionner un groupe pour afficher les messages.</p>
                         }
                     </div>
-
-                    <div class="chat-message clearfix position-absolute bottom-0 w-50" style="background-color: white; padding: 10px;">
-                        <div class="input-group mb-0">
-                            <InputText class="form-control" placeholder="Tapez votre message..." @bind-Value="nouveauMessage" />
-                            <div class="input-group-append">
-                                <Button Color="ButtonColor.Success" @onclick="EnvoyerMessage">Envoyer</Button>
-                            </div>
-                        </div>
-                    </div>
                 }
                 else
                 {
@@ -141,24 +131,28 @@
         </div>
     </div>
 </div>
+
+<!-- Style optimisé -->
 <style>
-    
+    .chat {
+        border: 2px solid #49beb7;
+        border-radius: 15px;
+    }
+
+    .chat-header {
+        border-radius: 15px 15px 0 0;
+    }
+
     .chat-history {
-        height: calc(100vh - 150px); /* Adjust according to your header and footer size */
-        overflow-y: auto;
-        padding-bottom: 60px; /* Leave space for the fixed chat message form */
+        padding: 10px;
+    }
+
+    .chat-scroll {
+        margin-right: -15px; /* Scrollbar externe */
     }
 
     .chat-message {
         z-index: 1000;
-    }
-    .container {
-        padding-left: 0;
-    }
-
-    .row.m-0 {
-        margin-left: 0;
-        margin-right: 0;
     }
 
     .avatar {
@@ -168,28 +162,28 @@
     }
 
     .bg-custom-user {
-        background-color: #49beb7; /* Couleur personnalisée pour les messages de l'utilisateur connecté */
-        color: white; /* Texte blanc pour un meilleur contraste */
+        background-color: #49beb7;
+        color: white;
     }
 
     .bg-body-tertiary {
-        background-color: #f1f1f1; /* Couleur de fond pour les autres messages */
-        color: black; /* Texte noir */
+        background-color: #f1f1f1;
+        color: black;
     }
 
     .message-bubble {
         padding: 10px;
         border-radius: 15px;
-        max-width: 400px; /* Limite la largeur des bulles de message */
-        word-wrap: break-word; /* Pour que le texte reste à l'intérieur de la bulle */
+        max-width: 400px;
+        word-wrap: break-word;
     }
 
     .timestamp {
         font-size: 0.8rem;
-        color: #6c757d; /* Couleur gris clair pour le timestamp */
+        color: #6c757d;
     }
-
 </style>
+
 @code {
     #region "Variables"
     private RechercheModel rechercheModel = new RechercheModel();
