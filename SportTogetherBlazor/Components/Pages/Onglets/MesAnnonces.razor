@@ -1,0 +1,249 @@
+﻿@page "/SportTogether/Mes-annonces"
+@using SportTogetherBlazor.Models
+@using SportTogetherBlazor.Services
+@inject IHttpClientFactory HttpClientFactory
+@inject SessionStorageServices session
+
+<div>
+
+
+    <ul class ="nav nav-tabs" id="myTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="author-tab" data-bs-toggle="tab" data-bs-target="#author" type="button" role="tab" aria-controls="author" aria-selected="true">
+                        Mes annonces en tant qu'auteur
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="participant-tab" data-bs-toggle="tab" data-bs-target="#participant" type="button" role="tab" aria-controls="participant" aria-selected="false">
+                        Mes annonces en tant que participant
+                    </button>
+                </li>
+            </ul>
+
+                    <!-- Tab Content -->
+                    <div class="tab-content" id="myTabContent">
+                        <!-- Author Tab -->
+                        <div class="tab-pane fade show active" id="author" role="tabpanel" aria-labelledby="author-tab">
+                            <table class="table align-middle mb-0 bg-white">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th>Titre</th>
+                                        <th>Sport</th>
+                                        <th>Date</th>
+                                        <th>Lieu</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (annoncesAuteur != null)
+                                    {
+                                        @foreach (var annonce in annoncesAuteur)
+                                        {
+                                            <tr>
+                                                <td>@annonce.Titre</td>
+                                                <td>@annonce.SportName</td>
+                                                <td>Le @annonce.DateHeureAnnonce.ToString("dd/MM/yyyy") à @annonce.DateHeureAnnonce.ToString("HH:mm")</td>
+                                                <td>@annonce.Lieu</td>
+                                                <td>
+                                                    <Button Color="ButtonColor.Info" TooltipTitle="Modifier l'annonce" Style="border-radius:revert;" Size="Size.Small">Modifier</Button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="5">Aucune annonce trouvée.</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Participant Tab -->
+                        <div class="tab-pane fade" id="participant" role="tabpanel" aria-labelledby="participant-tab">
+                            <table class="table align-middle mb-0 bg-white">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th>Titre</th>
+                                        <th>Sport</th>
+                                        <th>Date</th>
+                                        <th>Lieu</th>
+                                        <th>Auteur</th>
+                                        <th>Nbres. Part.</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (annoncesParticipant != null)
+                                    {
+                                        @foreach (var annonce in annoncesParticipant)
+                                        {
+                                            <tr>
+                                                <td>@annonce.Titre</td>
+                                                <td>@annonce.SportName</td>
+                                                <td>Le @annonce.DateHeureAnnonce.ToString("dd/MM/yyyy") à @annonce.DateHeureAnnonce.ToString("HH:mm")</td>
+                                                <td>@annonce.Lieu</td>
+                                                <td>@annonce.Auteur</td>
+                                                <td>@annonce.NombreParticipants</td>
+                                                <td>
+                                                    @if (annonce.isParticipate)
+                                                    {
+                                                        <Button Color="ButtonColor.Danger" @onclick="() => ShowRemoveParticipationModal(annonce)" TooltipTitle="Se désinscrire" Size="Size.Small">
+                                                            <Icon Name="IconName.X" Size="IconSize.x4"></Icon>
+                                                        </Button>
+                                                    }
+                                                    else
+                                                    {
+                                        <Button Color="ButtonColor.Success" @onclick="() => ShowAddParticipationModal(annonce)" TooltipTitle="Participer" Size="Size.Small">
+                                                            <Icon Name="IconName.Check" Size="IconSize.x4"></Icon>
+                                                        </Button>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="7">Aucune annonce trouvée.</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+<style>
+   
+</style>
+<Modal @ref="addParticipationModal" title="Confirmer la participation" IsVerticallyCentered="true">
+    <BodyTemplate>
+        <p>Voulez-vous vraiment participer à l'annonce '@selectedAnnonce.Titre' ?</p>
+    </BodyTemplate>
+    <FooterTemplate>
+        <Button Color="ButtonColor.Secondary" @onclick="HideAddParticipationModal">Annuler</Button>
+        <Button Color="ButtonColor.Success" @onclick="AddParticipation">Confirmer</Button>
+    </FooterTemplate>
+</Modal>
+
+<Modal @ref="removeParticipationModal" title="Confirmer la désinscription" IsVerticallyCentered="true">
+    <BodyTemplate>
+        <p>Voulez-vous vraiment vous désinscrire de l'annonce '@selectedAnnonce.Titre' ?</p>
+    </BodyTemplate>
+    <FooterTemplate>
+        <Button Color="ButtonColor.Secondary" @onclick="HideRemoveParticipationModal">Annuler</Button>
+        <Button Color="ButtonColor.Danger" @onclick="RemoveParticipation">Confirmer</Button>
+    </FooterTemplate>
+</Modal>
+
+@code {
+    private List<AnnonceVue> annoncesAuteur;
+    private List<AnnonceVue> annoncesParticipant;
+    private int utilisateurID;
+    private Modal addParticipationModal = default!;
+    private Modal removeParticipationModal = default!;
+
+    private AnnonceVue selectedAnnonce = default!;
+    [Inject] protected ToastService ToastService { get; set; } = default!;
+    private HttpClient Http;
+
+    protected override async Task OnInitializedAsync()
+    {
+        utilisateurID = (int)session.GetUserFromSession().UtilisateursId;
+        Http = HttpClientFactory.CreateClient("ApiSportTogetherClient");
+        var responseAuteur = await Http.GetFromJsonAsync<List<AnnonceVue>>($"/annonces/auteur/{utilisateurID}");
+        annoncesAuteur = responseAuteur ?? new List<AnnonceVue>();
+
+        var responseParticipant = await Http.GetFromJsonAsync<List<AnnonceVue>>($"/annonces/participant/{utilisateurID}");
+        annoncesParticipant = responseParticipant ?? new List<AnnonceVue>();
+        if (annoncesParticipant.Any())
+        {
+            foreach (AnnonceVue annonceV in annoncesParticipant)
+            {
+                annonceV.isParticipate = await CheckIfParticipant(annonceV.AnnoncesId);
+            }
+
+        }
+       
+    }
+
+    private async Task ShowAddParticipationModal(AnnonceVue annonce)
+    {
+        selectedAnnonce = annonce;
+        annonce.isParticipate = true;
+        await addParticipationModal.ShowAsync();
+    }
+
+    private async Task HideAddParticipationModal()
+    {
+        await addParticipationModal.HideAsync();
+    }
+
+    private async Task ShowRemoveParticipationModal(AnnonceVue annonce)
+    {
+        selectedAnnonce = annonce;
+        annonce.isParticipate = false;
+        await removeParticipationModal.ShowAsync();
+    }
+
+    private async Task HideRemoveParticipationModal()
+    {
+        await removeParticipationModal.HideAsync();
+    }
+
+    private async Task AddParticipation()
+    {
+        await HideAddParticipationModal();
+
+        var participation = new Participation
+            {
+                AnnonceId = selectedAnnonce.AnnoncesId,
+                UtilisateurId = utilisateurID,
+                DateParticipation = DateTime.Now
+            };
+
+        var response = await Http.PostAsJsonAsync("Participation/CreateParticipation", participation);
+        if (response.IsSuccessStatusCode)
+        {
+            selectedAnnonce.NombreParticipants++;
+            ToastService.Notify(new(ToastType.Success, $"Votre participation à l'annonce '{selectedAnnonce.Titre}' est bien enregistrée"));
+            StateHasChanged();
+        }
+        else
+        {
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            ToastService.Notify(new(ToastType.Danger, $"Erreur lors de l'enregistrement de votre participation : {errorMessage}"));
+        }
+    }
+
+    private async Task RemoveParticipation()
+    {
+        await HideRemoveParticipationModal();
+
+        var participation = new Participation
+            {
+                AnnonceId = selectedAnnonce.AnnoncesId,
+                UtilisateurId = utilisateurID
+            };
+
+        var response = await Http.PostAsJsonAsync("Participation/DeleteParticipation", participation);
+        if (response.IsSuccessStatusCode)
+        {
+            selectedAnnonce.NombreParticipants--;
+            ToastService.Notify(new(ToastType.Success, $"Votre désinscription de l'annonce '{selectedAnnonce.Titre}' a été confirmée"));
+            StateHasChanged();
+        }
+        else
+        {
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            ToastService.Notify(new(ToastType.Danger, $"Erreur lors de la désinscription : {errorMessage}"));
+        }
+    }
+
+    private async Task<bool> CheckIfParticipant(int annonceId)
+    {
+        return await Http.GetFromJsonAsync<bool>($"Participation/CheckParticipation/{utilisateurID}/{annonceId}");
+    }
+}

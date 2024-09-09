@@ -3,6 +3,8 @@
 @using SportTogetherBlazor.Models
 @inject NavigationManager NavigationManager
 @inject SessionStorageServices session
+@inject IHttpClientFactory ClientFactory
+
 <div class="d-flex flex-column flex-shrink-0 p-3 text-white bg-dark position-sticky" style="width: 280px;">
     <a href="/SportTogether" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
         <img src="images/logo-blanc.png" class="img-fluid align-self-center p-1" style="width:70px; height:70px;" />
@@ -20,14 +22,15 @@
             <a href="/SportTogether/Messagerie-instantane" class="nav-link text-white text-center text-capitalize" aria-current="page">
                 <Icon Name="IconName.Messenger" Color="IconColor.Light" Size="IconSize.x4" class="p-2" />
                 Messagerie
+                @if (messageCount)
+                {
+                    <span class="ms-3"><Badge Color="BadgeColor.Danger" Placement="BadgePlacement.MiddleRight" >@nbrMessages</Badge></span>
+                }
             </a>
-            @if (messageCount)
-            {
-                <Badge Color="BadgeColor.Danger" Placement="BadgePlacement.MiddleRight">@nbrMessages</Badge>
-            }
+           
         </li>
         <li class="nav-item h-auto @(linkClickedStates["Mes-annonces"] ? "clicked-style" : "")" @onclick="@(() => ToggleClick("Mes-annonces"))">
-            <a href="/SportTogether/Annonces" class="nav-link text-white text-center text-capitalize" aria-current="page">
+            <a href="/SportTogether/Mes-annonces" class="nav-link text-white text-center text-capitalize" aria-current="page">
                 <Icon Name="IconName.Calendar2Week" Color="IconColor.Light" Size="IconSize.x4" class="p-2" />
                 Mes annonces
             </a>
@@ -51,9 +54,9 @@
          
         </a>
         <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
-            <li><a class="dropdown-item" href="#">Parametre</a></li>
-            <li><a class="dropdown-item" href="#">Profile</a></li>
-            <li><a class="dropdown-item" href="#">Se déconnecter</a></li>
+            <li><a class="dropdown-item @(linkClickedStates["Parametre"] ? "clicked-style" : "")" @onclick="@(() => ToggleClick("Parametre"))" href="/SportTogether/Parametre">Parametre</a></li>
+            <li><a class="dropdown-item @(linkClickedStates["Profile"] ? "clicked-style" : "")" @onclick="@(() => ToggleClick("Profile"))" href="/SportTogether/Profile">Profile</a></li>
+            <li><a class="dropdown-item" @onclick="Logout">Se déconnecter</a></li>
         </ul>
     </div>
 </div>
@@ -68,7 +71,7 @@
     private Utilisateur utilisateurInfo;
     private string urlPhotoProfil = string.Empty;
     private Dictionary<string, bool> linkClickedStates = new Dictionary<string, bool>();
-
+   
     bool isClicked = false;
     bool messageCount = false;
     int nbrMessages = 0;
@@ -78,10 +81,15 @@
         linkClickedStates.Add("Annonces", false);
         linkClickedStates.Add("Messagerie-instantane", false);
         linkClickedStates.Add("Mes-annonces", false);
+        linkClickedStates.Add("Parametre", false);
+        linkClickedStates.Add("Profile", false);
 
+       
         await LoadUserInfo();
 
         await LoadImageUrl();
+  
+        await GetAllNombreMessageVu();
     }
 
     private async Task LoadUserInfo()
@@ -90,7 +98,7 @@
         if(utilisateurInfo == null){
             NavigationManager.NavigateTo("/SportTogether/Connexion");
         }
-     // urlPhotoProfil =  await 
+        // urlPhotoProfil =  await 
         // Utiliser cette information pour lier aux éléments du HTML ci-dessus
 
     }
@@ -104,7 +112,30 @@
 
 
     }
+    private void Logout()
+    {
+        session.Logout();
+        NavigationManager.NavigateTo("/SportTogether/Connexion");
+    }
+    private async Task GetAllNombreMessageVu()
+    {
+        try
+        {
+            HttpClient _httpClient = ClientFactory.CreateClient("ApiSportTogetherClient");
+            nbrMessages = await _httpClient.GetFromJsonAsync<int>($"VuMessage/GetAllVuMessagesCount/{utilisateurInfo.UtilisateursId}")!;
+            if(nbrMessages != 0)
+            {
+                messageCount = true;
+            }
+        }
+        catch (Exception ex)
+        {
+           
+        }
 
+
+
+    }
     void ToggleClick(string linkKey)
     {
         // Réinitialise tous les états à false

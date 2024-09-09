@@ -8,6 +8,7 @@ namespace SportTogetherBlazor.Services
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
 
+
         public SessionStorageServices(IHttpContextAccessor httpContextAccessor)
         {
             _httpContextAccessor = httpContextAccessor;
@@ -72,6 +73,20 @@ namespace SportTogetherBlazor.Services
                 return null;
             }
         }
+        public void Logout()
+        {
+            try
+            {
+
+                _httpContextAccessor.HttpContext.Session.Clear();
+            }
+            catch (Exception ex)
+            {
+                // Log this error or handle it accordingly
+                Console.WriteLine("Error during logout: " + ex.Message);
+            }
+        }
+
     }
 }
 

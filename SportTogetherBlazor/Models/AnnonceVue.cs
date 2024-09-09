@@ -40,6 +40,8 @@ namespace SportTogetherBlazor.Models
         public string Lieu { get; set; } = null!;
         [JsonPropertyName("DateHeureAnnonce")]
         public DateTime DateHeureAnnonce { get; set; }
+        [JsonIgnore]
+        public bool isParticipate { get; set; } = false;
 
     }
 }

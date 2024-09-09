@@ -118,12 +118,12 @@ namespace ApiSportTogether.Controller
 
             return !messagesVus.Any() ? NoContent() : Ok(messagesVus.ToArray());
         }
-        // GET: ApiSportTogether/VuMessage/GetVuMessagesCount/1
-        [HttpGet("GetVuMessagesCount/{groupeId}")]
-        public ActionResult<int> GetVuMessagesCount(int groupeId)
+        // GET: ApiSportTogether/VuMessage/GetVuMessagesCount/1/1
+        [HttpGet("GetVuMessagesCount/{groupeId}/{utilisateurId}")]
+        public ActionResult<int> GetVuMessagesCount(int groupeId, int utilisateurId)
         {
-            int vuMessage = _context.VuMessages
-                                      .Where(vm => vm.IdMessageNavigation.GroupeId == groupeId && vm.Vu == false)
+            int vuMessage = _context.VuMessages.Include(vm => vm.IdMessageNavigation)
+                                      .Where(vm => vm.IdMessageNavigation.GroupeId == groupeId && vm.Vu == false && vm.UtilisateurId != utilisateurId)
                                       .Count();
             if(vuMessage > 0)
             {
@@ -131,9 +131,84 @@ namespace ApiSportTogether.Controller
             }
             else
             {
-                return NoContent();
+                return 0;
             }
            
+        }
+        // Get: ApiSportTogether/VuMessage/ModifierLesVuMessagesVu/1/3
+        [HttpGet("ModifierLesMessagesVu/{groupeId}/{utilisateurId}")]
+        public IActionResult ModifierLesMessagesVu(int groupeId, int utilisateurId)
+        {
+            List<VuMessage> listVuMessage = _context.VuMessages.Include(vm => vm.IdMessageNavigation)
+                                      .Where(vm => vm.IdMessageNavigation.GroupeId == groupeId && vm.Vu == false && vm.UtilisateurId != utilisateurId)
+                                      .ToList();
+            if (listVuMessage == null)
+            {
+                return BadRequest();
+            }
+            if (!listVuMessage.Any())
+            {
+                return NotFound();
+            }
+            foreach(VuMessage vuMessage in listVuMessage)
+            {
+                vuMessage.Vu = true;
+                _context.Entry(vuMessage).State = EntityState.Modified;
+
+            }
+
+
+            try
+            {
+                _context.SaveChanges();
+            }
+            catch (DbUpdateConcurrencyException dbEx)
+            {
+                return BadRequest(dbEx);
+            }
+
+            return NoContent();
+        }
+
+        // GET: ApiSportTogether/VuMessage/GetVuMessagesCount/1/1
+        [HttpGet("GetAllVuMessagesCount/{utilisateurId}")]
+        public ActionResult<int> GetVuAllMessagesCount(int utilisateurId)
+        {
+            List<Groupe>? listGroupe = [.. _context.Groupes.Where(g => g.ChefDuGroupe == utilisateurId).ToList()];
+            List<Participation> listParticipation = new();
+            listParticipation = _context.Participations.Where(p => p.UtilisateurId == utilisateurId).ToList();
+            int vuMessage = 0;
+            if (listParticipation.Any())
+            {
+                foreach (Participation participe in listParticipation)
+                {
+                    listGroupe.Add(_context.Groupes.Find(participe.GroupeId)!);
+                }
+            }
+            if(listGroupe == null){
+                return BadRequest();
+            }
+            if (listGroupe.Any())
+            {
+                foreach (Groupe groupe in listGroupe)
+                {
+                    int vu =  _context.VuMessages.Include(vm => vm.IdMessageNavigation)
+                                          .Where(vm => vm.IdMessageNavigation.GroupeId == groupe.GroupesId && vm.Vu == false && vm.UtilisateurId != utilisateurId)
+                                          .Count();
+                    vuMessage = vuMessage + vu;
+                }
+            }
+          
+            
+            if (vuMessage > 0)
+            {
+                return Ok(vuMessage);
+            }
+            else
+            {
+                return 0;
+            }
+
         }
     }
 }

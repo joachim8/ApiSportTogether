@@ -45,18 +45,22 @@
         <p> Le @annonceVue.DateHeureAnnonce.ToString("dd/MM/yyyy") à @annonceVue.DateHeureAnnonce.ToString("HH:mm")</p>
         <div class="d-flex justify-content-between align-items-center">
             <p class="m-0">Nombre de participants : @nombreDeParticipants / @annonceVue.NombreParticipants</p>
-            @if (isParticipant)
+            @if (!isAuteur)
             {
-                <Button Color="ButtonColor.Danger" @onclick="ShowRemoveParticipationModal" TooltipTitle="Se désinscrire">
-                    <Icon Name="IconName.X" Size="IconSize.x4"></Icon>
-                </Button>
+                @if (isParticipant)
+                {
+                    <Button Color="ButtonColor.Danger" @onclick="ShowRemoveParticipationModal" TooltipTitle="Se désinscrire">
+                        <Icon Name="IconName.X" Size="IconSize.x4"></Icon>
+                    </Button>
+                }
+                else
+                {
+                    <Button Color="ButtonColor.Success" @onclick="ShowAddParticipationModal" TooltipTitle="Participer">
+                        <Icon Name="IconName.Check" Size="IconSize.x4"></Icon>
+                    </Button>
+                }
             }
-            else
-            {
-                <Button Color="ButtonColor.Success" @onclick="ShowAddParticipationModal" TooltipTitle="Participer">
-                    <Icon Name="IconName.Check" Size="IconSize.x4"></Icon>
-                </Button>
-            }
+            
         </div>
     </div>
 </div>
@@ -97,7 +101,7 @@
     [Inject] protected ToastService ToastService { get; set; } = default!;
     private bool isParticipant = false;
     private HttpClient httpClient;
-
+    private bool isAuteur = false;
     private Modal addParticipationModal = default!;
     private Modal removeParticipationModal = default!;
 
@@ -110,6 +114,10 @@
         httpClient = HttpClientFactory.CreateClient("ApiSportTogetherClient");
         nombreDeParticipants = await httpClient.GetFromJsonAsync<int>($"Participation/Annonce/{annonceVue.AnnoncesId}/count");
         isParticipant = await CheckIfParticipant();
+        if(annonceVue.AuteurId == utilisateur)
+        {
+            isAuteur = true;
+        }
     }
 
     /// <summary>

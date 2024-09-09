@@ -5,6 +5,7 @@
 @using SportTogetherBlazor.Services
 @inject SessionStorageServices session
 @using Microsoft.AspNetCore.SignalR.Client
+@implements IDisposable
 <div class="container">
     <div class="row m-0">
         <div class="col-lg-4">
@@ -37,14 +38,17 @@
                                                 <div class="card-body">
                                                     <h5 class="card-title">@groupe.Nom</h5>
                                                     <small>@groupe.LastMessage</small>
-                                                    @if (groupe.nbreMessageVu != null)
-                                                    {
-                                                        <small><Badge Color="BadgeColor.Danger" Placement="BadgePlacement.MiddleRight">@groupe.nbreMessageVu</Badge></small>
-                                                    }
+                                                    
                                                 </div>
                                             </div>
+                                            
                                         </div>
+                                       
                                     </div>
+                                    @if (groupe.nbreMessageVu != null && groupe.nbreMessageVu != 0)
+                                    {
+                                        <span><Badge Color="BadgeColor.Danger" Placement="BadgePlacement.MiddleRight">@groupe.nbreMessageVu</Badge></span>
+                                    }
                                 </a>
                             }
                         }
@@ -249,10 +253,10 @@
         }
         if(listMessage != null)
         {
-             listMessage.Clear();
+            listMessage.Clear();
         }
-       
-        
+
+
         _hubConnection = new HubConnectionBuilder()
     .WithUrl($"http://localhost:5000/chatHubSportTogether")
     .Build();
@@ -306,7 +310,13 @@
     // Dispose method to stop the SignalR connection
     public void Dispose()
     {
-        _hubConnection?.DisposeAsync().AsTask().Wait();
+        // Déconnecter de SignalR
+        if (_hubConnection != null)
+        {
+             _hubConnection.StopAsync();
+             _hubConnection.DisposeAsync();
+        }
+
     }
 
 
@@ -336,7 +346,7 @@
         }
 
     } 
-     private async Task RejoindreGroupesUtilisateur()
+    private async Task RejoindreGroupesUtilisateur()
     {
         foreach (var groupe in listGroupe)
         {
@@ -347,7 +357,9 @@
     {
         try
         {
-            int nbre = await httpClient.GetFromJsonAsync<int>($"GetVuMessagesCount/{groupeId}")!;
+            HttpClient _httpClient = HttpClientFactory.CreateClient("ApiSportTogetherClient");
+            int nbre = await _httpClient.GetFromJsonAsync<int>($"VuMessage/GetVuMessagesCount/{groupeId}/{utilisateurID}")!;
+
             return nbre;
         }
         catch (Exception ex)
@@ -358,7 +370,7 @@
 
 
     }
-     private async Task GetMessages()
+    private async Task GetMessages()
     {
         try
         {
@@ -374,7 +386,33 @@
     }
     #endregion
     #region "Task et méthodes"
-     private void OpenSettings()
+    private async Task<bool> ModifierLesMessagesVu(int groupeId)
+    {
+        try
+        {
+            var response = await httpClient.GetAsync($"VuMessage/ModifierLesMessagesVu/{groupeId}/{utilisateurID}");
+            bool bModifier = false;
+
+            if (response.IsSuccessStatusCode)
+            {
+                bModifier = true;
+                return bModifier;
+            }
+            else
+            {
+                return bModifier; 
+            }
+        }
+        catch (Exception ex)
+        {
+            ToastService.Notify(new(ToastType.Danger, $" un problème est survenue ,{ex.Message}"));
+            return false;
+        }
+
+
+
+    }
+    private void OpenSettings()
     {
         // Logique pour ouvrir les paramètres
         Console.WriteLine("Paramètres ouverts");
@@ -384,10 +422,18 @@
         if (selectedGroupe != null)
         {
             await _hubConnection.SendAsync("LeaveGroup", selectedGroupe.Nom);
-         }
+        }
 
         selectedGroupe = groupe;
-
+        if (selectedGroupe.nbreMessageVu != null && selectedGroupe.nbreMessageVu != 0)
+        {
+            bool bModifier = await ModifierLesMessagesVu(selectedGroupe.GroupesId);
+            if (bModifier)
+            {
+                groupe.nbreMessageVu = 0;
+                StateHasChanged();
+            }
+        }
         await _hubConnection.SendAsync("JoinGroup", selectedGroupe.Nom);
         if(listMessage != null)
             listMessage.Clear();

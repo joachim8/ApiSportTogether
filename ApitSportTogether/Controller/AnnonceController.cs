@@ -398,42 +398,52 @@ namespace ApiSportTogether.Controller
             DateTime dateDuJour = DateTime.Now;
 
             // Obtenez toutes les participations de l'utilisateur
-            List<int> annonceIds = (List<int>)_context.Participations
-                                           .Where(p => p.UtilisateurId == utilisateurId)
-                                           .ToList().Select(p => p.AnnonceId);
-
-            List<Annonce> listAnnonce = _context.Annonces
-                                                 .Where(a => annonceIds.Contains(a.AnnoncesId) && a.DateHeureAnnonce > dateDuJour)
-                                                 .OrderBy(a => a.DateHeureAnnonce)
-                                                 .Include(a => a.Sport)
-                                                 .Include(a => a.AuteurNavigation)
-                                                 .ToList();
-
-            if (listAnnonce.Count > 0)
+            List<int?> annonceIds = _context.Participations
+                .Where(p => p.UtilisateurId == utilisateurId)
+                .Select(p => p.AnnonceId)
+                .ToList();
+            if(annonceIds != null)
             {
-                List<AnnonceVue> listAnnonceVue = listAnnonce.Select(annonce => new AnnonceVue
-                {
-                    AnnoncesId = annonce.AnnoncesId,
-                    DateHeureAnnonce = annonce.DateHeureAnnonce,
-                    Auteur = annonce.AuteurNavigation?.Pseudo ?? string.Empty,
-                    AuteurId = annonce.Auteur,
-                    Description = annonce.Description,
-                    GenreAttendu = annonce.GenreAttendu,
-                    Lieu = annonce.Lieu,
-                    SportId = annonce.SportId,
-                    SportName = annonce.Sport?.Nom ?? string.Empty,
-                    NombreParticipants = annonce.NombreParticipants,
-                    Titre = annonce.Titre,
-                    Ville = annonce.Ville
-                }).ToList();
+                List<Annonce> listAnnonce = _context.Annonces
+                .Where(a => annonceIds.Contains(a.AnnoncesId) && a.DateHeureAnnonce > dateDuJour)
+                .OrderBy(a => a.DateHeureAnnonce)
+                .Include(a => a.Sport)
+                .Include(a => a.AuteurNavigation)
+                .ToList();
 
-                return listAnnonceVue.ToArray();
+                if (listAnnonce.Count > 0)
+                {
+                    List<AnnonceVue> listAnnonceVue = listAnnonce.Select(annonce => new AnnonceVue
+                    {
+                        AnnoncesId = annonce.AnnoncesId,
+                        DateHeureAnnonce = annonce.DateHeureAnnonce,
+                        Auteur = annonce.AuteurNavigation?.Pseudo ?? string.Empty,
+                        AuteurId = annonce.Auteur,
+                        Description = annonce.Description,
+                        GenreAttendu = annonce.GenreAttendu,
+                        Lieu = annonce.Lieu,
+                        SportId = annonce.SportId,
+                        SportName = annonce.Sport?.Nom ?? string.Empty,
+                        NombreParticipants = annonce.NombreParticipants,
+                        Titre = annonce.Titre,
+                        Ville = annonce.Ville
+                    }).ToList();
+
+                    return Ok(listAnnonceVue.ToArray());
+                }
+                else
+                {
+                    return NotFound();
+                }
+
+          
             }
             else
             {
                 return NotFound();
             }
         }
+
 
 
     }
