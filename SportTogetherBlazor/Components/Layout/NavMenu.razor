@@ -71,7 +71,7 @@
     private Utilisateur utilisateurInfo;
     private string urlPhotoProfil = string.Empty;
     private Dictionary<string, bool> linkClickedStates = new Dictionary<string, bool>();
-   
+
     bool isClicked = false;
     bool messageCount = false;
     int nbrMessages = 0;
@@ -84,12 +84,15 @@
         linkClickedStates.Add("Parametre", false);
         linkClickedStates.Add("Profile", false);
 
-       
+
         await LoadUserInfo();
 
         await LoadImageUrl();
-  
-        await GetAllNombreMessageVu();
+        if(utilisateurInfo != null)
+        {
+            await GetAllNombreMessageVu();
+        }
+      
     }
 
     private async Task LoadUserInfo()

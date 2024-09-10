@@ -313,8 +313,8 @@
         // Déconnecter de SignalR
         if (_hubConnection != null)
         {
-             _hubConnection.StopAsync();
-             _hubConnection.DisposeAsync();
+            _hubConnection.StopAsync();
+            _hubConnection.DisposeAsync();
         }
 
     }
@@ -328,9 +328,11 @@
             listGroupe = await httpClient.GetFromJsonAsync<List<Groupe>>($"Groupe/GetGroupePourMessagerie/{utilisateurID}")!;
             if (listGroupe.Any())
             {
+
                 selectedGroupe = listGroupe.First();
                 foreach (Groupe groupe in listGroupe)
                 {
+                    if (groupe.AnnonceId == null) listGroupe.Remove(groupe);
                     int? nbreVu = await GetNombreMessageVu(groupe.GroupesId);
                     if (nbreVu != null)
                     {

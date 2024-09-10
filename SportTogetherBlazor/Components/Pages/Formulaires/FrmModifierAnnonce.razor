@@ -1,0 +1,204 @@
+﻿@inject HttpClient httpClient
+@using SportTogetherBlazor.Models
+@using SportTogetherBlazor.Components.Pages.ComposantsReutilisables
+@using SportTogetherBlazor.Services
+@inject NavigationManager NavigationManager
+@inject SessionStorageServices session
+@using System.Text.Json.Serialization;
+
+
+    <EditForm Model="@annonce"  >
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <h2>Modifier l'annonce</h2>
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="form-outline">
+                    <label class="form-label" for="titre">Titre</label>
+                    <InputText id="titre" class="form-control" @bind-Value="annonce.Titre" />
+                    <ValidationMessage For="@(() => annonce.Titre)" />
+                </div>
+
+                <div class="form-outline">
+                    <label class="form-label" for="description">Description</label>
+                    <InputTextArea id="description" class="form-control" @bind-Value="annonce.Description" />
+                    <ValidationMessage For="@(() => annonce.Description)" />
+                </div>
+
+                <div class="form-outline mb-2">
+                    <label class="form-label" for="rechercheVille">Ville</label>
+                    <InputText id="rechercheVille" class="form-control"
+                               @bind-Value="rechercheVille"
+                               @oninput="@(async (ChangeEventArgs e) => await RechercherVilles(e.Value.ToString()))" />
+                    @if (villes.Any())
+                    {
+                        <div class="list-group">
+                            @foreach (var ville in villes)
+                            {
+                                <button type="button" class="list-group-item list-group-item-action" @onclick="() => SelectionnerVille(ville)">
+                                    @ville.Nom
+                                </button>
+                            }
+                        </div>
+                    }
+                </div>
+
+                <div class="form-outline">
+                    <label class="form-label" for="lieu">Lieu</label>
+                    <InputText id="lieu" class="form-control" @bind-Value="annonce.Lieu" />
+                    <ValidationMessage For="@(() => annonce.Lieu)" />
+                </div>
+
+                <div class="form-outline">
+                    <label class="form-label" for="genreAttendu">Genre Attendu</label>
+                    <InputSelect id="genreAttendu" class="form-control" @bind-Value="annonce.GenreAttendu">
+                        <option value="">Sélectionnez un genre</option>
+                        <option value="Femme">Femme</option>
+                        <option value="Homme">Homme</option>
+                        <option value="Mixte">Mixte</option>
+                    </InputSelect>
+                    <ValidationMessage For="@(() => annonce.GenreAttendu)" />
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div class="form-outline">
+                    <label class="form-label" for="dateHeureAnnonce">Date </label>
+                    <InputDate id="dateHeureAnnonce" class="form-control" @bind-Value="annonce.DateHeureAnnonce" />
+                    <ValidationMessage For="@(() => annonce.DateHeureAnnonce)" />
+                </div>
+
+                <div class="form-outline">
+                    <label class="form-label" for="heureAnnonce">Heure de l'Annonce</label>
+                <TimeInput id="heureAnnonce" class="form-control" @bind-Value="heureAnnonce" />
+                    <ValidationMessage For="@(() => annonce.DateHeureAnnonce)" />
+                </div>
+
+                <div class="form-outline">
+                    <label class="form-label" for="nombreParticipants">Nombre de Participants</label>
+                    <InputNumber id="nombreParticipants" class="form-control" @bind-Value="annonce.NombreParticipants" />
+                    <ValidationMessage For="@(() => annonce.NombreParticipants)" />
+                </div>
+
+                <div class="form-outline">
+                    <label class="form-label" for="sportId">Sport</label>
+                    <InputSelect id="sportId" class="form-control" @bind-Value="annonce.SportId">
+                        <option value="">Choisissez un sport</option>
+                        @foreach (var sport in sports)
+                        {
+                            <option value="@sport.SportsId">@sport.Nom</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="@(() => annonce.SportId)" />
+                </div>
+            </div>
+        </div>
+    <div class="d-flex justify-content-end">
+        <Button Color="ButtonColor.Success" @onclick="OnValidSubmit">Enregistrer</Button>
+        <Button Color="ButtonColor.Secondary" @onclick="AnnulerTask">Annuler</Button>
+    </div>
+        
+    </EditForm>
+
+
+
+@code {
+    [Parameter] public AnnonceVue annonce { get; set; } = new AnnonceVue();
+    [Parameter] public EventCallback Annuler { get; set; }
+    [Parameter] public EventCallback<AnnonceVue> OnSubmit { get; set; }
+    private TimeOnly heureAnnonce;
+    private string rechercheVille;
+    private List<Ville> villes = new();
+    private List<Sport> sports = new List<Sport>();
+
+    private async Task OnValidSubmit()
+    {
+        // Combine la date et l'heure avant de remonter l'annonce modifiée
+        annonce.DateHeureAnnonce = annonce.DateHeureAnnonce.Date.Add(heureAnnonce.ToTimeSpan());
+
+        // Lève l'événement pour le composant parent
+        await OnSubmit.InvokeAsync(annonce);
+    }
+    private async Task AnnulerTask()
+    {
+
+
+        // Lève l'événement pour le composant parent
+        await Annuler.InvokeAsync();
+    }
+
+    private void SelectionnerVille(Ville ville)
+    {
+        annonce.Ville = ville.Nom;
+        villes.Clear();
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        await GetListOfSport();
+        rechercheVille = annonce.Ville;
+        heureAnnonce = TimeOnly.FromDateTime(annonce.DateHeureAnnonce);
+
+
+    }
+    private async Task RechercherVilles(string recherche)
+    {
+        if (!string.IsNullOrEmpty(recherche) && recherche.Length >= 2) // Pour éviter des requêtes inutiles
+        {
+            if (!string.IsNullOrEmpty(recherche) && recherche.Length > 1) // Limite les requêtes pour les recherches de 2 caractères ou plus
+            {
+                try
+                {
+                    villes = await httpClient.GetFromJsonAsync<List<Ville>>($"https://geo.api.gouv.fr/communes?nom={recherche}&fields=nom,departement&boost=population&limit=5")!;
+                    StateHasChanged();
+                }
+                catch (Exception ex)
+                {
+                    // Gérez les exceptions, par exemple, en affichant un message d'erreur
+                    Console.WriteLine($"Erreur lors de la récupération des villes: {ex.Message}");
+                }
+            }
+        }
+    }
+    private async Task GetListOfSport()
+    {
+        try
+        {
+            var response = await httpClient.GetAsync("Sport");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var wrapper = await response.Content.ReadFromJsonAsync<SportsWrapper>();
+                sports = wrapper?.Sports ?? new List<Sport>();
+            }
+            else
+            {
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Erreur lors de de la récupération des sports: {errorMessage}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception lors de l'inscription: {ex.Message}");
+        }
+    }
+   
+
+    public class SportsWrapper
+    {
+        [JsonPropertyName("$id")]
+        public string Id { get; set; }
+
+        [JsonPropertyName("$values")]
+        public List<Sport> Sports { get; set; }
+    }
+   
+    
+    public class Ville
+    {
+        public string Nom { get; set; }
+        public string CodeDepartement { get; set; }
+    }
+}
+
+
