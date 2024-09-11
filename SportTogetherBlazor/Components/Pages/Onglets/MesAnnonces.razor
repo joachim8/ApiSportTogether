@@ -7,65 +7,80 @@
 @inject SessionStorageServices session
 
 <div class="container h-100" >
-    <Tabs EnableFadeEffect="true" NavStyle="NavStyle.Underline" Style="margin-top:20px;" >
-        <Tab Title="Mes annonces en tant qu'auteur" IsActive="true" Style="height:100%">
-            <Content>
-                <table class="table table-bordered h-100">
-                    <thead class="thead-dark">
-                        <tr>
-                            <th>Titre  <Button Color="ButtonColor.None" @onclick="() => SortByTitle(typeAuteur)"> <Icon Name="IconName.ArrowDownUp" /> </Button></th>
-                            <th>Sport</th>
-                            <th>Date</th>
-                            <th>Lieu</th>
-                            <th>Description</th>
-                            <th>Genre attendu</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @if (annoncesAuteur != null )
-                        {
-                            if (annoncesAuteur.Any())
-                            {
-                                @foreach (var annonce in annoncesAuteur)
-                                {
-                                    <tr>
-                                        <td>@annonce.Titre</td>
-                                        <td>@annonce.SportName</td>
-                                        <td>Le @annonce.DateHeureAnnonce.ToString("dd/MM/yyyy") à @annonce.DateHeureAnnonce.ToString("HH:mm")</td>
-                                        <td>@annonce.Lieu</td>
-                                        <td>@annonce.Description</td>
-                                        <th>@annonce.GenreAttendu</th>
-                                        <td>
-                                            <Dropdown Color="DropdownColor.Secondary">
-                                                <DropdownToggleButton>Action</DropdownToggleButton>
-                                                <DropdownMenu>
-                                                    <DropdownItem Type="ButtonType.Button" @onclick="() => SupprimerAnnonce(annonce.AnnoncesId)">Supprimer</DropdownItem>
-                                                    <DropdownItem Type="ButtonType.Button" @onclick="() => OuvrirModalModifierAnnonce(annonce)">Modifier</DropdownItem>
-                                                </DropdownMenu>
-                                            </Dropdown>
-                                        </td>
+    <Tabs EnableFadeEffect="true" NavStyle="NavStyle.Underline" Style="padding-top:20px; height:100%; background-color:aliceblue !important; color:black !important;" Class="custom-tabs">
+        
+        <Tab Title="" IsActive="true" >
+            <TitleTemplate>
+                <Icon Name="IconName.Person" /> Mes annonces en tant qu'auteur
+            </TitleTemplate>
+           
+            <Content >
+                <div class="table-responsive mt-2" style="background-color: aliceblue">
+                            <table class="table table-hover align-middle h-100 text-center">
+                                <thead class="table-light" >
+                                    <tr >
+                                        <th>Titre<span> <Button Color="ButtonColor.None" @onclick="() => SortByTitle(typeAuteur)"> <Icon Name="IconName.ArrowDownUp" /> </Button></span> </th>
+                                        <th>Sport</th>
+                                        <th>Date</th>
+                                        <th>Lieu</th>
+                                        <th>Description</th>
+                                        <th>Genre attendu</th>
+                                        <th>Actions</th>
                                     </tr>
-                                }
-                            }
-                            else
-                            {
-                                <tr>
-                                    <td colspan="5">Aucune annonce trouvée. Veuillez en créer des nouvelles.</td>
-                                </tr>
-                            }
+                                </thead>
+                                <tbody>
+                                    @if (annoncesAuteur != null )
+                                    {
+                                        if (annoncesAuteur.Any())
+                                        {
+                                            @foreach (var annonce in annoncesAuteur)
+                                            {
+                                                <tr>
+                                                    <td>@annonce.Titre</td>
+                                                    <td>@annonce.SportName</td>
+                                                    <td>Le @annonce.DateHeureAnnonce.ToString("dd/MM/yyyy") à @annonce.DateHeureAnnonce.ToString("HH:mm")</td>
+                                                    <td>@annonce.Lieu</td>
+                                                    <td>@annonce.Description</td>
+                                                    <th>@annonce.GenreAttendu</th>
+                                                    <td>
+                                                        <Dropdown Color="DropdownColor.Secondary">
+                                                            <DropdownToggleButton>Action</DropdownToggleButton>
+                                                            <DropdownMenu>
+                                                                <DropdownItem Type="ButtonType.Button" @onclick="() => SupprimerAnnonce(annonce.AnnoncesId)">Supprimer</DropdownItem>
+                                                                <DropdownItem Type="ButtonType.Button" @onclick="() => OuvrirModalModifierAnnonce(annonce)">Modifier</DropdownItem>
+                                                            </DropdownMenu>
+                                                        </Dropdown>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td colspan="7">Aucune annonce trouvée. Veuillez en créer des nouvelles.</td>
+                                            </tr>
+                                        }
 
-                        }
+                                    }
                         
-                    </tbody>
-                </table>
+                                </tbody>
+                            </table>
+                        </div>
+
             </Content>
         </Tab>
 
-        <Tab Title="Mes annonces en tant que participant">
+
+            <Tab >
+            <TitleTemplate>
+                <Icon Name="IconName.PersonArmsUp" /> Mes annonces en tant que participant
+            </TitleTemplate>
+         
             <Content>
-                <table class="table align-middle mb-0 bg-white mt-3">
-                    <thead class="bg-light">
+               
+                        <div class="table-responsive mt-2">
+                            <table class="table table-hover align-middle h-100  text-center">
+                                <thead class="table-light" >
                         <tr>
                             <th>Titre <Button Color="ButtonColor.None" @onclick="() => SortByTitle(typeParticipant)"> <Icon Name="IconName.ArrowDownUp"/> </Button></th>
                             <th>Sport</th>
@@ -78,50 +93,52 @@
                             <th>Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        @if (annoncesParticipant != null)
-                        {
-                            @if (annoncesParticipant.Any())
-                            {
-                                @foreach (var annonce in annoncesParticipant)
-                                {
-                                    <tr>
-                                        <td>@annonce.Titre</td>
-                                        <td>@annonce.SportName</td>
-                                        <td>Le @annonce.DateHeureAnnonce.ToString("dd/MM/yyyy") à @annonce.DateHeureAnnonce.ToString("HH:mm")</td>
-                                        <td>@annonce.Lieu</td>
-                                        <td>@annonce.Auteur</td>
-                                        <td>@annonce.NombreParticipants</td>
-                                        <td>@annonce.Description</td>
-                                        <th>@annonce.GenreAttendu</th>
-                                        <td>
-                                            @if (annonce.isParticipate)
+                                <tbody>
+                                    @if (annoncesParticipant != null)
+                                    {
+                                        @if (annoncesParticipant.Any())
+                                        {
+                                            @foreach (var annonce in annoncesParticipant)
                                             {
-                                                <Button Color="ButtonColor.Danger" @onclick="() => ShowRemoveParticipationModal(annonce)" TooltipTitle="Se désinscrire" Size="Size.Small">
-                                                    <Icon Name="IconName.X" Size="IconSize.x4"></Icon>
-                                                </Button>
+                                                <tr>
+                                                    <td>@annonce.Titre</td>
+                                                    <td>@annonce.SportName</td>
+                                                    <td>Le @annonce.DateHeureAnnonce.ToString("dd/MM/yyyy") à @annonce.DateHeureAnnonce.ToString("HH:mm")</td>
+                                                    <td>@annonce.Lieu</td>
+                                                    <td>@annonce.Auteur</td>
+                                                    <td>@annonce.NombreParticipants</td>
+                                                    <td>@annonce.Description</td>
+                                                    <th>@annonce.GenreAttendu</th>
+                                                    <td>
+                                                        @if (annonce.isParticipate)
+                                                        {
+                                                            <Button Color="ButtonColor.Danger" @onclick="() => ShowRemoveParticipationModal(annonce)" TooltipTitle="Se désinscrire" Size="Size.Small">
+                                                                <Icon Name="IconName.X" Size="IconSize.x4"></Icon>
+                                                            </Button>
+                                                        }
+                                                        else
+                                                        {
+                                                            <Button Color="ButtonColor.Success" @onclick="() => ShowAddParticipationModal(annonce)" TooltipTitle="Participer" Size="Size.Small">
+                                                                <Icon Name="IconName.Check" Size="IconSize.x4"></Icon>
+                                                            </Button>
+                                                        }
+                                                    </td>
+                                                </tr>
                                             }
-                                            else
-                                            {
-                                                <Button Color="ButtonColor.Success" @onclick="() => ShowAddParticipationModal(annonce)" TooltipTitle="Participer" Size="Size.Small">
-                                                    <Icon Name="IconName.Check" Size="IconSize.x4"></Icon>
-                                                </Button>
-                                            }
-                                        </td>
-                                    </tr>
-                                }
-                            }
-                            else
-                            {
-                                <tr>
-                                    <td colspan="7">Aucune annonce trouvée.</td>
-                                </tr>
-                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td colspan="7">Aucune annonce trouvée.</td>
+                                            </tr>
+                                        }
                             
-                        }
+                                    }
                        
-                    </tbody>
-                </table>
+                                </tbody>
+                            </table>
+                        </div>
+ 
             </Content>
         </Tab>
     </Tabs>
@@ -161,7 +178,37 @@
 
 <ConfirmDialog @ref="dialog" />
 <style>
-   
+    .nav-underline .nav-link.active {
+        background-color: #085f63;
+        color: white;
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+        padding: 10px;
+        text-align: center;
+    }
+
+    .nav-link {
+        background-color: aliceblue;
+        color: black;
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+        padding: 10px;
+        text-align: center;
+    }
+
+      .nav-link:hover {
+            background-color: lightgray;
+            color: black;
+            padding: 10px;
+            text-align: center;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+    table th {
+        text-align: center;
+        color:black;
+        background-color: #49beb7;
+    }
 </style>
 @code {
     #region "Variable"

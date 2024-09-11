@@ -3,9 +3,11 @@ using ApiSportTogether.model.dbContext;
 using ApiSportTogether.SignalR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
+using System.IO.Compression;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -66,6 +68,25 @@ builder.Services.Configure<FormOptions>(options =>
     options.MultipartBodyLengthLimit = 10485760; // 10 MB
     options.BufferBodyLengthLimit = 10485760; // 10 MB buffer limit
 });
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+    options.Providers.Add<BrotliCompressionProvider>();
+    options.Providers.Add<GzipCompressionProvider>();
+    options.MimeTypes =
+ResponseCompressionDefaults.MimeTypes.Concat(
+    new[] { "image/svg+xml" });
+});
+
+builder.Services.Configure<BrotliCompressionProviderOptions>(options =>
+{
+    options.Level = CompressionLevel.Fastest;
+});
+
+builder.Services.Configure<GzipCompressionProviderOptions>(options =>
+{
+    options.Level = CompressionLevel.SmallestSize;
+});
 WebApplication app = builder.Build();
 if(app.Environment.IsDevelopment())
 {
@@ -92,7 +113,7 @@ app.UseCors("MyCorsPolicy"); // Utiliser la politique CORS
 app.UseForwardedHeaders();
 app.UseAuthentication();
 app.UseAuthorization();
-
+app.UseResponseCompression();
 app.MapHub<ChatHubSportTogether>("/chatHubSportTogether");
 
 // Si les images sont dans un dossier spécifique à l'intérieur de wwwroot ou à un autre emplacement :
