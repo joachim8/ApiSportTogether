@@ -1,0 +1,47 @@
+﻿@media (max-width: 768px) {
+    body {
+        margin: 0;
+        padding: 0;
+        color: #cdcdcd;
+        font-family: Helvetica, Arial, sans-serif;
+    }
+
+
+    #sideMenu {
+        display: none; /* Cache le menu par défaut en mobile */
+        position: sticky;
+        top: 0;
+        left: 0;
+        width: 250px;
+        background: #343a40;
+        z-index: 1050; /* Plus élevé que l'overlay */
+        transform: translateX(-100%);
+        transition: transform 0.3s ease-in-out;
+        visibility: collapse;
+    }
+
+        #sideMenu.show {
+            transform: translateX(0); /* Affiche le menu quand la classe "show" est ajoutée */
+            visibility: visible;
+
+        }
+
+    .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1040; /* Moins élevé que le menu */
+        display: none; /* Cache l'overlay par défaut */
+        transition: opacity 0.3s ease-in-out;
+    }
+
+        .overlay.show {
+            display: block; /* Affiche l'overlay quand la classe "show" est ajoutée */
+        }
+
+
+
+}

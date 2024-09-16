@@ -1,8 +1,10 @@
 ﻿using ApiSportTogether.model.dbContext;
 using ApiSportTogether.model.ObjectContext;
+using ApiSportTogether.model.ObjectVue;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace ApiSportTogether.Controller
 {
@@ -137,5 +139,103 @@ namespace ApiSportTogether.Controller
 
             return NoContent();
         }
+
+        // GET: ApiSportTogether/UtilisateurVueById/5
+        [HttpGet("UtilisateurVueById/{id}")]
+        public ActionResult<UtilisateurVue> GetUtilisateurVueById(int id)
+        {
+            // Récupérer l'utilisateur depuis la base de données (exemple avec Entity Framework)
+            var utilisateur = _context.Utilisateurs.FirstOrDefault(u => u.UtilisateursId == id);
+
+            if (utilisateur == null)
+            {
+                return NotFound();
+            }
+
+            // Exemple : Récupérer les données supplémentaires (à ajuster selon ton modèle et tes calculs)
+            int nombreAuteurAnnonce = _context.Annonces.Count(a => a.Auteur == id);
+            int nombreAnnonceEffectuer = _context.Participations.Count(p => p.UtilisateurId == id);
+            List<Annonce>? listAnnonce = _context.Annonces.Where(a => a.Auteur == id).ToList();
+            List<decimal?> listNoteAnnonce = new();
+            decimal? noteMoyenneDesAnnonces = null;
+            if (listAnnonce != null)
+            {
+                if (listAnnonce.Any())
+                {
+                    foreach (var annonce in listAnnonce)
+                    {
+                        listNoteAnnonce.Add(annonce.NoteAnnonce);
+                    }
+                    decimal noteTotale = 0;
+                     foreach (var a in listNoteAnnonce)
+                    {
+                        noteTotale = (decimal)(noteTotale + a)!;  
+                    }
+                     if(noteTotale > 0)
+                    {
+                        noteMoyenneDesAnnonces = noteTotale / listAnnonce.Count();
+                    }
+                  
+                }
+            }
+          
+                var premiereParticipationOuAnnonce = _context.Participations
+        .Where(p => p.UtilisateurId == id)
+        .OrderBy(p => p.DateParticipation)
+        .Select(p => p.DateParticipation)
+        .FirstOrDefault();  // Récupérer la première date de participation
+
+            if (premiereParticipationOuAnnonce == DateTime.MinValue)
+            {
+                // Si aucune participation trouvée, on prend la date courante pour éviter une division par zéro
+                premiereParticipationOuAnnonce = DateTime.Now;
+            }
+
+            decimal moisDepasses = ((DateTime.Now - premiereParticipationOuAnnonce).Value.Days / 30.0m);
+            if (moisDepasses <= 0)
+            {
+                moisDepasses = 1;  // Pour éviter une division par 0, on force au moins 1 mois
+            }
+
+            decimal? annonceEffectuerParMoisMoyenne = nombreAnnonceEffectuer / moisDepasses;
+
+
+
+         
+            // Exemple : Récupérer les sports favoris (adapter selon tes relations)
+            List<string> topTroisSport = _context.SportFavoris
+                                        .Where(s => s.UtilisateursId == id)
+                                        .Take(3)
+                                        .Include(sf => sf.Sports)
+                                        .Select(s => s.Sports!.Nom)
+                                        .ToList()!;
+            string urlProfilImage = _context.ProfileImages.Where(pi => pi.UtilisateursId == id).FirstOrDefault()!.Url!;
+            // Convertir en UtilisateurVue
+            var utilisateurVue = ConvertirEnUtilisateurVue(utilisateur, nombreAuteurAnnonce, nombreAnnonceEffectuer, noteMoyenneDesAnnonces ?? 0, annonceEffectuerParMoisMoyenne ?? 0, topTroisSport, urlProfilImage);
+
+            // Retourner l'objet
+            return Ok(utilisateurVue);
+        }
+        private  UtilisateurVue ConvertirEnUtilisateurVue(Utilisateur utilisateur, int nombreAuteurAnnonce, int nombreAnnonceEffectuer, decimal noteMoyenneDesAnnonces, decimal annonceEffectuerParMoisMoyenne, List<string> topTroisSport, string url)
+        {
+            return new UtilisateurVue
+            {
+                UtilisateursId = utilisateur.UtilisateursId,
+                Nom = utilisateur.Nom,
+                Prenom = utilisateur.Prenom,
+                Pseudo = utilisateur.Pseudo,
+                Genre = utilisateur.Genre,
+                Age = utilisateur.Age,
+                Ville = utilisateur.Ville,
+                Description = utilisateur.Description,
+                NombreAuteurAnnonce = nombreAuteurAnnonce,
+                NombreAnnonceEffectuer = nombreAnnonceEffectuer,
+                NoteMoyenneDesAnnonces = noteMoyenneDesAnnonces,
+                AnnonceEffectuerParMoisMoyenne = annonceEffectuerParMoisMoyenne,
+                TopTroisSport = topTroisSport.ToArray(),
+                urlProfilImage = url
+            };
+        }
+
     }
 }

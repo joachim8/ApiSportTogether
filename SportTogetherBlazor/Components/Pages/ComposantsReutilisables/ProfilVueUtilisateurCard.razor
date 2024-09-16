@@ -1,0 +1,89 @@
+﻿@using SportTogetherBlazor.Models
+@inject IHttpClientFactory HttpClientFactory
+
+<Modal @ref="profileModal" title="Profil Utilisateur" IsVerticallyCentered="true">
+    <BodyTemplate>
+        @if (utilisateurVue != null)
+        {
+            <section class="w-100 " style="border-radius: .5rem .5rem 0 0; background-color:#9de2ff;">
+
+                <div class="card" >
+                    <div class="card-body p-4" style="border-radius: 15px;">
+                                <div class="d-flex">
+                                    <div class="flex-shrink-0">
+                                        <img src="@utilisateurVue.urlProfilImage"
+                                             alt="Profile image" class="img-fluid" style="width: 180px; border-radius: 10px;">
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <h5 class="mb-1">@utilisateurVue.Pseudo</h5>
+                                        <p class="mb-2 pb-1">@utilisateurVue.Description</p>
+                                        <div class="d-flex justify-content-start rounded-3 p-2 mb-2 bg-body-tertiary">
+                                            <div>
+                                                <p class="small text-muted mb-1">Nombre d'annonces créées</p>
+                                                <p class="mb-0">@utilisateurVue.NombreAuteurAnnonce</p>
+                                            </div>
+                                            <div class="px-3">
+                                                <p class="small text-muted mb-1">Nombre d'annonces effectuées</p>
+                                                <p class="mb-0">@utilisateurVue.NombreAnnonceEffectuer</p>
+                                            </div>
+                                            <div>
+                                                <p class="small text-muted mb-1">Note moyenne</p>
+                                                <p class="mb-0">@utilisateurVue.NoteMoyenneDesAnnonces.Value.ToString("0.00")</p>
+                                            </div>
+                                        </div>
+                                        <!-- Top 3 Sports Section -->
+                                        <div class="d-flex justify-content-start mb-2" style="padding-right:25px;">
+                                            @if (utilisateurVue.TopTroisSport != null && utilisateurVue.TopTroisSport.Any())
+                                            {
+                                                @foreach (var sport in utilisateurVue.TopTroisSport)
+                                                {
+                                                    <div class="me-2">
+                                                        <div class="d-flex align-items-center justify-content-center bg-light border rounded-circle"
+                                                             style="width: 60px; height: 60px; font-size: 16px; text-align: center;">
+                                                            <span>@sport</span>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+            </section>
+        }
+    </BodyTemplate>
+    <FooterTemplate>
+        <Button Color="ButtonColor.Secondary" @onclick="CloseModal">Fermer</Button>
+    </FooterTemplate>
+</Modal>
+<Button Color="ButtonColor.None" @onclick="() => ShowProfileModal()" TooltipTitle="Profile Auteur" Class="d-flex align-items-center">
+    <Icon Name="IconName.Person" Size="IconSize.x3" class="me-1" Style="color:#34495e"></Icon>
+    <span>@Auteur</span>
+</Button>
+@code {
+    private Modal profileModal = default!;
+    private UtilisateurVue utilisateurVue;
+    [Parameter] public string Auteur { get; set; }
+    [Parameter] public int userId { get; set; }
+    private HttpClient httpClient;
+    /// <summary>
+    /// Initialisation de la page
+    /// </summary>
+    /// <returns></returns>
+    protected override async Task OnInitializedAsync()
+    {
+        httpClient = HttpClientFactory.CreateClient("ApiSportTogetherClient");
+        utilisateurVue = await httpClient.GetFromJsonAsync<UtilisateurVue>($"Utilisateur/UtilisateurVueById/{userId}")!;
+    }
+    public async Task ShowProfileModal()
+    {
+      
+        await profileModal.ShowAsync();
+    }
+
+    private async Task CloseModal()
+    {
+       await profileModal.HideAsync();
+    }
+}

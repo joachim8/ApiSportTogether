@@ -30,6 +30,8 @@ public partial class Annonce
     public string Lieu { get; set; } = null!;
     [JsonPropertyName("DateHeureAnnonce")]
     public DateTime DateHeureAnnonce { get; set; }
+    [JsonPropertyName("NoteAnnonce")]
+    public decimal? NoteAnnonce { get; set; }
     [JsonIgnore]
     [JsonPropertyName("AuteurNavigation")]
     public virtual Utilisateur? AuteurNavigation { get; set; } 

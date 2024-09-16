@@ -36,11 +36,13 @@ public partial class Annonce
     [Required(ErrorMessage = "Le lieu est requis.")]
     [JsonPropertyName("Lieu")]
     public string Lieu { get; set; } = null!;
+
     [Required(ErrorMessage = "La date et l'heure de l'annonce sont requises.")]
     [FutureOrTodayDate(ErrorMessage = "La date doit être aujourd'hui ou dans le futur.")]
-    
     [JsonPropertyName("DateHeureAnnonce")]
     public DateTime DateHeureAnnonce { get; set; }
+    [JsonPropertyName("NoteAnnonce")]
+    public decimal? NoteAnnonce { get; set; }
     [JsonIgnore]
     [JsonPropertyName("AuteurNavigation")]
     public virtual Utilisateur? AuteurNavigation { get; set; }

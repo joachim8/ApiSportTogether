@@ -15,10 +15,7 @@
                 </div>
                 <div class="col-md-8 text-center">
                     <div class="d-flex align-items-center justify-content-center">
-                        <Button Color="ButtonColor.None" Type="ButtonType.Link" Class="d-flex align-items-center">
-                            <Icon Name="IconName.Person"  Size="IconSize.x3" class="me-1" Style="color:#34495e"></Icon>
-                            <span>@annonceVue.Auteur</span>
-                        </Button>
+                        <ProfilVueUtilisateurCard Auteur="@annonceVue.Auteur" userId="@annonceVue.AuteurId"/> 
                     </div>
                     <hr class="my-2" />
                     <div class="d-flex align-items-center justify-content-center">
@@ -84,6 +81,10 @@
         <Button Color="ButtonColor.Danger" @onclick="RemoveParticipation">Confirmer</Button>
     </FooterTemplate>
 </Modal>
+
+
+<!-- ProfileViewModal Component -->
+
 <style>
     .badge {
         font-size: 14px;
@@ -105,6 +106,7 @@
     private Modal addParticipationModal = default!;
     private Modal removeParticipationModal = default!;
 
+    
     /// <summary>
     /// Initialisation de la page
     /// </summary>

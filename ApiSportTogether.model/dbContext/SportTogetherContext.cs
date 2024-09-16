@@ -110,6 +110,7 @@ public partial class SportTogetherContext : DbContext
             entity.Property(e => e.DateHeureAnnonce).HasColumnType("datetime").HasColumnName("date_heure_annonce");
             entity.Property(e => e.SportId).HasColumnName("SportID");
             entity.Property(e => e.Titre).HasMaxLength(255);
+            entity.Property(e => e.NoteAnnonce).HasColumnName("Note_annonce");
             entity.Property(e => e.Ville)
                 .HasMaxLength(50)
                 .HasColumnName("ville");
