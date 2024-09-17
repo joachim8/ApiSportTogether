@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using ApiSportTogether.model.ObjectContext;
+using System.Text.Json.Serialization;
 
 public class UtilisateurVue
 {
@@ -30,6 +31,16 @@ public class UtilisateurVue
     public Array TopTroisSport { get; set; }
     [JsonPropertyName("urlProfilImage")]
     public string? urlProfilImage { get; set; }
+    [JsonPropertyName("NombreEquipier")]
+    public int? NombreEquipier { get; set; }
+    [JsonPropertyName("listCoequipier")]
+    public List<Utilisateur>? listCoequipier { get; set; }  
+    [JsonPropertyName("utilisateur")]
+    public Utilisateur? utilisateur { get; set; }
+
+  
+
+
 
 }
 

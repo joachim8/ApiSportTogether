@@ -13,10 +13,10 @@ public partial class Ami
 
     [JsonPropertyName("DateAjout")]
     public DateTime? DateAjout { get; set; }
-
+    [JsonIgnore]
     [JsonPropertyName("UtilisateurId1Navigation")]
     public virtual Utilisateur? UtilisateurId1Navigation { get; set; }
-
+    [JsonIgnore]
     [JsonPropertyName("UtilisateurId2Navigation")]
     public virtual Utilisateur? UtilisateurId2Navigation { get; set; }
 }

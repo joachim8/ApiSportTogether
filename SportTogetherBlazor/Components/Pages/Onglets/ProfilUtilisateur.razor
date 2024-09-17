@@ -1,5 +1,144 @@
-﻿<h3>ProfilUtilisateur</h3>
+﻿@page "/SportTogether/Profil-utilisateur"
+@using SportTogetherBlazor.Models
+@using System.Net.Http.Json
+@using SportTogetherBlazor.Services
+@inject HttpClient HttpClient
+@inject NavigationManager NavigationManager
+@inject SessionStorageServices session
+@if(utilisateurVue != null)
+{
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <!-- Card contenant les informations de l'utilisateur -->
+                <div class="card shadow-lg w-auto card">
+                    <div class="card-body d-flex text-center">
+                        <!-- Photo de profil à gauche -->
+                        <div class="me-4">
+                            <img src="@utilisateurVue.urlProfilImage" alt="Profile Picture" class="rounded-circle" id="img-profile" />
+                        </div>
+                        <!-- Informations utilisateur à droite -->
+                        <div class="flex-grow-1">
+                            <h4 class="card-title">@utilisateurVue.Pseudo</h4>
+                            <!-- Séparateur -->
+                            <hr class="mb-1 " style="width:50%; margin-left: auto;
+                                margin-right: auto;" />
+                            <p class="card-text">
+                                <strong>Âge:</strong> @utilisateurVue.Age
+                            </p>
+                            <hr class="mb-1 " style="width:50%; margin-left: auto;
+                                margin-right: auto;" />
+                            <p class="card-text">
+                                <strong>Coéquipiers:</strong> @nombreAmis
+                            </p>
+                            <hr class="mb-1 " style="width:50%; margin-left: auto;
+                                margin-right: auto;" />
+                            <p class="card-text">
+                                <strong>Note moyenne des annonces:</strong> @utilisateurVue.NoteMoyenneDesAnnonces / 10
+                            </p>
+                        </div>
+                    </div>
+                    <!-- Description en bas (footer de la card) -->
+                    <div class="card-footer text-center">
+                        <p class="text-muted">@utilisateurVue.Description</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Séparateur -->
+        <hr class="mb-4 mt-4" style="width:50%; margin-left: auto;
+            margin-right: auto;" />
+
+        <!-- Section des onglets -->
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <Tabs EnableFadeEffect="true" NavStyle="NavStyle.Pills" Alignment="Alignment.Center">
+                    <Tab Title="" IsActive="true">
+                        <TitleTemplate>
+                            <Icon Name="IconName.BookmarkCheckFill" /> Publications
+                        </TitleTemplate>
+                        <Content>
+                            <p class="mt-3">Voici les publications de l'utilisateur.</p>
+                        </Content>
+                    </Tab>
+                    <Tab Title="">
+                        <TitleTemplate>
+                            <Icon Name="IconName.Activity" /> Mes stats
+                        </TitleTemplate>
+                        <Content>
+                            <p class="mt-3">Statistiques personnelles de l'utilisateur.</p>
+                        </Content>
+                    </Tab>
+                    <Tab Title="">
+                        <TitleTemplate>
+                            <Icon Name="IconName.Heart" /> Mes préférences
+                        </TitleTemplate>
+                        <Content>
+                            <p class="mt-3">Préférences de l'utilisateur.</p>
+                        </Content>
+                    </Tab>
+                    <Tab Title="">
+                        <TitleTemplate>
+                            <Icon Name="IconName.InfoCircleFill" /> Informations du profil
+                        </TitleTemplate>
+                        <Content>
+                            <p class="mt-3">Options pour gérer le profil utilisateur.</p>
+                        </Content>
+                    </Tab>
+                </Tabs>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    
+}
+
+
+<style>
+    #img-profile {
+        width: 150px;
+        height: 150px;
+        border:solid;
+        border-color: #085f63;
+        
+    }
+</style>
 
 @code {
 
+    private UtilisateurVue? utilisateurVue { get; set; }
+    private Utilisateur utilisateurInfo;
+
+    private int nombreAmis = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Appel API pour récupérer l'utilisateur
+      
+        await LoadUserInfo();
+        utilisateurVue = await HttpClient.GetFromJsonAsync<UtilisateurVue>($"Utilisateur/UtilisateurVueById/{utilisateurInfo.UtilisateursId}");
+
+        if(utilisateurVue == null)
+        {
+            utilisateurVue = await HttpClient.GetFromJsonAsync<UtilisateurVue>($"Utilisateur/UtilisateurVueById/{utilisateurInfo.UtilisateursId}");
+        }
+
+        // Appel API pour récupérer le nombre d'amis
+        nombreAmis = await HttpClient.GetFromJsonAsync<int>($"Ami/GetNombreAmi/{utilisateurInfo.UtilisateursId}");
+    }
+    private async Task LoadUserInfo()
+    {
+        utilisateurInfo = session.GetUserFromSession()!;
+        if (utilisateurInfo == null)
+        {
+            NavigationManager.NavigateTo("/SportTogether/Connexion");
+        }
+        // urlPhotoProfil =  await
+        // Utiliser cette information pour lier aux éléments du HTML ci-dessus
+
+    }
 }

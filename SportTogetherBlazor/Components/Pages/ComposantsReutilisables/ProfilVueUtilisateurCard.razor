@@ -6,9 +6,8 @@
         @if (utilisateurVue != null)
         {
             <section class="w-100 " style="border-radius: .5rem .5rem 0 0; background-color:#9de2ff;">
-
                 <div class="card" >
-                    <div class="card-body p-4" style="border-radius: 15px;">
+                    <div class="card-body" style="border-radius: 15px;">
                                 <div class="d-flex">
                                     <div class="flex-shrink-0">
                                         <img src="@utilisateurVue.urlProfilImage"
@@ -28,7 +27,7 @@
                                             </div>
                                             <div>
                                                 <p class="small text-muted mb-1">Note moyenne</p>
-                                                <p class="mb-0">@utilisateurVue.NoteMoyenneDesAnnonces.Value.ToString("0.00")</p>
+                                                <p class="mb-0">@utilisateurVue.NoteMoyenneDesAnnonces!.Value.ToString("0.00")</p>
                                             </div>
                                         </div>
                                         <!-- Top 3 Sports Section -->
@@ -39,7 +38,7 @@
                                                 {
                                                     <div class="me-2">
                                                         <div class="d-flex align-items-center justify-content-center bg-light border rounded-circle"
-                                                             style="width: 60px; height: 60px; font-size: 16px; text-align: center;">
+                                                             >
                                                             <span>@sport</span>
                                                         </div>
                                                     </div>

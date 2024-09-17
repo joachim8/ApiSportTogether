@@ -233,7 +233,8 @@ namespace ApiSportTogether.Controller
                 NoteMoyenneDesAnnonces = noteMoyenneDesAnnonces,
                 AnnonceEffectuerParMoisMoyenne = annonceEffectuerParMoisMoyenne,
                 TopTroisSport = topTroisSport.ToArray(),
-                urlProfilImage = url
+                urlProfilImage = url,
+                utilisateur = utilisateur
             };
         }
 

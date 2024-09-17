@@ -36,8 +36,8 @@ namespace ApiSportTogether.Controllers
         public ActionResult<ProfileImage> GetProfileImageByUtilisateurId(int UtilisateurId)
         {
             var profileImage = _context.ProfileImages.Where(i => i.UtilisateursId == UtilisateurId && i.Type == "Profil").FirstOrDefault();
-            if(profileImage != null)
-            return Ok(profileImage);
+            if (profileImage != null)
+                return Ok(profileImage);
             else return NotFound("L'image not found.");
         }
 
@@ -154,7 +154,7 @@ namespace ApiSportTogether.Controllers
                     return $"photo_de_profil_{utilisateurId}_{guidPart}";
                 case "photos":
                     return $"photo_utilisateur{utilisateurId}_{guidPart}";
-             
+
                 default:
                     throw new ArgumentException("Invalid image type.");
             }

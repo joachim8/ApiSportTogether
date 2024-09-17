@@ -32,5 +32,10 @@ namespace SportTogetherBlazor.Models
         public List<string> TopTroisSport { get; set; }
         [JsonPropertyName("urlProfilImage")]
         public string? urlProfilImage { get; set; }
+        [JsonPropertyName("listCoequipier")]
+        public List<Utilisateur>? listCoequipier { get; set; }
+        [JsonPropertyName("utilisateur")]
+        public Utilisateur? utilisateur { get; set; }
+
     }
 }

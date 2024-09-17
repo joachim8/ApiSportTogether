@@ -92,5 +92,42 @@ namespace ApiSportTogether.Controller
 
             return NoContent();
         }
+        // GET: ApiSportTogether/Ami/GetNombreAmi/1
+        [HttpGet("GetNombreAmi/{utilisateur_id}")]
+        public ActionResult<int> GetNombreAmi(int utilisateur_id)
+        {
+            if (utilisateur_id == 0) return NotFound(); 
+            int nbrAmis = _context.Amis.Where(a => a.UtilisateurId1 == utilisateur_id || a.UtilisateurId2 == utilisateur_id).Count();
+            return nbrAmis;
+        }
+        // GET: ApiSportTogether/Ami/GetListAmi/1
+        [HttpGet("GetListAmi/{utilisateur_id}")]
+        public ActionResult<IEnumerable<Utilisateur>> GetListAmi(int utilisateur_id)
+        {
+            if (utilisateur_id == 0)
+            {
+                return NotFound();
+            }
+
+            // Récupérer la liste des relations d'amitié impliquant l'utilisateur
+            List<Ami> listAmi = _context.Amis
+                                        .Where(a => a.UtilisateurId1 == utilisateur_id || a.UtilisateurId2 == utilisateur_id)
+                                        .Include(a => a.UtilisateurId1Navigation)
+                                        .Include(a => a.UtilisateurId2Navigation)
+                                        .ToList();
+
+            if (listAmi == null || listAmi.Count == 0)
+            {
+                return NoContent();
+            }
+
+            // Création de la liste des utilisateurs amis
+            List<Utilisateur> listUtilisateur = listAmi.Select(a =>
+                a.UtilisateurId1 == utilisateur_id ? a.UtilisateurId2Navigation : a.UtilisateurId1Navigation
+            ).ToList()!;
+
+            if(listUtilisateur == null || !listUtilisateur.Any()) return NoContent();
+            return Ok(listUtilisateur.ToArray());
+        }
     }
 }

@@ -6,9 +6,10 @@
 @inject IHttpClientFactory ClientFactory
 @inject IJSRuntime JS
 
-<link href="NavMenu.css" rel="stylesheet" />
-<div class="d-flex">
-    <div class="bg-dark position-sticky d-flex flex-column" style="width: 280px; overflow-y: auto;" id="sideMenu">
+
+
+<!-- Normal Menu for larger screens -->
+<div class="d-none d-md-flex bg-dark position-sticky flex-column" style="width: 280px; overflow-y: auto;" id="sideMenu">
     <div class="d-flex flex-column flex-shrink-0 p-3 text-white flex-grow-1">
         <a href="/SportTogether" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
             <img src="images/logo-blanc.png" class="img-fluid align-self-center p-1" style="width:70px; height:70px;" />
@@ -17,13 +18,13 @@
         <hr>
         <ul class="nav nav-pills flex-column mb-auto">
             <li class="nav-item h-auto @(linkClickedStates["Annonces"] ? "clicked-style" : "")" @onclick="@(() => ToggleClick("Annonces"))">
-                <a href="/SportTogether/Annonces" class="nav-link text-white text-center text-capitalize" aria-current="page">
+                <a href="/SportTogether/Annonces" class="nav-link text-white text-center text-capitalize">
                     <Icon Name="IconName.House" Color="IconColor.Light" Size="IconSize.x4" class="p-2" />
                     Annonces
                 </a>
             </li>
             <li class="nav-item h-auto @(linkClickedStates["Messagerie-instantane"] ? "clicked-style" : "")" @onclick="@(() => ToggleClick("Messagerie-instantane"))">
-                <a href="/SportTogether/Messagerie-instantane" class="nav-link text-white text-center text-capitalize" aria-current="page">
+                <a href="/SportTogether/Messagerie-instantane" class="nav-link text-white text-center text-capitalize">
                     <Icon Name="IconName.Messenger" Color="IconColor.Light" Size="IconSize.x4" class="p-2" />
                     Messagerie
                     @if (messageCount)
@@ -31,21 +32,18 @@
                         <span class="ms-3"><Badge Color="BadgeColor.Danger" Placement="BadgePlacement.MiddleRight">@nbrMessages</Badge></span>
                     }
                 </a>
-
             </li>
             <li class="nav-item h-auto @(linkClickedStates["Mes-annonces"] ? "clicked-style" : "")" @onclick="@(() => ToggleClick("Mes-annonces"))">
-                <a href="/SportTogether/Mes-annonces" class="nav-link text-white text-center text-capitalize" aria-current="page">
+                <a href="/SportTogether/Mes-annonces" class="nav-link text-white text-center text-capitalize">
                     <Icon Name="IconName.Calendar2Week" Color="IconColor.Light" Size="IconSize.x4" class="p-2" />
                     Mes annonces
                 </a>
             </li>
         </ul>
 
-        
         <div class="dropdown mt-auto">
-                <hr>
+            <hr>
             <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
-                <!-- Profil utilisateur -->
                 @if (utilisateurInfo != null)
                 {
                     <img src="@urlPhotoProfil" alt="" width="32" height="32" class="rounded-circle me-2">
@@ -57,48 +55,82 @@
                 }
             </a>
             <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
-                <li><a class="dropdown-item" href="/SportTogether/Parametre">Parametre</a></li>
-                <li><a class="dropdown-item" href="/SportTogether/Profile">Profile</a></li>
+                <li><a class="dropdown-item" href="/SportTogether/Parametre">Paramètre</a></li>
+                <li><a class="dropdown-item" href="/SportTogether/Profil-utilisateur">Profil</a></li>
                 <li><a class="dropdown-item" @onclick="Logout">Se déconnecter</a></li>
             </ul>
         </div>
     </div>
 </div>
-</div>
-<!-- Overlay -->
-<div id="overlay" class="overlay" @onclick="CloseMenu"></div>
-<button class="navbar-toggler d-md-none position-sticky top-0" type="button" @onclick="ToggleMenu" aria-controls="sideMenu" aria-expanded="false" aria-label="Toggle navigation">
+
+<!-- Offcanvas for smaller screens -->
+<Offcanvas @ref="offcanvas" Placement="Placement.Start" IsScrollable="true" class="d-md-none" Size="OffcanvasSize.Small" Style="background-color: $bg-dark;">
+    <BodyTemplate>
+        <div class="d-flex flex-column p-3 text-white bg-dark flex-grow-1 h-100">
+            <a href="/SportTogether" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+                <img src="images/logo-blanc.png" class="img-fluid align-self-center p-1" style="width:70px; height:70px;" />
+                <span class="fs-4">SportTogether</span>
+            </a>
+            <hr>
+            <ul class="nav nav-pills flex-column mb-auto">
+                <!-- Links similar to the larger screen version -->
+                <li class="nav-item h-auto @(linkClickedStates["Annonces"] ? "clicked-style" : "")" @onclick="@(() => ToggleClick("Annonces"))">
+                    <a href="/SportTogether/Annonces" class="nav-link text-white text-center text-capitalize">
+                        <Icon Name="IconName.House" Color="IconColor.Light" Size="IconSize.x4" class="p-2" />
+                        Annonces
+                    </a>
+                </li>
+                <li class="nav-item h-auto @(linkClickedStates["Messagerie-instantane"] ? "clicked-style" : "")" @onclick="@(() => ToggleClick("Messagerie-instantane"))">
+                    <a href="/SportTogether/Messagerie-instantane" class="nav-link text-white text-center text-capitalize">
+                        <Icon Name="IconName.Messenger" Color="IconColor.Light" Size="IconSize.x4" class="p-2" />
+                        Messagerie
+                        @if (messageCount)
+                        {
+                            <span class="ms-3"><Badge Color="BadgeColor.Danger" Placement="BadgePlacement.MiddleRight">@nbrMessages</Badge></span>
+                        }
+                    </a>
+                </li>
+                <li class="nav-item h-auto @(linkClickedStates["Mes-annonces"] ? "clicked-style" : "")" @onclick="@(() => ToggleClick("Mes-annonces"))">
+                    <a href="/SportTogether/Mes-annonces" class="nav-link text-white text-center text-capitalize">
+                        <Icon Name="IconName.Calendar2Week" Color="IconColor.Light" Size="IconSize.x4" class="p-2" />
+                        Mes annonces
+                    </a>
+                </li>
+            </ul>
+            <div class="dropdown mt-auto">
+                <hr>
+                <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
+                    @if (utilisateurInfo != null)
+                    {
+                        <img src="@urlPhotoProfil" alt="" width="32" height="32" class="rounded-circle me-2">
+                        <strong>@utilisateurInfo.Pseudo</strong>
+                    }
+                    else
+                    {
+                        <strong>mdo</strong>
+                    }
+                </a>
+                <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
+                    <li><a class="dropdown-item" href="/SportTogether/Parametre">Paramètre</a></li>
+                    <li><a class="dropdown-item" href="/SportTogether/Profil-utilisateur">Profil</a></li>
+                    <li><a class="dropdown-item" @onclick="Logout">Se déconnecter</a></li>
+                </ul>
+            </div>
+        </div>
+    </BodyTemplate>
+</Offcanvas>
+
+<!-- Toggle button for smaller screens -->
+<button class="navbar-toggler d-md-none position-sticky " style="top:0" type="button" @onclick="() => OnShowOffcanvasClick(Placement.Start)">
     <span class="navbar-toggler-icon"><Icon Name="IconName.List" Color="IconColor.Dark" /></span>
 </button>
 
-
-<script>
-    window.toggleMenu = (isMenuVisible) => {
-        console.log('Menu toggled, isVisible:', isMenuVisible);
-        const menu = document.getElementById('sideMenu');
-        const overlay = document.getElementById('overlay');
-        const body = document.querySelector('body');
-
-        if (isMenuVisible) {
-            menu.classList.add('show');
-            body.classList.add('menu-open');
-            
-            overlay.classList.add('show');
-        } else {
-            menu.classList.remove('show');
-            body.classList.remove('menu-open');
-            overlay.classList.remove('show');
-        }
-    };
-</script>
-
-
 @code {
+    private Offcanvas offcanvas = default!;
     private bool isMenuVisible = false;
     private Utilisateur utilisateurInfo;
     private string urlPhotoProfil = string.Empty;
     private Dictionary<string, bool> linkClickedStates = new Dictionary<string, bool>();
-
     bool isClicked = false;
     bool messageCount = false;
     int nbrMessages = 0;
@@ -111,27 +143,23 @@
         linkClickedStates.Add("Parametre", false);
         linkClickedStates.Add("Profile", false);
 
-
         await LoadUserInfo();
-
         await LoadImageUrl();
-        if(utilisateurInfo != null)
+        if (utilisateurInfo != null)
         {
             await GetAllNombreMessageVu();
         }
-      
     }
 
     private async Task LoadUserInfo()
     {
         utilisateurInfo = session.GetUserFromSession()!;
-        if(utilisateurInfo == null){
+        if (utilisateurInfo == null)
+        {
             NavigationManager.NavigateTo("/SportTogether/Connexion");
         }
-        // urlPhotoProfil =  await 
-        // Utiliser cette information pour lier aux éléments du HTML ci-dessus
-
     }
+
     private async Task LoadImageUrl()
     {
         urlPhotoProfil = session.GetImageUrl()!;
@@ -139,55 +167,43 @@
         {
             NavigationManager.NavigateTo("/SportTogether/Connexion");
         }
-
-
     }
+
     private void Logout()
     {
         session.Logout();
         NavigationManager.NavigateTo("/SportTogether/Connexion");
     }
+
     private async Task GetAllNombreMessageVu()
     {
         try
         {
             HttpClient _httpClient = ClientFactory.CreateClient("ApiSportTogetherClient");
             nbrMessages = await _httpClient.GetFromJsonAsync<int>($"VuMessage/GetAllVuMessagesCount/{utilisateurInfo.UtilisateursId}")!;
-            if(nbrMessages != 0)
+            if (nbrMessages != 0)
             {
                 messageCount = true;
             }
         }
         catch (Exception ex)
         {
-           
+            // Handle exception
         }
-
-
-
     }
-    void ToggleClick(string linkKey)
+
+    private void ToggleClick(string linkKey)
     {
-        // Réinitialise tous les états à false
         foreach (var key in linkClickedStates.Keys.ToList())
         {
             linkClickedStates[key] = false;
         }
-
-        // Définit l'état du lien cliqué à true
         linkClickedStates[linkKey] = true;
     }
 
-
-    private async Task ToggleMenu()
+    private async Task OnShowOffcanvasClick(Placement placement)
     {
-        isMenuVisible = !isMenuVisible;
-        await JS.InvokeVoidAsync("toggleMenu", isMenuVisible);
-    }
-
-    private async Task CloseMenu()
-    {
-        isMenuVisible = false;
-        await JS.InvokeVoidAsync("toggleMenu", isMenuVisible);
+        offcanvas.Placement = placement;
+        await offcanvas.ShowAsync();
     }
 }
