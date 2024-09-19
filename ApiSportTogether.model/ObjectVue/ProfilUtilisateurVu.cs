@@ -1,8 +1,13 @@
-﻿using System.Text.Json.Serialization;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 
-namespace SportTogetherBlazor.Models
+namespace ApiSportTogether.model.ObjectVue
 {
-    public class UtilisateurVue
+    public class ProfilUtilisateurVu
     {
         [JsonPropertyName("UtilisateursId")]
         public int UtilisateursId { get; set; }
@@ -29,17 +34,8 @@ namespace SportTogetherBlazor.Models
         [JsonPropertyName("AnnonceEffectuerParMoisMoyenne")]
         public decimal? AnnonceEffectuerParMoisMoyenne { get; set; }
         [JsonPropertyName("TopTroisSport")]
-        public List<string> TopTroisSport { get; set; }
+        public Array TopTroisSport { get; set; }
         [JsonPropertyName("urlProfilImage")]
         public string? urlProfilImage { get; set; }
-        [JsonPropertyName("listCoequipier")]
-        public List<Utilisateur>? listCoequipier { get; set; }
-
-        [JsonPropertyName("ClassementAmis")]
-        public List<ClassementAmi>? ClassementAmis { get; set; }
-        [JsonPropertyName("PourcentageAugmentationAnnonceParticiper")]
-        public decimal? PourcentageAugmentationAnnonceParticiper { get; set; }
-        [JsonPropertyName("PourcentageAugmentationAnnonceAuteur")]
-        public decimal? PourcentageAugmentationAnnonceAuteur { get; set; }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace SportTogetherBlazor.Models
 {
-    public class UtilisateurVue
+    public class ProfilUtilisateurVu
     {
         [JsonPropertyName("UtilisateursId")]
         public int UtilisateursId { get; set; }
@@ -29,17 +29,8 @@ namespace SportTogetherBlazor.Models
         [JsonPropertyName("AnnonceEffectuerParMoisMoyenne")]
         public decimal? AnnonceEffectuerParMoisMoyenne { get; set; }
         [JsonPropertyName("TopTroisSport")]
-        public List<string> TopTroisSport { get; set; }
+        public List<string>? TopTroisSport { get; set; }
         [JsonPropertyName("urlProfilImage")]
         public string? urlProfilImage { get; set; }
-        [JsonPropertyName("listCoequipier")]
-        public List<Utilisateur>? listCoequipier { get; set; }
-
-        [JsonPropertyName("ClassementAmis")]
-        public List<ClassementAmi>? ClassementAmis { get; set; }
-        [JsonPropertyName("PourcentageAugmentationAnnonceParticiper")]
-        public decimal? PourcentageAugmentationAnnonceParticiper { get; set; }
-        [JsonPropertyName("PourcentageAugmentationAnnonceAuteur")]
-        public decimal? PourcentageAugmentationAnnonceAuteur { get; set; }
     }
 }

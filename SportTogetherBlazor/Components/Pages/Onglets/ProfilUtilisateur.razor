@@ -2,12 +2,13 @@
 @using SportTogetherBlazor.Models
 @using System.Net.Http.Json
 @using SportTogetherBlazor.Services
-@inject HttpClient HttpClient
+@using SportTogetherBlazor.Components.Pages.ComposantsReutilisables
+@inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager
 @inject SessionStorageServices session
 @if(utilisateurVue != null)
 {
-    <div class="container mt-5">
+    <div class="container mt-5" style="color:#085f63;">
         <div class="row justify-content-center">
             <div class="col-md-8">
                 <!-- Card contenant les informations de l'utilisateur -->
@@ -19,7 +20,7 @@
                         </div>
                         <!-- Informations utilisateur à droite -->
                         <div class="flex-grow-1">
-                            <h4 class="card-title">@utilisateurVue.Pseudo</h4>
+                            <h4 class="card-title"><strong>@utilisateurVue.Pseudo</strong></h4>
                             <!-- Séparateur -->
                             <hr class="mb-1 " style="width:50%; margin-left: auto;
                                 margin-right: auto;" />
@@ -54,7 +55,7 @@
         <!-- Section des onglets -->
         <div class="row justify-content-center">
             <div class="col-md-8">
-                <Tabs EnableFadeEffect="true" NavStyle="NavStyle.Pills" Alignment="Alignment.Center">
+                <Tabs Class=" justify-content-center" EnableFadeEffect="true" NavStyle="NavStyle.Pills">
                     <Tab Title="" IsActive="true">
                         <TitleTemplate>
                             <Icon Name="IconName.BookmarkCheckFill" /> Publications
@@ -68,7 +69,7 @@
                             <Icon Name="IconName.Activity" /> Mes stats
                         </TitleTemplate>
                         <Content>
-                            <p class="mt-3">Statistiques personnelles de l'utilisateur.</p>
+                            <MesStats utilisateurVue="@utilisateurVue"/>
                         </Content>
                     </Tab>
                     <Tab Title="">
@@ -110,25 +111,62 @@ else
 
 @code {
 
-    private UtilisateurVue? utilisateurVue { get; set; }
+    public UtilisateurVue? utilisateurVue { get; set; } 
     private Utilisateur utilisateurInfo;
+    private HttpClient httpClient;
 
     private int nombreAmis = 0;
 
     protected override async Task OnInitializedAsync()
     {
         // Appel API pour récupérer l'utilisateur
-      
+        httpClient = HttpClientFactory.CreateClient("ApiSportTogetherClient");
         await LoadUserInfo();
-        utilisateurVue = await HttpClient.GetFromJsonAsync<UtilisateurVue>($"Utilisateur/UtilisateurVueById/{utilisateurInfo.UtilisateursId}");
+        await GetUtilisateurVue();
+        // Appel API pour récupérer le nombre d'amis
+        nombreAmis = await httpClient.GetFromJsonAsync<int>($"Ami/GetNombreAmi/{utilisateurInfo.UtilisateursId}");
+    }
 
-        if(utilisateurVue == null)
-        {
-            utilisateurVue = await HttpClient.GetFromJsonAsync<UtilisateurVue>($"Utilisateur/UtilisateurVueById/{utilisateurInfo.UtilisateursId}");
+    private async Task GetUtilisateurVue()
+    {
+        
+            try
+            {
+
+                // Construction de l'URL avec des paramètres sécurisés
+            string requestUri = $"Utilisateur/UtilisateurVueById/{utilisateurInfo.UtilisateursId}/mois/{DateTime.Now.Month}/annee/{DateTime.Now.Year}";
+
+            var response = await httpClient.GetAsync(requestUri);
+            var responseBody = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(responseBody);
+
+                // Vérification du succès de la réponse
+                if (response.IsSuccessStatusCode)
+                {
+                    // Désérialisation des données JSON en UtilisateurVue
+                   utilisateurVue = await response.Content.ReadFromJsonAsync<UtilisateurVue>();
+
+                   
+                }
+                else
+                {
+                    throw new Exception($"Erreur lors de la récupération de l'utilisateur : {response.ReasonPhrase} {response.Content.ToString()}");
+                }
+            }
+            catch (HttpRequestException httpEx)
+            {
+                // Gestion des erreurs liées aux requêtes HTTP
+                Console.WriteLine($"Erreur réseau : {httpEx.Message}");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                // Gestion des autres exceptions
+                Console.WriteLine($"Erreur : {ex.Message}");
+                throw;
+            
         }
 
-        // Appel API pour récupérer le nombre d'amis
-        nombreAmis = await HttpClient.GetFromJsonAsync<int>($"Ami/GetNombreAmi/{utilisateurInfo.UtilisateursId}");
     }
     private async Task LoadUserInfo()
     {

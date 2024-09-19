@@ -140,24 +140,29 @@ namespace ApiSportTogether.Controller
             return NoContent();
         }
 
-        // GET: ApiSportTogether/UtilisateurVueById/5
-        [HttpGet("UtilisateurVueById/{id}")]
-        public ActionResult<UtilisateurVue> GetUtilisateurVueById(int id)
+        
+        // GET: utilisateur/UtilisateurVueById/5/mois/2/annee/1
+        [HttpGet("UtilisateurVueById/{utilisateur_id}/mois/{mois}/annee/{annee}")]
+        public ActionResult<UtilisateurVue> GetUtilisateurVueByIdParMois(int utilisateur_id, int mois, int annee)
         {
-            // Récupérer l'utilisateur depuis la base de données (exemple avec Entity Framework)
-            var utilisateur = _context.Utilisateurs.FirstOrDefault(u => u.UtilisateursId == id);
+            // Récupérer l'utilisateur depuis la base de données
+            var utilisateur = _context.Utilisateurs.FirstOrDefault(u => u.UtilisateursId == utilisateur_id);
 
             if (utilisateur == null)
             {
                 return NotFound();
             }
-
+            decimal? pourcentageAugmentationAnnonce = CalculerPourcentageAugmentation(utilisateur_id);
             // Exemple : Récupérer les données supplémentaires (à ajuster selon ton modèle et tes calculs)
-            int nombreAuteurAnnonce = _context.Annonces.Count(a => a.Auteur == id);
-            int nombreAnnonceEffectuer = _context.Participations.Count(p => p.UtilisateurId == id);
-            List<Annonce>? listAnnonce = _context.Annonces.Where(a => a.Auteur == id).ToList();
+            int nombreAuteurAnnonce = _context.Annonces.Count(a => a.Auteur == utilisateur_id);
+            int nombreAnnonceEffectuer = _context.Participations.Count(p => p.UtilisateurId == utilisateur_id);
+            List<Annonce>? listAnnonce = _context.Annonces.Where(a => a.Auteur == utilisateur_id).ToList();
             List<decimal?> listNoteAnnonce = new();
             decimal? noteMoyenneDesAnnonces = null;
+            var listAmi = GetListAmi(utilisateur_id);
+            Array? listClassementAmi = GetClassementAmisActivitesMois(utilisateur_id,mois, annee);
+            
+
             if (listAnnonce != null)
             {
                 if (listAnnonce.Any())
@@ -167,23 +172,23 @@ namespace ApiSportTogether.Controller
                         listNoteAnnonce.Add(annonce.NoteAnnonce);
                     }
                     decimal noteTotale = 0;
-                     foreach (var a in listNoteAnnonce)
+                    foreach (var a in listNoteAnnonce)
                     {
-                        noteTotale = (decimal)(noteTotale + a)!;  
+                        noteTotale = (decimal)(noteTotale + a)!;
                     }
-                     if(noteTotale > 0)
+                    if (noteTotale > 0)
                     {
                         noteMoyenneDesAnnonces = noteTotale / listAnnonce.Count();
                     }
-                  
+
                 }
             }
-          
-                var premiereParticipationOuAnnonce = _context.Participations
-        .Where(p => p.UtilisateurId == id)
-        .OrderBy(p => p.DateParticipation)
-        .Select(p => p.DateParticipation)
-        .FirstOrDefault();  // Récupérer la première date de participation
+
+                    var premiereParticipationOuAnnonce = _context.Participations
+            .Where(p => p.UtilisateurId == utilisateur_id)
+            .OrderBy(p => p.DateParticipation)
+            .Select(p => p.DateParticipation)
+            .FirstOrDefault();  // Récupérer la première date de participation
 
             if (premiereParticipationOuAnnonce == DateTime.MinValue)
             {
@@ -201,22 +206,29 @@ namespace ApiSportTogether.Controller
 
 
 
-         
+
             // Exemple : Récupérer les sports favoris (adapter selon tes relations)
             List<string> topTroisSport = _context.SportFavoris
-                                        .Where(s => s.UtilisateursId == id)
+                                        .Where(s => s.UtilisateursId == utilisateur_id)
                                         .Take(3)
                                         .Include(sf => sf.Sports)
                                         .Select(s => s.Sports!.Nom)
                                         .ToList()!;
-            string urlProfilImage = _context.ProfileImages.Where(pi => pi.UtilisateursId == id).FirstOrDefault()!.Url!;
+            string urlProfilImage = _context.ProfileImages.Where(pi => pi.UtilisateursId == utilisateur_id).FirstOrDefault()!.Url!;
             // Convertir en UtilisateurVue
-            var utilisateurVue = ConvertirEnUtilisateurVue(utilisateur, nombreAuteurAnnonce, nombreAnnonceEffectuer, noteMoyenneDesAnnonces ?? 0, annonceEffectuerParMoisMoyenne ?? 0, topTroisSport, urlProfilImage);
-
-            // Retourner l'objet
-            return Ok(utilisateurVue);
+            UtilisateurVue utilisateurVue = ConvertirEnUtilisateurVue(utilisateur, nombreAuteurAnnonce, nombreAnnonceEffectuer, noteMoyenneDesAnnonces ?? 0, annonceEffectuerParMoisMoyenne ?? 0, topTroisSport, urlProfilImage, listClassementAmi, pourcentageAugmentationAnnonce);
+            try
+            {
+                // Retourner l'objet
+                return Ok(utilisateurVue);
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(new Exception(ex.Message));
+            }
+            
         }
-        private  UtilisateurVue ConvertirEnUtilisateurVue(Utilisateur utilisateur, int nombreAuteurAnnonce, int nombreAnnonceEffectuer, decimal noteMoyenneDesAnnonces, decimal annonceEffectuerParMoisMoyenne, List<string> topTroisSport, string url)
+        private  UtilisateurVue ConvertirEnUtilisateurVue(Utilisateur utilisateur, int nombreAuteurAnnonce, int nombreAnnonceEffectuer, decimal noteMoyenneDesAnnonces, decimal annonceEffectuerParMoisMoyenne, List<string> topTroisSport, string url, Array? listClassementAmi, decimal? pourcentageAugmentationAnnonce)
         {
             return new UtilisateurVue
             {
@@ -230,13 +242,204 @@ namespace ApiSportTogether.Controller
                 Description = utilisateur.Description,
                 NombreAuteurAnnonce = nombreAuteurAnnonce,
                 NombreAnnonceEffectuer = nombreAnnonceEffectuer,
-                NoteMoyenneDesAnnonces = noteMoyenneDesAnnonces,
+                NoteMoyenneDesAnnonces = Math.Round(noteMoyenneDesAnnonces, 2),
                 AnnonceEffectuerParMoisMoyenne = annonceEffectuerParMoisMoyenne,
                 TopTroisSport = topTroisSport.ToArray(),
                 urlProfilImage = url,
-                utilisateur = utilisateur
+                ClassementAmis = listClassementAmi,
+                PourcentageAugmentationAnnonceAuteur = pourcentageAugmentationAnnonce,
+              
+
             };
         }
+        private decimal? CalculerPourcentageAugmentation(int utilisateurId)
+        {
+            // Calcul de l'augmentation des annonces entre le mois précédent et ce mois
+            int annoncesMoisActuel = 0;
+            int annoncesMoisPrecedent = 0;
+            annoncesMoisActuel = _context.Annonces
+                .Where(a => a.Auteur == utilisateurId && a.DateHeureAnnonce.Month == DateTime.Now.Month)
+                .Count();
+
+           annoncesMoisPrecedent = _context.Annonces
+                .Where(a => a.Auteur == utilisateurId && a.DateHeureAnnonce.Month == DateTime.Now.AddMonths(-1).Month)
+                .Count();
+            if(annoncesMoisPrecedent >0 )
+           return ((annoncesMoisActuel - annoncesMoisPrecedent) / (decimal)annoncesMoisPrecedent) * 100;
+            return null;
+           
+        }
+        private IEnumerable<Utilisateur>? GetListAmi(int utilisateur_id)
+        {
+            if (utilisateur_id == 0) return null;
+
+            // Récupérer la liste d'amis depuis la table Amis
+            List<Ami> listAmi = _context.Amis
+                                        .Where(a => a.UtilisateurId1 == utilisateur_id || a.UtilisateurId2 == utilisateur_id)
+                                        .Include(a => a.UtilisateurId1Navigation).ThenInclude(u => u.ProfileImages)
+                                        .Include(a => a.UtilisateurId2Navigation).ThenInclude(u => u.ProfileImages)
+                                        .ToList();
+
+            if (listAmi == null || listAmi.Count == 0) return null;
+
+            // Construire la liste des amis (sélectionner l'ami en fonction de l'utilisateur)
+            List<Utilisateur> listUtilisateur = listAmi.Select(a =>
+                a.UtilisateurId1 == utilisateur_id ? a.UtilisateurId2Navigation : a.UtilisateurId1Navigation
+            ).ToList()!;
+
+            if (!listUtilisateur.Any()) return null;
+            return listUtilisateur.ToArray();
+        }
+        public Array? GetClassementAmisActivitesMois(int utilisateurId, int mois, int annee)
+        {
+            // Récupérer la liste des amis
+            var amis = GetListAmi(utilisateurId)?.ToList() ?? new List<Utilisateur>();
+
+            // Ajouter l'utilisateur en cours dans la liste des amis
+            var utilisateur = _context.Utilisateurs.FirstOrDefault(u => u.UtilisateursId == utilisateurId);
+            if (utilisateur != null)
+            {
+                amis.Add(utilisateur);
+            }
+
+            if (!amis.Any())
+            {
+                return null;
+            }
+
+            // Classement basé sur le nombre d'activités durant le mois sélectionné
+            var classementAmis = amis.Select(ami => new
+            {
+                Ami = ami,
+                NombreActivites = _context.Participations
+                    .Where(p => p.UtilisateurId == ami.UtilisateursId &&
+                                p.DateParticipation.Value.Month == mois &&
+                                p.DateParticipation.Value.Year == annee)
+                    .Count() +
+                    _context.Annonces
+                    .Where(a => a.Auteur == ami.UtilisateursId &&
+                                a.DateHeureAnnonce.Month == mois &&
+                                a.DateHeureAnnonce.Year == annee)
+                    .Count()
+            })
+            .OrderByDescending(x => x.NombreActivites)
+            .Select((x, index) => new ClassementAmi
+            {
+                Pseudo = x.Ami.Pseudo,
+                UrlProfilImage = x.Ami.ProfileImages.FirstOrDefault()?.Url,
+                Classement = index + 1,
+                NombreActivites = x.NombreActivites
+            })
+            .Take(10)
+            .ToList();
+
+            if (!classementAmis.Any())
+            {
+                return null;
+            }
+
+            return classementAmis.OrderByDescending(ca => ca.NombreActivites).ToArray();
+        }
+
+
+        // GET: utilisateur/GetProfilUtilisateurByIdParMois/5
+        [HttpGet("GetProfilUtilisateurByIdParMois/{id}")]
+        public ActionResult<ProfilUtilisateurVu> GetProfilUtilisateurByIdParMois(int id)
+        {
+            // Récupérer l'utilisateur depuis la base de données
+            var utilisateur = _context.Utilisateurs.FirstOrDefault(u => u.UtilisateursId == id);
+
+            if (utilisateur == null)
+            {
+                return NotFound();
+            }
+            decimal? pourcentageAugmentationAnnonce = CalculerPourcentageAugmentation(id);
+            // Exemple : Récupérer les données supplémentaires (à ajuster selon ton modèle et tes calculs)
+            int nombreAuteurAnnonce = _context.Annonces.Count(a => a.Auteur == id);
+            int nombreAnnonceEffectuer = _context.Participations.Count(p => p.UtilisateurId == id);
+            List<Annonce>? listAnnonce = _context.Annonces.Where(a => a.Auteur == id).ToList();
+            List<decimal?> listNoteAnnonce = new();
+            decimal? noteMoyenneDesAnnonces = null;
+            var listAmi = GetListAmi(id);
+
+
+            if (listAnnonce != null)
+            {
+                if (listAnnonce.Any())
+                {
+                    foreach (var annonce in listAnnonce)
+                    {
+                        listNoteAnnonce.Add(annonce.NoteAnnonce);
+                    }
+                    decimal noteTotale = 0;
+                    foreach (var a in listNoteAnnonce)
+                    {
+                        noteTotale = (decimal)(noteTotale + a)!;
+                    }
+                    if (noteTotale > 0)
+                    {
+                        noteMoyenneDesAnnonces = noteTotale / listAnnonce.Count();
+                    }
+
+                }
+            }
+
+            var premiereParticipationOuAnnonce = _context.Participations
+    .Where(p => p.UtilisateurId == id)
+    .OrderBy(p => p.DateParticipation)
+    .Select(p => p.DateParticipation)
+    .FirstOrDefault();  // Récupérer la première date de participation
+
+            if (premiereParticipationOuAnnonce == DateTime.MinValue)
+            {
+                // Si aucune participation trouvée, on prend la date courante pour éviter une division par zéro
+                premiereParticipationOuAnnonce = DateTime.Now;
+            }
+
+            decimal moisDepasses = ((DateTime.Now - premiereParticipationOuAnnonce).Value.Days / 30.0m);
+            if (moisDepasses <= 0)
+            {
+                moisDepasses = 1;  // Pour éviter une division par 0, on force au moins 1 mois
+            }
+
+            decimal? annonceEffectuerParMoisMoyenne = nombreAnnonceEffectuer / moisDepasses;
+
+
+
+
+            // Exemple : Récupérer les sports favoris (adapter selon tes relations)
+            List<string> topTroisSport = _context.SportFavoris
+                                        .Where(s => s.UtilisateursId == id)
+                                        .Take(3)
+                                        .Include(sf => sf.Sports)
+                                        .Select(s => s.Sports!.Nom)
+                                        .ToList()!;
+            string urlProfilImage = _context.ProfileImages.Where(pi => pi.UtilisateursId == id).FirstOrDefault()!.Url!;
+            // Convertir en UtilisateurVue
+            ProfilUtilisateurVu profilUtilisateurVu = new()
+            {
+                UtilisateursId = id,
+                urlProfilImage = urlProfilImage,
+                Age = utilisateur.Age,
+                Description = utilisateur.Description,
+                Genre = utilisateur.Genre,
+                Nom = utilisateur.Nom,
+                Pseudo = utilisateur.Pseudo,
+                Prenom = utilisateur.Prenom,
+                Ville = utilisateur.Ville,
+                AnnonceEffectuerParMoisMoyenne = annonceEffectuerParMoisMoyenne,
+                NombreAnnonceEffectuer = nombreAnnonceEffectuer,
+                NombreAuteurAnnonce = nombreAuteurAnnonce,
+                NoteMoyenneDesAnnonces = noteMoyenneDesAnnonces,
+                TopTroisSport = topTroisSport.ToArray()
+                
+            };
+
+            // Retourner l'objet
+            return Ok(profilUtilisateurVu);
+        }
+
+
 
     }
 }

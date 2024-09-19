@@ -1,45 +1,45 @@
-﻿@using SportTogetherBlazor.Models
+﻿ @using SportTogetherBlazor.Models
 @inject IHttpClientFactory HttpClientFactory
 
 <Modal @ref="profileModal" title="Profil Utilisateur" IsVerticallyCentered="true">
     <BodyTemplate>
-        @if (utilisateurVue != null)
+        @if (profilUtilisateurVue != null)
         {
             <section class="w-100 " style="border-radius: .5rem .5rem 0 0; background-color:#9de2ff;">
-                <div class="card" >
+                <div class="card w-100" >
                     <div class="card-body" style="border-radius: 15px;">
                                 <div class="d-flex">
                                     <div class="flex-shrink-0">
-                                        <img src="@utilisateurVue.urlProfilImage"
+                                        <img src="@profilUtilisateurVue.urlProfilImage"
                                              alt="Profile image" class="img-fluid" style="width: 180px; border-radius: 10px;">
                                     </div>
                                     <div class="flex-grow-1 ms-3">
-                                        <h5 class="mb-1">@utilisateurVue.Pseudo</h5>
-                                        <p class="mb-2 pb-1">@utilisateurVue.Description</p>
+                                        <h5 class="mb-1">@profilUtilisateurVue.Pseudo</h5>
+                                        <p class="mb-2 pb-1">@profilUtilisateurVue.Description</p>
                                         <div class="d-flex justify-content-start rounded-3 p-2 mb-2 bg-body-tertiary">
                                             <div>
                                                 <p class="small text-muted mb-1">Nombre d'annonces créées</p>
-                                                <p class="mb-0">@utilisateurVue.NombreAuteurAnnonce</p>
+                                                <p class="mb-0">@profilUtilisateurVue.NombreAuteurAnnonce</p>
                                             </div>
                                             <div class="px-3">
                                                 <p class="small text-muted mb-1">Nombre d'annonces effectuées</p>
-                                                <p class="mb-0">@utilisateurVue.NombreAnnonceEffectuer</p>
+                                                <p class="mb-0">@profilUtilisateurVue.NombreAnnonceEffectuer</p>
                                             </div>
                                             <div>
                                                 <p class="small text-muted mb-1">Note moyenne</p>
-                                                <p class="mb-0">@utilisateurVue.NoteMoyenneDesAnnonces!.Value.ToString("0.00")</p>
+                                                <p class="mb-0">@profilUtilisateurVue.NoteMoyenneDesAnnonces!.Value.ToString("0.00")</p>
                                             </div>
                                         </div>
                                         <!-- Top 3 Sports Section -->
                                         <div class="d-flex justify-content-start mb-2" style="padding-right:25px;">
-                                            @if (utilisateurVue.TopTroisSport != null && utilisateurVue.TopTroisSport.Any())
+                                            @if (profilUtilisateurVue.TopTroisSport != null && profilUtilisateurVue.TopTroisSport.Any())
                                             {
-                                                @foreach (var sport in utilisateurVue.TopTroisSport)
+                                                @foreach (var sport in profilUtilisateurVue.TopTroisSport)
                                                 {
                                                     <div class="me-2">
-                                                        <div class="d-flex align-items-center justify-content-center bg-light border rounded-circle"
-                                                             >
-                                                            <span>@sport</span>
+                                                        <div class="d-flex align-items-start bg-light border rounded-circle w-100 h-100">
+                                                            <Icon Name="IconName.Star" Color="IconColor.Success" Class="m-1"></Icon> 
+                                                            @sport
                                                         </div>
                                                     </div>
                                                 }
@@ -62,7 +62,7 @@
 </Button>
 @code {
     private Modal profileModal = default!;
-    private UtilisateurVue utilisateurVue;
+    private ProfilUtilisateurVu profilUtilisateurVue;
     [Parameter] public string Auteur { get; set; }
     [Parameter] public int userId { get; set; }
     private HttpClient httpClient;
@@ -73,7 +73,7 @@
     protected override async Task OnInitializedAsync()
     {
         httpClient = HttpClientFactory.CreateClient("ApiSportTogetherClient");
-        utilisateurVue = await httpClient.GetFromJsonAsync<UtilisateurVue>($"Utilisateur/UtilisateurVueById/{userId}")!;
+        profilUtilisateurVue = await httpClient.GetFromJsonAsync<ProfilUtilisateurVu>($"Utilisateur/GetProfilUtilisateurByIdParMois/{userId}")!;
     }
     public async Task ShowProfileModal()
     {
@@ -86,3 +86,4 @@
        await profileModal.HideAsync();
     }
 }
+ 

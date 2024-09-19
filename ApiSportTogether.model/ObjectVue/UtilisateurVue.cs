@@ -1,4 +1,5 @@
 ﻿using ApiSportTogether.model.ObjectContext;
+using ApiSportTogether.model.ObjectVue;
 using System.Text.Json.Serialization;
 
 public class UtilisateurVue
@@ -35,12 +36,12 @@ public class UtilisateurVue
     public int? NombreEquipier { get; set; }
     [JsonPropertyName("listCoequipier")]
     public List<Utilisateur>? listCoequipier { get; set; }  
-    [JsonPropertyName("utilisateur")]
-    public Utilisateur? utilisateur { get; set; }
 
-  
-
-
-
+    [JsonPropertyName("ClassementAmis")]
+    public Array? ClassementAmis { get; set; }
+    [JsonPropertyName("PourcentageAugmentationAnnonceParticiper")]
+    public decimal? PourcentageAugmentationAnnonceParticiper { get; set; }
+    [JsonPropertyName("PourcentageAugmentationAnnonceAuteur")]
+    public decimal? PourcentageAugmentationAnnonceAuteur { get; set; }
 }
 
