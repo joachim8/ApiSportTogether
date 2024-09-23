@@ -127,7 +127,7 @@
     }
     private async Task ChargerStats()
     {
-        var result = await Http.GetFromJsonAsync<UtilisateurVue>($"utilisateur/UtilisateurVueById/{utilisateurVue.UtilisateursId}/mois/{filtre.Mois}/annee/{DateTime.Now.Year}");
+        var result = await Http.GetFromJsonAsync<UtilisateurVue>($"utilisateur/GetUtilisateurVueByIdParMois/{utilisateurVue.UtilisateursId}/mois/{filtre.Mois}/annee/{DateTime.Now.Year}");
 
         if (result != null)
         {

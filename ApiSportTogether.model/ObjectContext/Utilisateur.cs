@@ -36,7 +36,7 @@ public partial class Utilisateur
     [JsonIgnore]
     [JsonPropertyName("Annonces")]
     public virtual ICollection<Annonce> Annonces { get; set; } = new List<Annonce>();
-
+    [JsonIgnore]
     [JsonPropertyName("ProfileImages")]
     public virtual ICollection<ProfileImage> ProfileImages { get; set; } = new List<ProfileImage>();
     [JsonIgnore]
@@ -57,4 +57,7 @@ public partial class Utilisateur
     [JsonIgnore]
     [JsonPropertyName("Messages")]
     public virtual ICollection<Message> Messages { get; set; } = new List<Message>();
+    [JsonIgnore]
+    [JsonPropertyName("PublicationCommentaires")]
+    public virtual ICollection<PublicationCommentaire> PublicationCommentaires { get; set; } = new List<PublicationCommentaire>();
 }

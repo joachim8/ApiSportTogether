@@ -36,19 +36,18 @@ public partial class Utilisateur
     [JsonIgnore]
     [JsonPropertyName("Annonces")]
     public virtual ICollection<Annonce> Annonces { get; set; } = new List<Annonce>();
-    [JsonIgnore]
+
     [JsonPropertyName("ProfileImages")]
     public virtual ICollection<ProfileImage> ProfileImages { get; set; } = new List<ProfileImage>();
+    [JsonIgnore]
+    [JsonPropertyName("Groupes")]
+    public virtual ICollection<Groupe> Groupes { get; set; } = new List<Groupe>();
     [JsonIgnore]
     [JsonPropertyName("VuMessages")]
     public virtual ICollection<VuMessage> VuMessages { get; set; } = new List<VuMessage>();
     [JsonIgnore]
     [JsonPropertyName("MembreGroupes")]
     public virtual ICollection<MembreGroupe> MembreGroupes { get; set; } = new List<MembreGroupe>();
-    [JsonIgnore]
-    [JsonPropertyName("Groupes")]
-    public virtual ICollection<Groupe> Groupes { get; set; } = new List<Groupe>();
-
     [JsonIgnore]
     [JsonPropertyName("Publications")]
     public virtual ICollection<Publication> Publications { get; set; } = new List<Publication>();
@@ -58,5 +57,8 @@ public partial class Utilisateur
     [JsonIgnore]
     [JsonPropertyName("Messages")]
     public virtual ICollection<Message> Messages { get; set; } = new List<Message>();
+    [JsonIgnore]
+    [JsonPropertyName("PublicationCommentaires")]
+    public virtual ICollection<PublicationCommentaire> PublicationCommentaires { get; set; } = new List<PublicationCommentaire>();
 
 }

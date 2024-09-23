@@ -1,0 +1,117 @@
+﻿@inject IHttpClientFactory HttpClientFactory
+@using SportTogetherBlazor.Models
+@code {
+    [Parameter] public int PublicationId { get; set; }
+    private PublicationVue? publicationVue = null;
+    private bool isLoading = true;
+    private bool hasError = false;
+    private HttpClient httpClient;
+    private string error;
+    protected override async Task OnInitializedAsync()
+    {
+        httpClient = HttpClientFactory.CreateClient("ApiSportTogetherClient");
+        try
+        {
+            var response = await httpClient.GetAsync($"Publication/GetPublicationVueById/{PublicationId}");
+            if (response.IsSuccessStatusCode)
+            {
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                publicationVue = await response.Content.ReadFromJsonAsync<PublicationVue?>();
+                
+            }
+            else
+            {
+                error = response.Content.ToString();
+                Console.Write(response.Content.ToString());
+            }
+        }
+        catch (Exception ex)
+        {
+            hasError = true;
+           
+            Console.Write(ex.Message);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+}
+
+@if (hasError || publicationVue == null)
+{
+    <p class="text-danger">Erreur lors du chargement de la publication. Veuillez réessayer plus tard. @error</p>
+}
+else
+{
+    <div class="publication border rounded p-3 mb-3 shadow-sm">
+        <div class="user-info mb-3 d-flex align-items-center">
+            <img src="@publicationVue.ImageUtilisateurUrl" alt="Image de profil" class="user-image rounded-circle me-2" width="50" />
+            <span class="fw-bold">@publicationVue.PseudoUtilisateur</span>
+        </div>
+
+        <div class="content mb-3">
+            <p class="text-muted">@publicationVue.Contenu</p>
+            @if (publicationVue.MediaUrls != null && publicationVue.MediaUrls.Count > 0)
+            {
+                <div class="media">
+                    @if (publicationVue.MediaUrls.Count() == 1)
+                    {
+                        <img src="@publicationVue.MediaUrls[0]" alt="Media" class="img-fluid rounded" />
+                    }
+                    else
+                    {
+                        <div id="mediaCarousel" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-inner">
+                                @for (int i = 0; i < publicationVue.MediaUrls.Count; i++)
+                                {
+                                    <div class="carousel-item @(i == 0 ? "active" : "")">
+                                        <img src="@publicationVue.MediaUrls[i]" alt="Media" class="d-block w-100 rounded" />
+                                    </div>
+                                }
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#mediaCarousel" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Précédent</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#mediaCarousel" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Suivant</span>
+                            </button>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <div class="encouragements mb-3">
+            <span class="fw-bold">@publicationVue.NombreEncouragements</span> 💪
+        </div>
+
+        <div class="comments">
+            @if (publicationVue.Commentaires != null && publicationVue.Commentaires.Count > 0)
+            {
+                <h5>Commentaires</h5>
+                <ul class="list-unstyled">
+                    @foreach (var commentaire in publicationVue.Commentaires)
+                    {
+                        <li class="border-bottom mb-2 pb-2">
+                            <div class="comment-user d-flex align-items-center">
+                                <img src="@commentaire.ImageUtilisateurUrl" alt="Image de profil" class="user-image rounded-circle me-2" width="40" />
+                                <span class="fw-bold">@commentaire.PseudoUtilisateur</span>
+                            </div>
+                            <p class="text-muted">@commentaire.Contenu</p>
+                            <span class="text-secondary">@commentaire.DateCommentaire.ToShortDateString()</span>
+                            <span class="fw-bold">@commentaire.NombreEncouragementCommentaire</span> 💪
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p>Aucun commentaire pour cette publication.</p>
+            }
+        </div>
+    </div>
+}

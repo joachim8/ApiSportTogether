@@ -1,0 +1,171 @@
+﻿@using System.Net.Http.Headers
+@inject HttpClient Http
+@using SportTogetherBlazor.Models
+
+
+<div class="card" style="background-color: #f8f9fa;">
+    <div class="card-body">
+        <h3 class="text-center">Ajouter une publication</h3>
+
+        <EditForm Model="publicationRequest" OnValidSubmit="SubmitPublicationAsync" class="d-flex align-items-center gap-2">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <!-- Zone de texte pour le contenu de la publication -->
+            <div class="form-group mb-0 flex-grow-1">
+                <InputTextArea id="contenu" @bind-Value="publicationRequest.Publication.Contenu" class="form-control" placeholder="Exprimez-vous ici..." />
+            </div>
+
+            <!-- InputFile sous forme d'icône trombone -->
+            <div class="form-group mb-0 position-relative">
+                <Button Type="ButtonType.Button" Color="ButtonColor.Secondary" TooltipTitle="Ajouter une image ou une vidéo.">
+                    <Icon Name="IconName.Paperclip" Color="IconColor.Light"></Icon> <!-- Icône trombone -->
+                    <InputFile OnChange="OnInputFileChange" multiple style="opacity: 0; position: absolute; left: 0; top: 0; width: 100%; height: 100%;" />
+                </Button>
+            </div>
+
+            <!-- Bouton pour soumettre la publication -->
+            <div class="form-group mb-0">
+                <Button Type="ButtonType.Submit" Color="ButtonColor.Primary" TooltipTitle="Publier">
+                    <Icon Name="IconName.Airplane" Color="IconColor.Light"></Icon>
+                </Button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+
+<!-- Affichage des fichiers sélectionnés en italique et petit -->
+@if (uploadedFiles.Any())
+{
+    <div class="mt-2" style="font-size: small; font-style: italic;">
+        <p>@($"{uploadedFiles.Count} fichier(s) sélectionné(s)")</p>
+        <ul class="list-unstyled">
+            @foreach (var file in uploadedFiles)
+            {
+                <li>@file.Name</li>
+            }
+        </ul>
+    </div>
+}
+
+
+@code {
+    [Parameter] public int UtilisateurId { get; set; }
+    private PublicationAjoutVue publicationRequest = new PublicationAjoutVue();
+    private List<IBrowserFile> uploadedFiles = new List<IBrowserFile>();
+    private bool isSubmitting = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        publicationRequest.Publication = new();
+    }
+
+    // Fonction pour uploader les fichiers et récupérer les URLs
+    private async Task<List<string>> UploadFilesAsync()
+    {
+        List<string> fileUrls = new List<string>();
+
+        if (uploadedFiles.Count == 0)
+        {
+            return fileUrls;
+        }
+
+        var content = new MultipartFormDataContent();
+
+        foreach (var file in uploadedFiles)
+        {
+            var fileContent = new StreamContent(file.OpenReadStream(10 * 1024 * 1024)); // Limite à 10 MB par fichier
+            fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
+            content.Add(fileContent, "Files", file.Name);
+        }
+
+        // Ajouter le type de média à la requête (ici "image" ou "video")
+        content.Add(new StringContent("image"), "MediaType"); // ou "video" selon le besoin
+
+        // Envoyer la requête POST à l'API d'upload
+        var response = await Http.PostAsync("http://localhost:5400/ApiImageSportTogether/Images/upload", content);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var result = await response.Content.ReadFromJsonAsync<List<string>>();
+            if (result != null)
+            {
+                fileUrls = result;
+            }
+        }
+        else
+        {
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Erreur lors de l'upload des fichiers: {errorMessage}");
+        }
+
+        return fileUrls;
+    }
+
+    // Fonction pour soumettre la publication
+    private async Task SubmitPublicationAsync()
+    {
+        isSubmitting = true;
+
+        try
+        {
+            // Uploader les fichiers et récupérer les URLs
+            var uploadedUrls = await UploadFilesAsync();
+
+            // Créer l'objet PublicationAjoutVue
+            var publicationAjoutVue = new PublicationAjoutVue
+                {
+                    Publication = new Publication
+                    {
+                        Contenu = publicationRequest.Publication.Contenu,
+                        UtilisateurId = UtilisateurId,
+                        DatePublication = DateTime.Now,
+
+                    },
+                    MediaUrls = uploadedUrls
+                };
+
+            // Envoyer la publication avec les URLs des médias à l'API
+            var response = await Http.PostAsJsonAsync("Publication/AjouterPublicationAvecMedias", publicationAjoutVue);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Réinitialiser le formulaire après succès
+                publicationRequest = new PublicationAjoutVue();
+                uploadedFiles.Clear();
+                await response.Content.ReadFromJsonAsync<Publication>();
+            }
+            else
+            {
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Erreur lors de la soumission de la publication: {errorMessage}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur: {ex.Message}");
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    // Fonction pour gérer l'upload des fichiers
+    private void OnInputFileChange(InputFileChangeEventArgs e)
+    {
+        uploadedFiles.Clear(); // Réinitialiser les fichiers précédemment uploadés
+        foreach (var file in e.GetMultipleFiles())
+        {
+            uploadedFiles.Add(file);
+        }
+    }
+
+    // Modèle de réponse pour l'upload
+    public class UploadResponse
+    {
+        public List<string>? UploadedFiles { get; set; }
+    }
+}
+

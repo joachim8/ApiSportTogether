@@ -140,6 +140,86 @@
                         </div>
  
             </Content>
+               
+        
+        </Tab>
+        <Tab Title="">
+            <TitleTemplate>
+                <Icon Name="IconName.Book" /> Historiques
+            </TitleTemplate>
+
+            <Content>
+                     <div class="table-responsive mt-2" style="background-color: aliceblue">
+                            <table class="table table-hover align-middle h-100 text-center">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>
+                                            Titre
+                                            <span>
+                                                <Button Color="ButtonColor.None" @onclick="() => SortByTitle(typeAuteur)">
+                                                    <Icon Name="IconName.SortAlphaDown" />
+                                                </Button>
+                                            </span>
+                                        </th>
+                                        <td>Auteur</td>
+                                        <th>Sport</th>
+                                        <th>Date</th>
+                                        <th>Lieu</th>
+                                        <th>Description</th>
+                                        <th>Genre attendu</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                            @if (historiqueAnnonce != null)
+                                    {
+                                if (historiqueAnnonce.Any())
+                                        {
+                                            @foreach (var annonce in historiqueAnnonce)
+                                            {
+                                                <tr>
+                                                    <td>@annonce.Titre</td>
+                                                    <td>@annonce.Auteur</td>
+                                                    <td>@annonce.SportName</td>
+                                                    <td>Le @annonce.DateHeureAnnonce.ToString("dd/MM/yyyy") à @annonce.DateHeureAnnonce.ToString("HH:mm")</td>
+                                                    <td>@annonce.Lieu</td>
+                                                    <td>@annonce.Description</td>
+                                                    <th>@annonce.GenreAttendu</th>
+                                                    @if(annonce.AuteurId != utilisateurID)
+                                                    {
+                                                        <td>
+                                                            <Dropdown Color="DropdownColor.Secondary">
+                                                                <DropdownToggleButton>Action</DropdownToggleButton>
+                                                                <DropdownMenu>
+                                                                    <DropdownItem Type="ButtonType.Button" @onclick="() => SignalerAnnonce(annonce.AnnoncesId)">
+                                                                        Signaler
+                                                                    </DropdownItem>
+                                                                    <DropdownItem Type="ButtonType.Button" @onclick="() => AjouterNoteAnnonce(annonce.AnnoncesId)">
+                                                                        Ajouter une note
+                                                                    </DropdownItem>
+                                                                </DropdownMenu>
+                                                            </Dropdown>
+                                                        </td>
+                                                    }
+                                                    else
+                                                    {
+                                                        <td></td>
+                                                    }
+
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td colspan="7">Aucune annonce trouvée. Veuillez en créer des nouvelles.</td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+            </Content>
         </Tab>
     </Tabs>
    
@@ -214,6 +294,7 @@
     #region "Variable"
     private List<AnnonceVue> annoncesAuteur;
     private List<AnnonceVue> annoncesParticipant;
+    private List<AnnonceVue> historiqueAnnonce;
     private int utilisateurID;
     private Modal addParticipationModal = default!;
     private Modal removeParticipationModal = default!;
@@ -262,6 +343,15 @@
             // Par exemple, loguer l'erreur ou montrer un message à l'utilisateur
         }
 
+        try
+        {
+            historiqueAnnonce = await GetAnnoncesHistoriqueAsync(utilisateurID);
+        }
+        catch (Exception ex)
+        {
+            // Gérer les exceptions spécifiques si besoin
+            // Par exemple, loguer l'erreur ou montrer un message à l'utilisateur
+        }
     }
     #endregion
     #region "GetAnnonces"
@@ -282,6 +372,19 @@
     public async Task<List<AnnonceVue>> GetAnnoncesParticipantAsync(int utilisateurID)
     {
         var response = await Http.GetAsync($"/annonces/participant/{utilisateurID}");
+        if (response.IsSuccessStatusCode)
+        {
+            return await response.Content.ReadFromJsonAsync<List<AnnonceVue>>() ?? new List<AnnonceVue>();
+        }
+        else
+        {
+            await HandleErrorResponse(response);
+            return new List<AnnonceVue>(); // Ou vous pouvez lancer une exception personnalisée
+        }
+    }
+    public async Task<List<AnnonceVue>> GetAnnoncesHistoriqueAsync(int utilisateurID)
+    {
+        var response = await Http.GetAsync($"/annonces/historique/{utilisateurID}");
         if (response.IsSuccessStatusCode)
         {
             return await response.Content.ReadFromJsonAsync<List<AnnonceVue>>() ?? new List<AnnonceVue>();
@@ -341,6 +444,14 @@
             var errorMessage = await response.Content.ReadAsStringAsync();
             ToastService.Notify(new(ToastType.Danger, $"Erreur lors de la suppression de votre annonce : {errorMessage}"));
         }
+    }
+    private async Task SignalerAnnonce(int annonceId)
+    {
+        
+    }
+    private async Task AjouterNoteAnnonce(int annonceId)
+    {
+        
     }
     #endregion
     #region "ModificationAnnonce"

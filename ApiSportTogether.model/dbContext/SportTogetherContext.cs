@@ -30,6 +30,7 @@ public partial class SportTogetherContext : DbContext
     public virtual DbSet<Participation> Participations { get; set; }
 
     public virtual DbSet<Publication> Publications { get; set; }
+    public virtual DbSet<PublicationCommentaire> PublicationCommentaires { get; set; }
 
     public virtual DbSet<Sport> Sports { get; set; }
 
@@ -236,12 +237,45 @@ public partial class SportTogetherContext : DbContext
             entity.Property(e => e.Contenu).HasColumnType("text");
 
             entity.Property(e => e.UtilisateurId).HasColumnName("UtilisateurID");
+            entity.Property(e => e.NombreEncouragement).HasColumnName("nombre_encouragement");
 
-         
+            entity.Property(e => e.DatePublication).HasColumnName("Date_publication");
 
             entity.HasOne(d => d.Utilisateur).WithMany(p => p.Publications)
                 .HasForeignKey(d => d.UtilisateurId)
                 .HasConstraintName("fk_publications_UtilisateurID");
+        });
+        modelBuilder.Entity<PublicationCommentaire>(entity =>
+        {
+            entity.HasKey(e => e.CommentaireId).HasName("PRIMARY");
+
+            entity.ToTable("publication_commentaire");
+
+            entity.HasIndex(e => e.PublicationId, "fk_publication_commentaire_publication_id");
+
+            entity.HasIndex(e => e.UtilisateurId, "fk_publication_commentaire_utilisateur_id");
+
+
+            entity.Property(e => e.CommentaireId).HasColumnName("commentaire_id");
+            entity.Property(e => e.Contenu)
+                .HasColumnType("text")
+                .HasColumnName("contenu");
+            entity.Property(e => e.DateCommentaire)
+                .HasColumnType("datetime")
+                .HasColumnName("date_commentaire");
+            entity.Property(e => e.PublicationId).HasColumnName("publication_id");
+            entity.Property(e => e.UtilisateurId).HasColumnName("utilisateur_id");
+            entity.Property(e => e.NombreEncouragementCommentaire).HasColumnName("nombre_encouragement_commentaire");
+
+            entity.HasOne(d => d.Publication).WithMany(p => p.PublicationCommentaires)
+                .HasForeignKey(d => d.PublicationId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_publication_commentaire_publication_id");
+
+            entity.HasOne(d => d.Utilisateur).WithMany(p => p.PublicationCommentaires)
+                .HasForeignKey(d => d.UtilisateurId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_publication_commentaire_utilisateur_id");
         });
         modelBuilder.Entity<ProfileImage>(entity =>
         {

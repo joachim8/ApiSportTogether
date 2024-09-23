@@ -474,6 +474,62 @@ namespace ApiSportTogether.Controller
                 return NotFound();
             }
         }
+        [HttpGet("/annonces/historique/{utilisateurId}")]
+        public ActionResult<IEnumerable<AnnonceVue>> GetAnnoncesByHistorique(int utilisateurId)
+        {
+            DateTime dateDuJour = DateTime.Now;
+
+            // Obtenir toutes les participations de l'utilisateur
+            List<int?> annonceIdsParticipant = _context.Participations
+                .Where(p => p.UtilisateurId == utilisateurId)
+                .Select(p => p.AnnonceId)
+                .ToList();
+
+            // Obtenir toutes les annonces où l'utilisateur est l'auteur
+            List<Annonce> listAnnonceAuteur = _context.Annonces
+                .Where(a => a.Auteur == utilisateurId && a.DateHeureAnnonce < dateDuJour)
+                .Include(a => a.Sport)
+                .Include(a => a.AuteurNavigation)
+                .ToList();
+
+            // Obtenir toutes les annonces où l'utilisateur est participant
+            List<Annonce> listAnnonceParticipant = _context.Annonces
+                .Where(a => annonceIdsParticipant.Contains(a.AnnoncesId) && a.DateHeureAnnonce < dateDuJour)
+                .Include(a => a.Sport)
+                .Include(a => a.AuteurNavigation)
+                .ToList();
+
+            // Combiner les annonces d'auteur et de participant
+            List<Annonce> combinedAnnonces = listAnnonceAuteur
+                .Union(listAnnonceParticipant) // Union pour combiner les deux listes sans doublons
+                .OrderBy(a => a.DateHeureAnnonce) // Trier par la date la plus proche de maintenant
+                .ToList();
+
+            if (combinedAnnonces.Count > 0)
+            {
+                List<AnnonceVue> listAnnonceVue = combinedAnnonces.Select(annonce => new AnnonceVue
+                {
+                    AnnoncesId = annonce.AnnoncesId,
+                    DateHeureAnnonce = annonce.DateHeureAnnonce,
+                    Auteur = annonce.AuteurNavigation?.Pseudo ?? string.Empty,
+                    AuteurId = annonce.Auteur,
+                    Description = annonce.Description,
+                    GenreAttendu = annonce.GenreAttendu,
+                    Lieu = annonce.Lieu,
+                    SportId = annonce.SportId,
+                    SportName = annonce.Sport?.Nom ?? string.Empty,
+                    NombreParticipants = annonce.NombreParticipants,
+                    Titre = annonce.Titre,
+                    Ville = annonce.Ville
+                }).ToList();
+
+                return Ok(listAnnonceVue.ToArray());
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
 
 
 

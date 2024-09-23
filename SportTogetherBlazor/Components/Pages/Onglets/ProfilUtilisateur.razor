@@ -3,6 +3,7 @@
 @using System.Net.Http.Json
 @using SportTogetherBlazor.Services
 @using SportTogetherBlazor.Components.Pages.ComposantsReutilisables
+@using SportTogetherBlazor.Components.Pages.Formulaires
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager
 @inject SessionStorageServices session
@@ -61,7 +62,12 @@
                             <Icon Name="IconName.BookmarkCheckFill" /> Publications
                         </TitleTemplate>
                         <Content>
-                            <p class="mt-3">Voici les publications de l'utilisateur.</p>
+                            <div class="mt-4">
+                                <AjoutDePublication UtilisateurId="utilisateurVue.UtilisateursId" />
+                            </div>
+                            <div class="mt-4">
+                                <MesPublications utilisateurId="utilisateurVue.UtilisateursId" />
+                            </div>
                         </Content>
                     </Tab>
                     <Tab Title="">
@@ -134,7 +140,7 @@ else
             {
 
                 // Construction de l'URL avec des paramètres sécurisés
-            string requestUri = $"Utilisateur/UtilisateurVueById/{utilisateurInfo.UtilisateursId}/mois/{DateTime.Now.Month}/annee/{DateTime.Now.Year}";
+            string requestUri = $"Utilisateur/GetUtilisateurVueByIdParMois/{utilisateurInfo.UtilisateursId}/mois/{DateTime.Now.Month}/annee/{DateTime.Now.Year}";
 
             var response = await httpClient.GetAsync(requestUri);
             var responseBody = await response.Content.ReadAsStringAsync();

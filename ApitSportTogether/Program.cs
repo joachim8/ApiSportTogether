@@ -62,12 +62,7 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
 });
-// Configuration pour augmenter la taille maximale des fichiers
-builder.Services.Configure<FormOptions>(options =>
-{
-    options.MultipartBodyLengthLimit = 10485760; // 10 MB
-    options.BufferBodyLengthLimit = 10485760; // 10 MB buffer limit
-});
+
 builder.Services.AddResponseCompression(options =>
 {
     options.EnableForHttps = true;
@@ -93,7 +88,7 @@ if(app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "API ITER ITER V1");
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "API SportTogether V1");
     });
 }
 app.UseHttpsRedirection();

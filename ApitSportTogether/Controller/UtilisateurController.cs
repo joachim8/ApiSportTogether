@@ -140,9 +140,9 @@ namespace ApiSportTogether.Controller
             return NoContent();
         }
 
-        
-        // GET: utilisateur/UtilisateurVueById/5/mois/2/annee/1
-        [HttpGet("UtilisateurVueById/{utilisateur_id}/mois/{mois}/annee/{annee}")]
+
+        // GET: utilisateur/GetUtilisateurVueByIdParMois/5/mois/2/annee/1
+        [HttpGet("GetUtilisateurVueByIdParMois/{utilisateur_id}/mois/{mois}/annee/{annee}")]
         public ActionResult<UtilisateurVue> GetUtilisateurVueByIdParMois(int utilisateur_id, int mois, int annee)
         {
             // Récupérer l'utilisateur depuis la base de données
@@ -152,7 +152,7 @@ namespace ApiSportTogether.Controller
             {
                 return NotFound();
             }
-            decimal? pourcentageAugmentationAnnonce = CalculerPourcentageAugmentation(utilisateur_id);
+            decimal? pourcentageAugmentationAnnonce = CalculerPourcentageAugmentation(utilisateur_id, mois, annee);
             // Exemple : Récupérer les données supplémentaires (à ajuster selon ton modèle et tes calculs)
             int nombreAuteurAnnonce = _context.Annonces.Count(a => a.Auteur == utilisateur_id);
             int nombreAnnonceEffectuer = _context.Participations.Count(p => p.UtilisateurId == utilisateur_id);
@@ -252,20 +252,63 @@ namespace ApiSportTogether.Controller
 
             };
         }
-        private decimal? CalculerPourcentageAugmentation(int utilisateurId)
+        private decimal? CalculerPourcentageAugmentation(int utilisateurId, int month, int annee)
         {
+            // Obtenir toutes les participations de l'utilisateur
+            List<int?> annonceIdsParticipant = _context.Participations
+                .Where(p => p.UtilisateurId == utilisateurId)
+                .Select(p => p.AnnonceId)
+                .ToList();
             // Calcul de l'augmentation des annonces entre le mois précédent et ce mois
             int annoncesMoisActuel = 0;
             int annoncesMoisPrecedent = 0;
-            annoncesMoisActuel = _context.Annonces
-                .Where(a => a.Auteur == utilisateurId && a.DateHeureAnnonce.Month == DateTime.Now.Month)
-                .Count();
 
-           annoncesMoisPrecedent = _context.Annonces
-                .Where(a => a.Auteur == utilisateurId && a.DateHeureAnnonce.Month == DateTime.Now.AddMonths(-1).Month)
-                .Count();
-            if(annoncesMoisPrecedent >0 )
-           return ((annoncesMoisActuel - annoncesMoisPrecedent) / (decimal)annoncesMoisPrecedent) * 100;
+            // Obtenir toutes les annonces où l'utilisateur est l'auteur
+            List<Annonce> listAnnonceAuteur = _context.Annonces
+                .Where(a => a.Auteur == utilisateurId && a.DateHeureAnnonce.Month == month)
+                .Include(a => a.Sport)
+                .Include(a => a.AuteurNavigation)
+                .ToList();
+
+            // Obtenir toutes les annonces où l'utilisateur est participant
+            List<Annonce> listAnnonceParticipant = _context.Annonces
+                .Where(a => annonceIdsParticipant.Contains(a.AnnoncesId) && a.DateHeureAnnonce.Month == month)
+                .Include(a => a.Sport)
+                .Include(a => a.AuteurNavigation)
+                .ToList();
+
+            // Combiner les annonces d'auteur et de participant
+            List<Annonce> combinedAnnoncesDuMois = listAnnonceAuteur
+                .Union(listAnnonceParticipant) // Union pour combiner les deux listes sans doublons
+                .OrderBy(a => a.DateHeureAnnonce) // Trier par la date la plus proche de maintenant
+                .ToList();
+
+            annoncesMoisActuel = combinedAnnoncesDuMois.Count();
+
+            // Obtenir toutes les annonces où l'utilisateur est l'auteur
+            List<Annonce> listAnnonceAuteurMoisPrecedent = _context.Annonces
+                .Where(a => a.Auteur == utilisateurId && a.DateHeureAnnonce.Month == (month -1))
+                .Include(a => a.Sport)
+                .Include(a => a.AuteurNavigation)
+                .ToList();
+
+            // Obtenir toutes les annonces où l'utilisateur est participant
+            List<Annonce> listAnnonceParticipantMoisPrecedent = _context.Annonces
+                .Where(a => annonceIdsParticipant.Contains(a.AnnoncesId) && a.DateHeureAnnonce.Month == (month -1))
+                .Include(a => a.Sport)
+                .Include(a => a.AuteurNavigation)
+                .ToList();
+
+            // Combiner les annonces d'auteur et de participant
+            List<Annonce> combinedAnnoncesMoisPrecedent = listAnnonceAuteurMoisPrecedent
+                .Union(listAnnonceParticipantMoisPrecedent) // Union pour combiner les deux listes sans doublons
+                .OrderBy(a => a.DateHeureAnnonce) // Trier par la date la plus proche de maintenant
+                .ToList();
+
+
+            annoncesMoisPrecedent = combinedAnnoncesMoisPrecedent.Count();
+
+            if (annoncesMoisPrecedent > 0 )  return ((annoncesMoisActuel - annoncesMoisPrecedent) / (decimal)annoncesMoisPrecedent) * 100;
             return null;
            
         }
@@ -353,7 +396,7 @@ namespace ApiSportTogether.Controller
             {
                 return NotFound();
             }
-            decimal? pourcentageAugmentationAnnonce = CalculerPourcentageAugmentation(id);
+            decimal? pourcentageAugmentationAnnonce = null;
             // Exemple : Récupérer les données supplémentaires (à ajuster selon ton modèle et tes calculs)
             int nombreAuteurAnnonce = _context.Annonces.Count(a => a.Auteur == id);
             int nombreAnnonceEffectuer = _context.Participations.Count(p => p.UtilisateurId == id);

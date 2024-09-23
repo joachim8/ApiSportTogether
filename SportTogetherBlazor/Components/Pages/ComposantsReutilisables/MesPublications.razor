@@ -1,0 +1,41 @@
+﻿@inject HttpClient Http
+
+<h3 class="text-center">Mes Publications</h3>
+
+@if (publications == null)
+{
+    <p>Chargement...</p>
+}
+else if (publications.Count == 0)
+{
+    <p>Aucune publication trouvée.</p>
+}
+else
+{
+    <ul>
+        @foreach (var publicationId in publications)
+        {
+            <li>
+                <PublicationCard PublicationId="@publicationId" />
+            </li>
+        }
+    </ul>
+}
+
+@code {
+    [Parameter] public int utilisateurId { get; set; } 
+    private List<int> publications;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await Http.GetAsync($"Publication/GetPublicationsIdsByUtilisateur/{utilisateurId}");
+        if (response.IsSuccessStatusCode)
+        {
+            publications = await response.Content.ReadFromJsonAsync<List<int>>();
+        }
+        else
+        {
+            publications = new List<int>(); // En cas d'erreur, on initialise une liste vide
+        }
+    }
+}
