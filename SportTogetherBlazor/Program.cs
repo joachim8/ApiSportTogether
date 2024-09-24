@@ -1,18 +1,16 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.ResponseCompression;
-using Microsoft.AspNetCore.SignalR.Client;
 using SportTogetherBlazor.Components;
 using SportTogetherBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddSingleton<CircuitHandler, CustomCircuitHandler>();
 
-builder.Services.AddScoped<AuthServices>();
+
+
 builder.Services.AddScoped<SessionStorageServices>();
-builder.Services.AddScoped<AnnonceImageServices>();
+
 // Enregistrer HttpClient et IHttpClientFactory avec la base URL
 builder.Services.AddHttpClient("ApiSportTogetherClient", client =>
 {
@@ -23,7 +21,7 @@ builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().Cre
 
 builder.Services.Configure<CookiePolicyOptions>(options =>
 {
- 
+
     // This lambda determines whether user consent for non-essential cookies is needed for a given request.
     options.CheckConsentNeeded = context => true;
     options.MinimumSameSitePolicy = SameSiteMode.None;
@@ -63,6 +61,7 @@ builder.Services.AddDistributedMemoryCache(); // Vous pouvez changer cela pour u
 // Ajout des services Blazor
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
 builder.Services.AddBlazorBootstrap();
 
 var app = builder.Build();
@@ -92,7 +91,7 @@ app.Use(async delegate (HttpContext Context, Func<Task> Next)
 app.UseRouting();
 app.UseAntiforgery();
 app.UseResponseCaching();
-// Assurez-vous que UseSession est appelé avant MapRazorComponents
+
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 

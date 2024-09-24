@@ -1,7 +1,9 @@
 ﻿using ApiSportTogether.model.dbContext;
 using ApiSportTogether.model.ObjectContext;
 using ApiSportTogether.model.ObjectVue;
+using ApiSportTogether.SignalR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,10 +15,11 @@ namespace ApiSportTogether.Controller
     public class PublicationCommentaireController : ControllerBase
     {
         private readonly SportTogetherContext _context;
-
-        public PublicationCommentaireController(SportTogetherContext context)
+        private readonly IHubContext<PublicationHub> _hubContext;
+        public PublicationCommentaireController(SportTogetherContext context, IHubContext<PublicationHub> hubContext)
         {
             _context = context;
+            _hubContext = hubContext;
         }
 
         // GET: ApiSportTogether/PublicationCommentaire
@@ -43,7 +46,7 @@ namespace ApiSportTogether.Controller
 
         // POST: ApiSportTogether/PublicationCommentaire/CreateCommentaire
         [HttpPost("CreateCommentaire")]
-        public ActionResult<PublicationCommentaire> PostPublicationCommentaire([FromBody] PublicationCommentaire commentaire)
+        public async Task<ActionResult<PublicationCommentaire>> PostPublicationCommentaire([FromBody] PublicationCommentaire commentaire)
         {
             if (commentaire == null)
             {
@@ -53,8 +56,14 @@ namespace ApiSportTogether.Controller
             _context.PublicationCommentaires.Add(commentaire);
             _context.SaveChanges();
 
+            // Notifier via SignalR que le commentaire a été ajouté
+            await _hubContext.Clients.Group(commentaire.PublicationId.ToString())
+                .SendAsync("ReceiveCommentAdded", commentaire.CommentaireId);
+
             return CreatedAtAction(nameof(GetPublicationCommentaireById), new { id = commentaire.CommentaireId }, commentaire);
         }
+
+
 
         // PUT: ApiSportTogether/PublicationCommentaire/5
         [HttpPut("{id}")]
@@ -88,7 +97,7 @@ namespace ApiSportTogether.Controller
 
         // DELETE: ApiSportTogether/PublicationCommentaire/5
         [HttpDelete("{id}")]
-        public IActionResult DeletePublicationCommentaire(int id)
+        public async Task<IActionResult> DeletePublicationCommentaire(int id)
         {
             var commentaire = _context.PublicationCommentaires.Find(id);
             if (commentaire == null)
@@ -96,11 +105,20 @@ namespace ApiSportTogether.Controller
                 return NotFound();
             }
 
+            var commentaireId = commentaire.CommentaireId;
+            var publicationId = commentaire.PublicationId;
+
             _context.PublicationCommentaires.Remove(commentaire);
             _context.SaveChanges();
 
+            // Notifier via SignalR que le commentaire a été supprimé
+            await _hubContext.Clients.Group(publicationId.ToString())
+                .SendAsync("ReceiveCommentDeleted", commentaireId);
+
             return NoContent();
         }
+
+
 
         // GET: ApiSportTogether/PublicationCommentaire/GetCommentairesByPublicationId/5
         [HttpGet("GetCommentairesByPublicationId/{publicationId}")]
@@ -112,6 +130,33 @@ namespace ApiSportTogether.Controller
                                         .ToList();
 
             return commentaires.Any() ? Ok(commentaires) : NotFound();
+        }
+
+        // GET: ApiSportTogether/PublicationCommentaire/GetCommentaireById/5
+        [HttpGet("GetCommentaireById/{commentaireId:int}")]
+        public ActionResult<CommentaireVue> GetCommentaireById(int commentaireId)
+        {
+            var commentaire = _context.PublicationCommentaires
+                .Where(c => c.CommentaireId == commentaireId)
+                .Include(c => c.Utilisateur)
+                .Select(c => new CommentaireVue
+                {
+                    CommentaireId = c.CommentaireId,
+                    UtilisateurId = c.UtilisateurId,
+                    PseudoUtilisateur = c.Utilisateur.Pseudo, // Assurez-vous que le modèle Utilisateur a une propriété Pseudo
+                    Contenu = c.Contenu,
+                    DateCommentaire = c.DateCommentaire,
+                    NombreEncouragementCommentaire = c.NombreEncouragementCommentaire,
+                    ImageUtilisateurUrl = _context.ProfileImages.Where(pi => pi.UtilisateursId == c.UtilisateurId).FirstOrDefault()!.Url // Assurez-vous que le modèle Utilisateur a une propriété ImageUrl
+                })
+                .FirstOrDefault();
+
+            if (commentaire == null)
+            {
+                return NotFound(); // 404 si aucun commentaire trouvé
+            }
+
+            return Ok(commentaire); // 200 avec le commentaire
         }
     }
 }

@@ -1,7 +1,9 @@
 ﻿using ApiSportTogether.model.dbContext;
 using ApiSportTogether.model.ObjectContext;
 using ApiSportTogether.model.ObjectVue;
+using ApiSportTogether.SignalR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 namespace ApiSportTogether.Controller
@@ -11,10 +13,11 @@ namespace ApiSportTogether.Controller
     public class PublicationController : ControllerBase
     {
         private readonly SportTogetherContext _context;
-
-        public PublicationController(SportTogetherContext context)
+        private readonly IHubContext<PublicationHub> _hubContext;
+        public PublicationController(SportTogetherContext context, IHubContext<PublicationHub> hubContext)
         {
             _context = context;
+            _hubContext = hubContext;
         }
 
         // GET: ApiSportTogether/Publication
@@ -31,6 +34,7 @@ namespace ApiSportTogether.Controller
         {
             var publicationIds = _context.Publications
                 .Where(p => p.UtilisateurId == utilisateurId)
+                .OrderByDescending(p => p.DatePublication)
                 .Select(p => p.PublicationsId)
                 .ToList();
 
@@ -71,9 +75,9 @@ namespace ApiSportTogether.Controller
             return CreatedAtAction(nameof(GetPublicationById), new { id = publication.PublicationsId }, publication);
         }
 
-        // PUT: ApiSportTogether/Publication/5
+        // PUT: ApiSportTogether/Publication/{id}
         [HttpPut("{id}")]
-        public ActionResult PutPublication(int id, Publication publication)
+        public async Task<IActionResult> UpdatePublication(int id, [FromBody] Publication publication)
         {
             if (id != publication.PublicationsId)
             {
@@ -85,6 +89,10 @@ namespace ApiSportTogether.Controller
             try
             {
                 _context.SaveChanges();
+
+                // Notifier via SignalR que la publication a été modifiée
+                await _hubContext.Clients.Group(publication.PublicationsId.ToString())
+                    .SendAsync("ReceivePublicationUpdated", publication.PublicationsId);
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -135,6 +143,7 @@ namespace ApiSportTogether.Controller
                     ImageUtilisateurUrl = p.Utilisateur.ProfileImages.FirstOrDefault()!.Url, // Remplacer par l'URL de l'image de profil
                     MediaUrls = p.PublicationImages.Select(i => i.Url).ToArray()!, // URLs des médias (images/vidéos)
                     NombreEncouragements = p.NombreEncouragement,
+                    tempsDiff = GetDateDifference(p.DatePublication, DateTime.Now)
                 })
                 .FirstOrDefault();
 
@@ -198,6 +207,88 @@ namespace ApiSportTogether.Controller
             }
 
             return Ok(request);
+        }
+        public static string GetDateDifference(DateTime startDate, DateTime endDate)
+        {
+            // S'assurer que la date de fin est postérieure à la date de début
+            if (endDate < startDate)
+            {
+                throw new ArgumentException("La date de fin doit être postérieure à la date de début.");
+            }
+
+            // Calculer la différence entre les dates
+            var totalDays = (endDate - startDate).Days;
+            var totalHours = (endDate - startDate).Hours;
+            var totalMinutes = (endDate - startDate).Minutes;
+
+            // Conversion des unités
+            int years = 0, months = 0, days = 0, hours = 0, minutes = 0;
+
+            // On part des jours totaux pour calculer le nombre d'années
+            while (totalDays >= 365)
+            {
+                years++;
+                totalDays -= 365; // On suppose une année de 365 jours
+            }
+
+            // On part des jours restants pour calculer le nombre de mois
+            while (totalDays >= 30)
+            {
+                months++;
+                totalDays -= 30; // On suppose un mois de 30 jours
+            }
+
+            // Les jours restants après le calcul des mois
+            days = totalDays;
+
+            // Ajout des heures totales
+            hours += totalHours;
+
+            // Ajustement des minutes
+            minutes += totalMinutes;
+
+            // Ajustement si les minutes dépassent 60
+            if (minutes >= 60)
+            {
+                hours += minutes / 60;
+                minutes %= 60; // Reste des minutes
+            }
+
+            // Ajustement si les heures dépassent 24
+            if (hours >= 24)
+            {
+                days += hours / 24;
+                hours %= 24; // Reste des heures
+            }
+
+            // Ajustement si les jours dépassent 31
+            if (days >= 30)
+            {
+                months += days / 30; // Conversion en mois
+                days %= 30; // Reste des jours
+            }
+
+            // Retourne la plus grande unité de temps
+            if (years > 0)
+            {
+                return $"{years} année{(years > 1 ? "s" : "")}";
+            }
+            else if (months > 0)
+            {
+                return $"{months} mois";
+            }
+            else if (days > 0)
+            {
+                return $"{days} jour{(days > 1 ? "s" : "")}";
+            }
+            else if (hours > 0)
+            {
+                return $"{hours} heure{(hours > 1 ? "s" : "")}";
+            }
+            else
+            {
+                return $"{minutes} minute{(minutes > 1 ? "s" : "")}";
+            }
         }
     }
 }

@@ -1,5 +1,9 @@
-﻿@inject IHttpClientFactory HttpClientFactory
+﻿@page "/publication/{PublicationId:int}"
+@inject IHttpClientFactory HttpClientFactory
+@implements IDisposable
 @using SportTogetherBlazor.Models
+@using Microsoft.AspNetCore.SignalR.Client
+
 @code {
     [Parameter] public int PublicationId { get; set; }
     private PublicationVue? publicationVue = null;
@@ -7,17 +11,92 @@
     private bool hasError = false;
     private HttpClient httpClient;
     private string error;
+    private PublicationCommentaire newCommentaire = new PublicationCommentaire();
+    private HubConnection _hubConnection;
+
     protected override async Task OnInitializedAsync()
+    {
+        await FetchPublicationDetails(PublicationId);
+        _hubConnection = new HubConnectionBuilder()
+            .WithUrl("http://localhost:5000/publicationHub")
+            .Build();
+
+        // Écouter l'ajout d'un commentaire
+        _hubConnection.On<int>("ReceiveCommentAdded", async (commentaireId) =>
+        {
+            var commentaire = await FetchCommentaireById(commentaireId);
+            if (commentaire != null)
+            {
+                publicationVue.Commentaires.Add(commentaire);
+                StateHasChanged(); // Re-render the component
+            }
+        });
+
+        // Écouter la suppression d'un commentaire
+        _hubConnection.On<int>("ReceiveCommentDeleted", async (commentaireId) =>
+        {
+            // Logique pour supprimer le commentaire de publicationVue.Commentaires
+            var commentaire = publicationVue.Commentaires.FirstOrDefault(c => c.CommentaireId == commentaireId);
+            if (commentaire != null)
+            {
+                publicationVue.Commentaires.Remove(commentaire);
+                StateHasChanged();
+            }
+        });
+
+        // Écouter la modification d'une publication
+        _hubConnection.On<int>("ReceivePublicationUpdated", async (publicationId) =>
+        {
+            await FetchPublicationDetails(publicationId);
+        });
+
+        await _hubConnection.StartAsync();
+        await _hubConnection.SendAsync("JoinPublicationGroup", PublicationId.ToString()); // Rejoindre le groupe
+
+    }
+    // Méthode pour récupérer le commentaire par ID
+    private async Task<CommentaireVue?> FetchCommentaireById(int commentaireId)
+    {
+        try
+        {
+            var response = await httpClient.GetAsync($"PublicationCommentaire/GetCommentaireById/{commentaireId}");
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadFromJsonAsync<CommentaireVue>();
+            }
+            else
+            {
+                Console.WriteLine($"Erreur lors de la récupération du commentaire : {await response.Content.ReadAsStringAsync()}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur : {ex.Message}");
+        }
+        return null;
+    }
+    // Dispose method to stop the SignalR connection
+   public void Dispose()
+    {
+        // Déconnecter de SignalR
+        if (_hubConnection != null)
+        {
+             _hubConnection.SendAsync("LeavePublicationGroup", PublicationId.ToString()); // Quitter le groupe
+             _hubConnection.DisposeAsync();
+        }
+
+    }
+   
+
+    private async Task FetchPublicationDetails(int publicationId)
     {
         httpClient = HttpClientFactory.CreateClient("ApiSportTogetherClient");
         try
         {
-            var response = await httpClient.GetAsync($"Publication/GetPublicationVueById/{PublicationId}");
+            var response = await httpClient.GetAsync($"Publication/GetPublicationVueById/{publicationId}");
             if (response.IsSuccessStatusCode)
             {
-                var jsonResponse = await response.Content.ReadAsStringAsync();
                 publicationVue = await response.Content.ReadFromJsonAsync<PublicationVue?>();
-                
             }
             else
             {
@@ -28,13 +107,34 @@
         catch (Exception ex)
         {
             hasError = true;
-           
             Console.Write(ex.Message);
         }
         finally
         {
             isLoading = false;
             StateHasChanged();
+        }
+    }
+
+    private async Task AddCommentaire()
+    {
+        newCommentaire.PublicationId = PublicationId;
+        newCommentaire.DateCommentaire = DateTime.UtcNow;
+        // Remplacez `UtilisateurId` par l'ID de l'utilisateur authentifié
+        newCommentaire.UtilisateurId = publicationVue.UtilisateurId;
+
+        var response = await httpClient.PostAsJsonAsync("PublicationCommentaire/CreateCommentaire", newCommentaire);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var addedCommentaire = await response.Content.ReadFromJsonAsync<PublicationCommentaire>();
+            newCommentaire = new PublicationCommentaire(); // Réinitialiser le formulaire
+            StateHasChanged(); // Re-render the component
+        }
+        else
+        {
+            error = "Erreur lors de l'ajout du commentaire.";
+            Console.WriteLine(await response.Content.ReadAsStringAsync());
         }
     }
 }
@@ -49,16 +149,19 @@ else
         <div class="user-info mb-3 d-flex align-items-center">
             <img src="@publicationVue.ImageUtilisateurUrl" alt="Image de profil" class="user-image rounded-circle me-2" width="50" />
             <span class="fw-bold">@publicationVue.PseudoUtilisateur</span>
+            
         </div>
-
+        <div class="temps m-0">
+            <p class="text-muted text-sm-start">@publicationVue.tempsDiff</p>
+        </div>
         <div class="content mb-3">
-            <p class="text-muted">@publicationVue.Contenu</p>
+            <h3>@publicationVue.Contenu</h3>
             @if (publicationVue.MediaUrls != null && publicationVue.MediaUrls.Count > 0)
             {
                 <div class="media">
                     @if (publicationVue.MediaUrls.Count() == 1)
                     {
-                        <img src="@publicationVue.MediaUrls[0]" alt="Media" class="img-fluid rounded" />
+                        <img src="@publicationVue.MediaUrls[0]" alt="Media" class="img-thumbnail rounded w-50 h-50" />
                     }
                     else
                     {
@@ -86,7 +189,9 @@ else
         </div>
 
         <div class="encouragements mb-3">
-            <span class="fw-bold">@publicationVue.NombreEncouragements</span> 💪
+            <Button Color="ButtonColor.None" Type="ButtonType.Button" >
+                <span class="fw-bold">@publicationVue.NombreEncouragements</span> 💪
+            </Button>
         </div>
 
         <div class="comments">
@@ -113,5 +218,15 @@ else
                 <p>Aucun commentaire pour cette publication.</p>
             }
         </div>
+
+        <h5>Ajouter un commentaire</h5>
+        <EditForm Model="@newCommentaire" OnValidSubmit="@AddCommentaire">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <div class="mb-3">
+                <InputText @bind-Value="newCommentaire.Contenu" class="form-control" placeholder="Votre commentaire..." />
+            </div>
+            <button type="submit" class="btn btn-primary">Ajouter</button>
+        </EditForm>
     </div>
 }

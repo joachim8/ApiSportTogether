@@ -55,7 +55,7 @@
     private PublicationAjoutVue publicationRequest = new PublicationAjoutVue();
     private List<IBrowserFile> uploadedFiles = new List<IBrowserFile>();
     private bool isSubmitting = false;
-
+    [Inject] protected ToastService ToastService { get; set; } = default!;
     protected override async Task OnInitializedAsync()
     {
         publicationRequest.Publication = new();
@@ -112,7 +112,7 @@
         {
             // Uploader les fichiers et récupérer les URLs
             var uploadedUrls = await UploadFilesAsync();
-
+            Publication? publicationAjouter = null;
             // Créer l'objet PublicationAjoutVue
             var publicationAjoutVue = new PublicationAjoutVue
                 {
@@ -134,21 +134,28 @@
                 // Réinitialiser le formulaire après succès
                 publicationRequest = new PublicationAjoutVue();
                 uploadedFiles.Clear();
-                await response.Content.ReadFromJsonAsync<Publication>();
+                publicationAjouter = await response.Content.ReadFromJsonAsync<Publication>();
+                if(publicationAjouter != null)
+                {
+                    ToastService.Notify(new(ToastType.Success, $"Votre publication {publicationAjoutVue.Publication.Contenu} a bien été publier."));
+                   
+                }
+               
             }
             else
             {
                 var errorMessage = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"Erreur lors de la soumission de la publication: {errorMessage}");
+                ToastService.Notify(new(ToastType.Danger, $"Échec de l'ajout de la publication {publicationAjoutVue.Publication.Contenu}. Exception : {errorMessage}"));
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Erreur: {ex.Message}");
+            ToastService.Notify(new(ToastType.Danger, $"Échec de l'ajout de la publication. Exception : {ex.Message}"));
         }
         finally
         {
             isSubmitting = false;
+            
         }
     }
 

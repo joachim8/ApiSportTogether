@@ -27,5 +27,8 @@ namespace ApiSportTogether.model.ObjectVue
         public int NombreEncouragements { get; set; } // Nombre d'encouragements (emoji gros bras)
         [JsonPropertyName("Commentaires")]
         public Array? Commentaires { get; set; } // Liste des commentaires
+                                                 
+        [JsonPropertyName("tempsDiff")]
+        public string? tempsDiff { get; set; } // Temps diff
     }
 }

@@ -28,14 +28,20 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        await GetPublicationsIdsByUtilisateur();
+    }
+    private async Task GetPublicationsIdsByUtilisateur()
+    {
         var response = await Http.GetAsync($"Publication/GetPublicationsIdsByUtilisateur/{utilisateurId}");
         if (response.IsSuccessStatusCode)
         {
             publications = await response.Content.ReadFromJsonAsync<List<int>>();
+           
         }
         else
         {
             publications = new List<int>(); // En cas d'erreur, on initialise une liste vide
         }
     }
+   
 }
