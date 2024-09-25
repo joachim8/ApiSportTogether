@@ -30,5 +30,7 @@ namespace ApiSportTogether.model.ObjectVue
                                                  
         [JsonPropertyName("tempsDiff")]
         public string? tempsDiff { get; set; } // Temps diff
+        [JsonPropertyName("IsEncourager")]
+        public bool IsEncourager { get; set; }
     }
 }

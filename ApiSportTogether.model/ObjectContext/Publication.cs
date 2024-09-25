@@ -15,6 +15,9 @@ public partial class Publication
     [JsonPropertyName("NombreEncouragement")]
     public int NombreEncouragement { get; set; }
     [JsonIgnore]
+    [JsonPropertyName("EncouragementPublications")]
+    public virtual ICollection<EncouragementPublication> EncouragementPublications { get; set; } = new List<EncouragementPublication>();
+    [JsonIgnore]
     [JsonPropertyName("PublicationImages")]
     public virtual ICollection<PublicationImage> PublicationImages { get; set; } = new List<PublicationImage>();
     [JsonIgnore]

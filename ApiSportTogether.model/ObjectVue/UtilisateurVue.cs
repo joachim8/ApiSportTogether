@@ -35,7 +35,7 @@ public class UtilisateurVue
     [JsonPropertyName("NombreEquipier")]
     public int? NombreEquipier { get; set; }
     [JsonPropertyName("listCoequipier")]
-    public List<Utilisateur>? listCoequipier { get; set; }  
+    public List<AmiVue>? listCoequipier { get; set; }  
 
     [JsonPropertyName("ClassementAmis")]
     public Array? ClassementAmis { get; set; }

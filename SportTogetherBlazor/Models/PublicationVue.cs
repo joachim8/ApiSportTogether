@@ -25,5 +25,7 @@ namespace SportTogetherBlazor.Models
         public List<CommentaireVue>? Commentaires { get; set; } // Liste des commentaires
         [JsonPropertyName("tempsDiff")]
         public string? tempsDiff { get; set; } // Temps diff
+        [JsonPropertyName("IsEncourager")]
+        public bool IsEncourager { get; set; }
     }
 }

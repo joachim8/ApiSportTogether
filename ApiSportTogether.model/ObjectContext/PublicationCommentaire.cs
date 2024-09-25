@@ -24,4 +24,7 @@ public partial class PublicationCommentaire
     [JsonIgnore]
     [JsonPropertyName("Utilisateur")]
     public virtual Utilisateur? Utilisateur { get; set; } = null!;
+    [JsonIgnore]
+    [JsonPropertyName("EncouragementPublicationCommentaires")]
+    public virtual ICollection<EncouragementPublicationCommentaire> EncouragementPublicationCommentaires { get; set; } = new List<EncouragementPublicationCommentaire>();
 }

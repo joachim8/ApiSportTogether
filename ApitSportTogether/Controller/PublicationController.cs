@@ -133,6 +133,7 @@ namespace ApiSportTogether.Controller
                 .Include(p => p.Utilisateur).ThenInclude(u => u.ProfileImages)
                 .Include(p => p.PublicationImages)
                 .Include(p => p.PublicationCommentaires)
+                .Include(p => p.EncouragementPublications)
                 .Select(p => new PublicationVue
                 {
                     PublicationsId = p.PublicationsId,
@@ -143,7 +144,8 @@ namespace ApiSportTogether.Controller
                     ImageUtilisateurUrl = p.Utilisateur.ProfileImages.FirstOrDefault()!.Url, // Remplacer par l'URL de l'image de profil
                     MediaUrls = p.PublicationImages.Select(i => i.Url).ToArray()!, // URLs des médias (images/vidéos)
                     NombreEncouragements = p.NombreEncouragement,
-                    tempsDiff = GetDateDifference(p.DatePublication, DateTime.Now)
+                    tempsDiff = GetDateDifference(p.DatePublication, DateTime.Now),
+                    IsEncourager = p.EncouragementPublications.Any(ep => ep.UtilisateurId == p.UtilisateurId)
                 })
                 .FirstOrDefault();
 
@@ -151,17 +153,18 @@ namespace ApiSportTogether.Controller
             {
                 return NotFound("Aucune publication trouvée pour cet utilisateur.");
             }
-            publications.Commentaires = _context.PublicationCommentaires.Where(pc => pc.PublicationId == publicationId).Select(c => new CommentaireVue
-                {
-                    CommentaireId = c.CommentaireId,
-                    UtilisateurId = c.UtilisateurId,
-                    PseudoUtilisateur = c.Utilisateur.Pseudo, // Remplacer par le champ du pseudo
-                    Contenu = c.Contenu,
-                    DateCommentaire = c.DateCommentaire,
-                    NombreEncouragementCommentaire = c.NombreEncouragementCommentaire,
-                    ImageUtilisateurUrl = _context.ProfileImages.Where(pi => pi.UtilisateursId == c.UtilisateurId).FirstOrDefault()!.Url // URL de l'image de profil de l'utilisateur du commentaire
-                }).ToArray();
-            if (publications.Commentaires == null)
+            publications.Commentaires = _context.PublicationCommentaires.Where(pc => pc.PublicationId == publicationId).Include(pc => pc.EncouragementPublicationCommentaires).Select(c => new CommentaireVue
+            {
+                CommentaireId = c.CommentaireId,
+                UtilisateurId = c.UtilisateurId,
+                PseudoUtilisateur = c.Utilisateur.Pseudo, // Remplacer par le champ du pseudo
+                Contenu = c.Contenu,
+                DateCommentaire = c.DateCommentaire,
+                NombreEncouragementCommentaire = c.NombreEncouragementCommentaire,
+                ImageUtilisateurUrl = _context.ProfileImages.Where(pi => pi.UtilisateursId == c.UtilisateurId).FirstOrDefault()!.Url, // URL de l'image de profil de l'utilisateur du commentaire
+                IsEncouragerCom = c.EncouragementPublicationCommentaires.Any(epc => epc.UtilisateurId == c.UtilisateurId)
+            }).ToArray();
+            if (publications.Commentaires != null)
             {
                 
             }

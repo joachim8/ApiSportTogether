@@ -111,6 +111,7 @@ app.UseAuthorization();
 app.UseResponseCompression();
 app.MapHub<ChatHubSportTogether>("/chatHubSportTogether");
 app.MapHub<PublicationHub>("/publicationHub");
+app.MapHub<CommentaireHub>("/commentaireHub");
 
 // Si les images sont dans un dossier spécifique à l'intérieur de wwwroot ou à un autre emplacement :
 app.UseStaticFiles(new StaticFileOptions

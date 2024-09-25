@@ -4,6 +4,7 @@ namespace ApiSportTogether.SignalR
 {
     public class PublicationHub : Hub
     {
+        #region "Commentaire"
         // Notification pour l'ajout d'un commentaire
         public async Task NotifyCommentAdded(int CommentaireId)
         {
@@ -15,13 +16,38 @@ namespace ApiSportTogether.SignalR
         {
             await Clients.Group(CommentaireId.ToString()).SendAsync("ReceiveCommentDeleted", CommentaireId);
         }
-
+        #endregion
+        #region "Publication"
         // Notification pour la modification d'une publication
         public async Task NotifyPublicationUpdated(int publicationId)
         {
             await Clients.Group(publicationId.ToString()).SendAsync("ReceivePublicationUpdated", publicationId);
         }
-
+        // Notification pour la modification d'une publication
+        public async Task NotifyPublicationAdded(int publicationId)
+        {
+            await Clients.Group(publicationId.ToString()).SendAsync("ReceivePublicationAdded", publicationId);
+        }
+        // Notification pour la modification d'une publication
+        public async Task NotifyPublicationDeleted(int publicationId)
+        {
+            await Clients.Group(publicationId.ToString()).SendAsync("ReceivePublicationDeleted", publicationId);
+        }
+        #endregion
+        #region "Encouragement"
+        // Notification pour la modification d'une publication
+        public async Task NotifyEncouragementPublicationAdded(int publicationId, string nbreEncouragement)
+        {
+            await Clients.Group(publicationId.ToString()).SendAsync("ReceivePublicationAdded", publicationId, nbreEncouragement);
+        }
+        // Notification pour la modification d'une publication
+        public async Task NotifyEncouragementPublicationDeleted(int publicationId,  string nbreEncouragement)
+        {
+            await Clients.Group(publicationId.ToString()).SendAsync("ReceivePublicationDeleted", publicationId, nbreEncouragement);
+        }
+      
+        #endregion
+        #region "Group publication"
         // Joindre un groupe spécifique basé sur l'ID de la publication
         public async Task JoinPublicationGroup(string publicationId)
         {
@@ -33,6 +59,7 @@ namespace ApiSportTogether.SignalR
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, publicationId);
         }
+        #endregion
     }
 
 

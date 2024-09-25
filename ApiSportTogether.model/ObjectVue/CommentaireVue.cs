@@ -25,5 +25,7 @@ namespace ApiSportTogether.model.ObjectVue
         public int NombreEncouragementCommentaire { get; set; }
         [JsonPropertyName("ImageUtilisateurUrl")]
         public string? ImageUtilisateurUrl { get; set; } // URL de l'image de profil de l'utilisateur
+        [JsonPropertyName("IsEncouragerCom")]
+        public bool IsEncouragerCom { get; set; }
     }
 }

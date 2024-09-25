@@ -1,6 +1,5 @@
 ﻿@inject HttpClient Http
 
-<h3 class="text-center">Mes Publications</h3>
 
 @if (publications == null)
 {
@@ -12,14 +11,14 @@ else if (publications.Count == 0)
 }
 else
 {
-    <ul>
+    <div class="d-flex justify-content-center flex-wrap">
         @foreach (var publicationId in publications)
         {
-            <li>
-                <PublicationCard PublicationId="@publicationId" />
-            </li>
+           
+            <PublicationCard PublicationId="@publicationId" />
+
         }
-    </ul>
+    </div>
 }
 
 @code {

@@ -22,7 +22,9 @@ public partial class SportTogetherContext : DbContext
     public virtual DbSet<PublicationImage> PublicationImages { get; set; }
 
     public virtual DbSet<Annonce> Annonces { get; set; }
+    public virtual DbSet<EncouragementPublication> EncouragementPublications { get; set; }
 
+    public virtual DbSet<EncouragementPublicationCommentaire> EncouragementPublicationCommentaires { get; set; }
     public virtual DbSet<Groupe> Groupes { get; set; }
     public virtual DbSet<MembreGroupe> MembreGroupes { get; set; }
     public virtual DbSet<Message> Messages { get; set; }
@@ -126,7 +128,63 @@ public partial class SportTogetherContext : DbContext
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("fk_annonces_SportID");
         });
+        modelBuilder.Entity<EncouragementPublication>(entity =>
+        {
+            entity.HasKey(e => e.EncouragementPublicationId).HasName("PRIMARY");
 
+            entity.ToTable("encouragement_publication");
+
+            entity.HasIndex(e => e.PublicationId, "fk_encouragement_publication_publication_id");
+
+            entity.HasIndex(e => e.UtilisateurId, "fk_encouragement_publication_utilisateur_id");
+
+            entity.Property(e => e.EncouragementPublicationId).HasColumnName("encouragement_publication_id");
+            entity.Property(e => e.DateEncouragementPublication)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("datetime")
+                .HasColumnName("date_encouragement_publication");
+            entity.Property(e => e.PublicationId).HasColumnName("publication_id");
+            entity.Property(e => e.UtilisateurId).HasColumnName("utilisateur_id");
+
+            entity.HasOne(d => d.Publication).WithMany(p => p.EncouragementPublications)
+                .HasForeignKey(d => d.PublicationId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_encouragement_publication_publication_id");
+
+            entity.HasOne(d => d.Utilisateur).WithMany(p => p.EncouragementPublications)
+                .HasForeignKey(d => d.UtilisateurId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_encouragement_publication_utilisateur_id");
+        });
+
+        modelBuilder.Entity<EncouragementPublicationCommentaire>(entity =>
+        {
+            entity.HasKey(e => e.EncouragementPublicationCommentaireId).HasName("PRIMARY");
+
+            entity.ToTable("encouragement_publication_commentaire");
+
+            entity.HasIndex(e => e.PublicationCommentaireId, "fk_encouragement_publication_commentaire_commentaire_id");
+
+            entity.HasIndex(e => e.UtilisateurId, "fk_encouragement_publication_commentaire_utilisateur_id");
+
+            entity.Property(e => e.EncouragementPublicationCommentaireId).HasColumnName("encouragement_publication_commentaire_id");
+            entity.Property(e => e.DateEncouragementPublicationCommentaire)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("datetime")
+                .HasColumnName("date_encouragement_publication_commentaire");
+            entity.Property(e => e.PublicationCommentaireId).HasColumnName("publication_commentaire_id");
+            entity.Property(e => e.UtilisateurId).HasColumnName("utilisateur_id");
+
+            entity.HasOne(d => d.PublicationCommentaire).WithMany(p => p.EncouragementPublicationCommentaires)
+                .HasForeignKey(d => d.PublicationCommentaireId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_encouragement_publication_commentaire_commentaire_id");
+
+            entity.HasOne(d => d.Utilisateur).WithMany(p => p.EncouragementPublicationCommentaires)
+                .HasForeignKey(d => d.UtilisateurId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("fk_encouragement_publication_commentaire_utilisateur_id");
+        });
         modelBuilder.Entity<Groupe>(entity =>
         {
             entity.HasKey(e => e.GroupesId).HasName("PRIMARY");
