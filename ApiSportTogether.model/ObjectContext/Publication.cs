@@ -26,4 +26,6 @@ public partial class Publication
     [JsonIgnore]
     [JsonPropertyName("Utilisateur")]
     public virtual Utilisateur? Utilisateur { get; set; }
+    [JsonPropertyName("SportTag")]
+    public string SportTag { get; set; }
 }

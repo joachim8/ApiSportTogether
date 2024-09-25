@@ -65,6 +65,7 @@
     private ProfilUtilisateurVu profilUtilisateurVue;
     [Parameter] public string Auteur { get; set; }
     [Parameter] public int userId { get; set; }
+    [Parameter] public string sport { get; set; }
     private HttpClient httpClient;
     /// <summary>
     /// Initialisation de la page
@@ -73,7 +74,20 @@
     protected override async Task OnInitializedAsync()
     {
         httpClient = HttpClientFactory.CreateClient("ApiSportTogetherClient");
-        profilUtilisateurVue = await httpClient.GetFromJsonAsync<ProfilUtilisateurVu>($"Utilisateur/GetProfilUtilisateurByIdParMois/{userId}")!;
+        try
+        {
+            profilUtilisateurVue = await httpClient.GetFromJsonAsync<ProfilUtilisateurVu>($"Utilisateur/GetProfilUtilisateurByIdParMois/{userId}")!;
+        }
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine($"Erreur lors de la requête : {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur inattendue : {ex.Message}");
+        }
+
+       
     }
     public async Task ShowProfileModal()
     {

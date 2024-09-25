@@ -26,4 +26,6 @@ public partial class Publication
     [JsonIgnore]
     [JsonPropertyName("EncouragementPublications")]
     public virtual ICollection<EncouragementPublication> EncouragementPublications { get; set; } = new List<EncouragementPublication>();
+    [JsonPropertyName("SportTag")]
+    public string? SportTag { get; set; }
 }

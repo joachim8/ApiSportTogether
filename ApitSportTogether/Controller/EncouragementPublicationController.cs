@@ -131,15 +131,15 @@ namespace ApiSportTogether.Controller
         }
 
         // DELETE: ApiSportTogether/EncouragementPublication/5
-        [HttpDelete("{id}")]
-        public IActionResult DeleteEncouragement(int id)
+        [HttpDelete("DeleteEncouragement/{publicationId}/{utilisateurId}")]
+        public IActionResult DeleteEncouragement(int publicationId, int utilisateurId)
         {
-            var encouragement = _context.EncouragementPublications.Find(id);
+            var encouragement = _context.EncouragementPublications.Where(ep => ep.PublicationId == publicationId && ep.UtilisateurId == utilisateurId).FirstOrDefault();
             if (encouragement == null)
             {
                 return NotFound("Encouragement non trouvé.");
             }
-            Publication? pb = _context.Publications.Find(encouragement.PublicationId);
+            Publication? pb = _context.Publications.Find(publicationId);
             _context.EncouragementPublications.Remove(encouragement);
             _context.SaveChanges();
             if(pb != null)

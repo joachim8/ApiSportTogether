@@ -3,7 +3,8 @@
 @implements IDisposable
 @using SportTogetherBlazor.Models
 @using Microsoft.AspNetCore.SignalR.Client
-
+@using SportTogetherBlazor.Services
+@inject SessionStorageServices session
 
 
 @if (hasError || publicationVue == null)
@@ -17,12 +18,20 @@ else
     <div class="card shadow-sm mb-4 col-lg-8 col-sm-12 col-md-10" >
         <div class="card-body p-3">
             <!-- Pseudo et nom utilisateur en haut à gauche -->
-            <div class="d-flex align-items-center mb-3">
-                <div class="user-info">
+            <div class="d-flex align-items-center mb-3 justify-content-between">
+                <!-- Section utilisateur -->
+                <div class="user-info d-flex align-items-center">
                     <img src="@publicationVue.ImageUtilisateurUrl" alt="Image de profil" class="user-image rounded-circle me-2" width="50" />
                     <span class="card-title mb-0">@publicationVue.PseudoUtilisateur</span>
                 </div>
+
+                <!-- Section badge et tempsDiff alignée à droite -->
+                <div class="text-end">
+                    <p class="card-text text-muted mb-1">@publicationVue.tempsDiff</p>
+                    <Badge Color="BadgeColor.Success" Class="text-uppercase">@publicationVue.SportTag</Badge>
+                </div>
             </div>
+
 
             <!-- Image -->
             <div class="image-section mb-3">
@@ -115,10 +124,13 @@ else
     private string error;
     private PublicationCommentaire newCommentaire = new PublicationCommentaire();
     private HubConnection _hubConnection;
+    private int utilisateurId;
 
     protected override async Task OnInitializedAsync()
     {
         await FetchPublicationDetails(PublicationId);
+        utilisateurId = session.GetUserFromSession()!.UtilisateursId;
+
         _hubConnection = new HubConnectionBuilder()
             .WithUrl("http://localhost:5000/publicationHub")
             .Build();
@@ -246,7 +258,7 @@ else
         EncouragementPublication encouragement = new()
             {
                 PublicationId = PublicationId,
-                UtilisateurId = publicationVue.UtilisateurId // Remplacez par l'ID de l'utilisateur authentifié
+                UtilisateurId = utilisateurId // Remplacez par l'ID de l'utilisateur authentifié
             };
 
         try
@@ -273,11 +285,11 @@ else
     }
     private async Task AjoutNombreEncouragementCommentaire(CommentaireVue commentaireVue)
     {
-        
+
         EncouragementPublicationCommentaire encouragement = new()
         {
             PublicationCommentaireId = commentaireVue.CommentaireId,
-            UtilisateurId = commentaireVue.UtilisateurId
+                UtilisateurId = utilisateurId
         };
         try
         {
@@ -309,11 +321,11 @@ else
     private async Task SupprimerNombreEncouragement()
     {
         // Utilisez l'ID de l'encouragement à supprimer (assurez-vous d'avoir cet ID disponible)
-        int encouragementId = publicationVue.UtilisateurId; // Remplacez par l'ID de l'encouragement que vous souhaitez supprimer
-
+        int encouragementId = publicationVue.PublicationsId; // Remplacez par l'ID de l'encouragement que vous souhaitez supprimer
+        
         try
         {
-            var response = await httpClient.DeleteAsync($"EncouragementPublication/{encouragementId}");
+            var response = await httpClient.DeleteAsync($"EncouragementPublication/DeleteEncouragement/{encouragementId}/{utilisateurId}");
 
             if (response.IsSuccessStatusCode)
             {
@@ -341,7 +353,7 @@ else
 
         try
         {
-            var response = await httpClient.DeleteAsync($"EncouragementPublicationCommentaire/{encouragementId}");
+            var response = await httpClient.DeleteAsync($"EncouragementPublicationCommentaire/DeleteEncouragementPublicationCommentaire/{encouragementId}/{utilisateurId}");
 
             if (response.IsSuccessStatusCode)
             {

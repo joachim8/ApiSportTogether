@@ -145,7 +145,9 @@ namespace ApiSportTogether.Controller
                     MediaUrls = p.PublicationImages.Select(i => i.Url).ToArray()!, // URLs des médias (images/vidéos)
                     NombreEncouragements = p.NombreEncouragement,
                     tempsDiff = GetDateDifference(p.DatePublication, DateTime.Now),
-                    IsEncourager = p.EncouragementPublications.Any(ep => ep.UtilisateurId == p.UtilisateurId)
+                    IsEncourager = p.EncouragementPublications.Any(ep => ep.UtilisateurId == p.UtilisateurId),
+                    SportTag = p.SportTag,
+
                 })
                 .FirstOrDefault();
 

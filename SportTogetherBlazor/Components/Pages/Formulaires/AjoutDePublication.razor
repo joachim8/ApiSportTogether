@@ -10,7 +10,7 @@
         <EditForm Model="publicationRequest" OnValidSubmit="SubmitPublicationAsync" class="d-flex align-items-center gap-2">
             <DataAnnotationsValidator />
             <ValidationSummary />
-
+          
             <!-- Zone de texte pour le contenu de la publication -->
             <div class="form-group mb-0 flex-grow-1">
                 <InputTextArea id="contenu" @bind-Value="publicationRequest.Publication.Contenu" class="form-control" placeholder="Exprimez-vous ici..." />
@@ -31,6 +31,17 @@
                 </Button>
             </div>
         </EditForm>
+    </div>
+    <div class=" card-footer">
+        <!-- Affichage des badges pour chaque sport -->
+        <div class="mb-3">
+            @foreach (var sport in listSport)
+            {
+                <Badge Color="@(publicationRequest.Publication.SportTag == sport ? BadgeColor.Primary : BadgeColor.Secondary)" Style="cursor: pointer;" @onclick="() => AddSportTag(sport)">
+                    @sport
+                </Badge>
+            }
+        </div>
     </div>
 </div>
 
@@ -56,9 +67,33 @@
     private List<IBrowserFile> uploadedFiles = new List<IBrowserFile>();
     private bool isSubmitting = false;
     [Inject] protected ToastService ToastService { get; set; } = default!;
+    private List<string> listSport = new();
+
     protected override async Task OnInitializedAsync()
     {
         publicationRequest.Publication = new();
+        listSport = new()
+        {
+            "Football",
+            "Basketball",
+            "Tennis",
+            "Athlétisme",
+            "Gymnastique",
+            "Natation",
+            "Baseball",
+            "Cyclisme",
+            "Volleyball",
+            "Rugby",
+            "Boxe",
+            "Hockey sur glace",
+            "Tennis de table",
+            "Badminton",
+            "Arts martiaux mixtes",
+            "Pétanque",
+            "Yoga"
+        };
+
+
     }
 
     // Fonction pour uploader les fichiers et récupérer les URLs
@@ -102,6 +137,13 @@
 
         return fileUrls;
     }
+    // Ajouter le sport sélectionné au SportTag de la publication
+    private void AddSportTag(string sport)
+    {
+
+        publicationRequest.Publication.SportTag = sport;
+
+    }
 
     // Fonction pour soumettre la publication
     private async Task SubmitPublicationAsync()
@@ -121,7 +163,7 @@
                         Contenu = publicationRequest.Publication.Contenu,
                         UtilisateurId = UtilisateurId,
                         DatePublication = DateTime.Now,
-
+                        SportTag = publicationRequest.Publication.SportTag
                     },
                     MediaUrls = uploadedUrls
                 };
@@ -134,13 +176,13 @@
                 // Réinitialiser le formulaire après succès
                 publicationRequest = new PublicationAjoutVue();
                 uploadedFiles.Clear();
-                publicationAjouter = await response.Content.ReadFromJsonAsync<Publication>();
+
                 if(publicationAjouter != null)
                 {
                     ToastService.Notify(new(ToastType.Success, $"Votre publication {publicationAjoutVue.Publication.Contenu} a bien été publier."));
-                   
+
                 }
-               
+
             }
             else
             {
@@ -155,7 +197,7 @@
         finally
         {
             isSubmitting = false;
-            
+            StateHasChanged();
         }
     }
 

@@ -27,5 +27,7 @@ namespace SportTogetherBlazor.Models
         public string? tempsDiff { get; set; } // Temps diff
         [JsonPropertyName("IsEncourager")]
         public bool IsEncourager { get; set; }
+        [JsonPropertyName("SportTag")]
+        public string? SportTag { get; set; }
     }
 }

@@ -15,7 +15,7 @@
                 </div>
                 <div class="col-md-8 text-center">
                     <div class="d-flex align-items-center justify-content-center">
-                        <ProfilVueUtilisateurCard Auteur="@annonceVue.Auteur" userId="@annonceVue.AuteurId"/> 
+                        <ProfilVueUtilisateurCard Auteur="@annonceVue.Auteur" userId="@annonceVue.AuteurId" sport="@annonceVue.SportName"/> 
                     </div>
                     <hr class="my-2" />
                     <div class="d-flex align-items-center justify-content-center">
@@ -106,7 +106,7 @@
     private Modal addParticipationModal = default!;
     private Modal removeParticipationModal = default!;
 
-    
+
     /// <summary>
     /// Initialisation de la page
     /// </summary>
@@ -120,6 +120,7 @@
         {
             isAuteur = true;
         }
+
     }
 
     /// <summary>

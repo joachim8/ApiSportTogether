@@ -122,15 +122,15 @@ namespace ApiSportTogether.Controller
         }
 
         // DELETE: ApiSportTogether/EncouragementPublicationCommentaire/{id}
-        [HttpDelete("{id}")]
-        public ActionResult DeleteEncouragementPublicationCommentaire(int id)
+        [HttpDelete("DeleteEncouragementPublicationCommentaire/{PublicationCommentaireId}/{utilisateurId}")]
+        public ActionResult DeleteEncouragementPublicationCommentaire(int publicationCommentaireId, int utilisateurId)
         {
-            var encouragement = _context.EncouragementPublicationCommentaires.Find(id);
+            var encouragement = _context.EncouragementPublicationCommentaires.Where(epc => epc.PublicationCommentaireId == publicationCommentaireId && epc.UtilisateurId == utilisateurId).FirstOrDefault();
             if (encouragement == null)
             {
                 return NotFound();
             }
-            PublicationCommentaire? publicationCommentaire = _context.PublicationCommentaires.Find(encouragement.PublicationCommentaireId);
+            PublicationCommentaire? publicationCommentaire = _context.PublicationCommentaires.Find(publicationCommentaireId);
             _context.EncouragementPublicationCommentaires.Remove(encouragement);
             _context.SaveChanges();
             if (publicationCommentaire != null)

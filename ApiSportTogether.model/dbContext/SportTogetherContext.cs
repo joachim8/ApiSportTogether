@@ -293,7 +293,7 @@ public partial class SportTogetherContext : DbContext
 
             entity.Property(e => e.PublicationsId).HasColumnName("publications_id");
             entity.Property(e => e.Contenu).HasColumnType("text");
-
+            entity.Property(e => e.SportTag).HasColumnName("sport_tag");
             entity.Property(e => e.UtilisateurId).HasColumnName("UtilisateurID");
             entity.Property(e => e.NombreEncouragement).HasColumnName("nombre_encouragement");
 
