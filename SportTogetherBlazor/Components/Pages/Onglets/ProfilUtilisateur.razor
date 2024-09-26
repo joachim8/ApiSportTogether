@@ -63,10 +63,10 @@
                         </TitleTemplate>
                         <Content>
                             <div class="mt-4">
-                                <AjoutDePublication UtilisateurId="utilisateurVue.UtilisateursId" />
+                                <AjoutDePublication UtilisateurId="utilisateurVue.UtilisateursId" OnPublicationAdded="RafraichirPublications" />
                             </div>
                             <div class="mt-4">
-                                <MesPublications utilisateurId="utilisateurVue.UtilisateursId" />
+                                <MesPublications @ref="mesPublicationsRef" utilisateurId="utilisateurVue.UtilisateursId" />
                             </div>
                         </Content>
                     </Tab>
@@ -120,7 +120,7 @@ else
     public UtilisateurVue? utilisateurVue { get; set; } 
     private Utilisateur utilisateurInfo;
     private HttpClient httpClient;
-
+    private MesPublications mesPublicationsRef;
     private int nombreAmis = 0;
 
     protected override async Task OnInitializedAsync()
@@ -132,7 +132,10 @@ else
         // Appel API pour récupérer le nombre d'amis
         nombreAmis = await httpClient.GetFromJsonAsync<int>($"Ami/GetNombreAmi/{utilisateurInfo.UtilisateursId}");
     }
-
+    private async Task RafraichirPublications()
+    {
+        await mesPublicationsRef.GetPublicationsIdsByUtilisateur(); // Méthode pour récupérer les publications
+    }
     private async Task GetUtilisateurVue()
     {
         

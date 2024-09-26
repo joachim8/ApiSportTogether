@@ -27,6 +27,21 @@ else
 
                 <!-- Section badge et tempsDiff alignée à droite -->
                 <div class="text-end">
+                    <Dropdown Color="DropdownColor.None"  >
+                        <DropdownToggleButton ><Icon Name="IconName.ThreeDotsVertical" Color="IconColor.Dark" /></DropdownToggleButton>
+                        <DropdownMenu>
+                            @if(publicationVue.UtilisateurId == utilisateurId)
+                            {
+                                <DropdownItem Type="ButtonType.Button" @onclick="() => DeletePublication()">Supprimer</DropdownItem>
+                            }
+                            else
+                            {
+                                <DropdownItem Type="ButtonType.Button">Signaler</DropdownItem>
+                            }  
+
+                        </DropdownMenu>
+                    </Dropdown>
+                    <Button Color="ButtonColor.None" Size="Size.Small" > </Button>
                     <p class="card-text text-muted mb-1">@publicationVue.tempsDiff</p>
                     <Badge Color="BadgeColor.Success" Class="text-uppercase">@publicationVue.SportTag</Badge>
                 </div>
@@ -115,8 +130,18 @@ else
     </div>
    
 }
+<ConfirmDialog @ref="dialog" />
+<style>
+    .dropdown-toggle::after !important {
+        display: none;
+    }
+</style>
+
 @code {
+
+    #region "Variable"
     [Parameter] public int PublicationId { get; set; }
+    [Parameter] public EventCallback<int> OnDelete { get; set; }
     private PublicationVue? publicationVue = null;
     private bool isLoading = true;
     private bool hasError = false;
@@ -125,7 +150,13 @@ else
     private PublicationCommentaire newCommentaire = new PublicationCommentaire();
     private HubConnection _hubConnection;
     private int utilisateurId;
+    private readonly List<string> imageExtensions = new List<string> { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff" };
+    private readonly List<string> videoExtensions = new List<string> { ".mp4", ".avi", ".mov", ".wmv", ".mkv", ".flv", ".webm" };
+    private ConfirmDialog dialog;
 
+    #endregion
+
+    #region "Init et dispose"
     protected override async Task OnInitializedAsync()
     {
         await FetchPublicationDetails(PublicationId);
@@ -142,7 +173,8 @@ else
             if (commentaire != null)
             {
                 publicationVue.Commentaires.Add(commentaire);
-                StateHasChanged(); // Re-render the component
+                // Actualiser l'affichage
+                await InvokeAsync(StateHasChanged);
             }
         });
 
@@ -154,7 +186,8 @@ else
             if (commentaire != null)
             {
                 publicationVue.Commentaires.Remove(commentaire);
-                StateHasChanged();
+                // Actualiser l'affichage
+                await InvokeAsync(StateHasChanged);
             }
         });
 
@@ -168,7 +201,25 @@ else
         await _hubConnection.SendAsync("JoinPublicationGroup", PublicationId.ToString()); // Rejoindre le groupe
 
     }
-    // Méthode pour récupérer le commentaire par ID
+    // Dispose method to stop the SignalR connection
+    public void Dispose()
+    {
+        // Déconnecter de SignalR
+        if (_hubConnection != null)
+        {
+            _hubConnection.SendAsync("LeavePublicationGroup", PublicationId.ToString()); // Quitter le groupe
+            _hubConnection.DisposeAsync();
+        }
+
+    }
+    #endregion
+
+    #region "Task commentaire"
+    /// <summary>
+    /// Méthode pour récupérer le commentaire par ID
+    /// </summary>
+    /// <param name="commentaireId"></param>
+    /// <returns></returns>
     private async Task<CommentaireVue?> FetchCommentaireById(int commentaireId)
     {
         try
@@ -189,47 +240,13 @@ else
         }
         return null;
     }
-    // Dispose method to stop the SignalR connection
-    public void Dispose()
-    {
-        // Déconnecter de SignalR
-        if (_hubConnection != null)
-        {
-            _hubConnection.SendAsync("LeavePublicationGroup", PublicationId.ToString()); // Quitter le groupe
-            _hubConnection.DisposeAsync();
-        }
-
-    }
 
 
-    private async Task FetchPublicationDetails(int publicationId)
-    {
-        httpClient = HttpClientFactory.CreateClient("ApiSportTogetherClient");
-        try
-        {
-            var response = await httpClient.GetAsync($"Publication/GetPublicationVueById/{publicationId}");
-            if (response.IsSuccessStatusCode)
-            {
-                publicationVue = await response.Content.ReadFromJsonAsync<PublicationVue?>();
-            }
-            else
-            {
-                error = response.Content.ToString();
-                Console.Write(response.Content.ToString());
-            }
-        }
-        catch (Exception ex)
-        {
-            hasError = true;
-            Console.Write(ex.Message);
-        }
-        finally
-        {
-            isLoading = false;
-            StateHasChanged();
-        }
-    }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
     private async Task AddCommentaire()
     {
         newCommentaire.PublicationId = PublicationId;
@@ -251,46 +268,19 @@ else
             Console.WriteLine(await response.Content.ReadAsStringAsync());
         }
     }
-
-
-    private async Task AjoutNombreEncouragement()
-    {
-        EncouragementPublication encouragement = new()
-            {
-                PublicationId = PublicationId,
-                UtilisateurId = utilisateurId // Remplacez par l'ID de l'utilisateur authentifié
-            };
-
-        try
-        {
-            var response = await httpClient.PostAsJsonAsync("EncouragementPublication/CreateEncouragement", encouragement);
-
-            if (response.IsSuccessStatusCode)
-            {
-                // Mise à jour du nombre d'encouragements de la publication
-                publicationVue.NombreEncouragements++;
-                publicationVue.IsEncourager = true; // Met à jour l'état d'encouragement de la publication
-                StateHasChanged(); // Re-render le composant
-            }
-            else
-            {
-                error = "Erreur lors de l'ajout de l'encouragement à la publication.";
-                Console.WriteLine(await response.Content.ReadAsStringAsync());
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Erreur : {ex.Message}");
-        }
-    }
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="commentaireVue"></param>
+    /// <returns></returns>
     private async Task AjoutNombreEncouragementCommentaire(CommentaireVue commentaireVue)
     {
 
         EncouragementPublicationCommentaire encouragement = new()
-        {
-            PublicationCommentaireId = commentaireVue.CommentaireId,
+            {
+                PublicationCommentaireId = commentaireVue.CommentaireId,
                 UtilisateurId = utilisateurId
-        };
+            };
         try
         {
             var response = await httpClient.PostAsJsonAsync($"EncouragementPublicationCommentaire/CreateEncouragementPublicationCommentaire/", encouragement);
@@ -317,35 +307,11 @@ else
             Console.WriteLine($"Erreur : {ex.Message}");
         }
     }
-
-    private async Task SupprimerNombreEncouragement()
-    {
-        // Utilisez l'ID de l'encouragement à supprimer (assurez-vous d'avoir cet ID disponible)
-        int encouragementId = publicationVue.PublicationsId; // Remplacez par l'ID de l'encouragement que vous souhaitez supprimer
-        
-        try
-        {
-            var response = await httpClient.DeleteAsync($"EncouragementPublication/DeleteEncouragement/{encouragementId}/{utilisateurId}");
-
-            if (response.IsSuccessStatusCode)
-            {
-                // Mise à jour du nombre d'encouragements de la publication
-                publicationVue.NombreEncouragements--;
-                publicationVue.IsEncourager = false; // Met à jour l'état d'encouragement de la publication
-                StateHasChanged(); // Re-render le composant
-            }
-            else
-            {
-                error = "Erreur lors de la suppression de l'encouragement à la publication.";
-                Console.WriteLine(await response.Content.ReadAsStringAsync());
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Erreur : {ex.Message}");
-        }
-    }
-
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="commentaireVue"></param>
+    /// <returns></returns>
     private async Task SupprimerNombreEncouragementCommentaire(CommentaireVue commentaireVue)
     {
         // Utilisez l'ID de l'encouragement à supprimer (assurez-vous d'avoir cet ID disponible)
@@ -377,6 +343,185 @@ else
             Console.WriteLine($"Erreur : {ex.Message}");
         }
     }
+    #endregion
+    #region "Task Publication"
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="publicationId"></param>
+    /// <returns></returns>
+    private async Task FetchPublicationDetails(int publicationId)
+    {
+        httpClient = HttpClientFactory.CreateClient("ApiSportTogetherClient");
+        try
+        {
+            var response = await httpClient.GetAsync($"Publication/GetPublicationVueById/{publicationId}");
+            if (response.IsSuccessStatusCode)
+            {
+                publicationVue = await response.Content.ReadFromJsonAsync<PublicationVue?>();
+            }
+            else
+            {
+                error = response.Content.ToString();
+                Console.Write(response.Content.ToString());
+            }
+        }
+        catch (Exception ex)
+        {
+            hasError = true;
+            Console.Write(ex.Message);
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
+    private async Task AjoutNombreEncouragement()
+    {
+        EncouragementPublication encouragement = new()
+            {
+                PublicationId = PublicationId,
+                UtilisateurId = utilisateurId // Remplacez par l'ID de l'utilisateur authentifié
+            };
+
+        try
+        {
+            var response = await httpClient.PostAsJsonAsync("EncouragementPublication/CreateEncouragement", encouragement);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Mise à jour du nombre d'encouragements de la publication
+                publicationVue.NombreEncouragements++;
+                publicationVue.IsEncourager = true; // Met à jour l'état d'encouragement de la publication
+                StateHasChanged(); // Re-render le composant
+            }
+            else
+            {
+                error = "Erreur lors de l'ajout de l'encouragement à la publication.";
+                Console.WriteLine(await response.Content.ReadAsStringAsync());
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur : {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
+    private async Task SupprimerNombreEncouragement()
+    {
+        // Utilisez l'ID de l'encouragement à supprimer (assurez-vous d'avoir cet ID disponible)
+        int publicationId = publicationVue.PublicationsId; // Remplacez par l'ID de l'encouragement que vous souhaitez supprimer
+
+        try
+        {
+            var response = await httpClient.DeleteAsync($"EncouragementPublication/DeleteEncouragement/{publicationId}/{utilisateurId}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Mise à jour du nombre d'encouragements de la publication
+                publicationVue.NombreEncouragements--;
+                publicationVue.IsEncourager = false; // Met à jour l'état d'encouragement de la publication
+                StateHasChanged(); // Re-render le composant
+            }
+            else
+            {
+                error = "Erreur lors de la suppression de l'encouragement à la publication.";
+                Console.WriteLine(await response.Content.ReadAsStringAsync());
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur : {ex.Message}");
+        }
+    }
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
+    private async Task DeletePublication()
+    {
+        var confirmation = await dialog.ShowAsync(
+          title: "Etes vous sur de vouloir supprimer cette publication ?",
+          message1: $"La publication : {publicationVue.Contenu} ");
+        if (confirmation)
+        {
+            await SupprimerPublication();
+        }
+    }
+    /// <summary>
+    ///
+    /// </summary>
+    /// <returns></returns>
+    private async Task SupprimerPublication()
+    {
+        // Utilisez l'ID de la publication à supprimer (assurez-vous d'avoir cet ID disponible)
+        int publicationId = publicationVue.PublicationsId; 
+
+        try
+        {
+            var response = await httpClient.DeleteAsync($"Publication/DeletePublication/{publicationId}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                foreach(string url in publicationVue.MediaUrls)
+                {
+                    string mediaType = GetMediaTypeFromUrl(url);
+                    string nomDuFichier = Path.GetFileName(new Uri(url).AbsolutePath);
+                    try
+                    {
+                        await httpClient.DeleteAsync($"http://localhost:5400/ApiImageSportTogether/Images/DeleteMedia/{mediaType}/{nomDuFichier}");
+                    }catch(Exception ex)
+                    {
+                        
+                    }
+                   
+                }
+
+                await OnDelete.InvokeAsync(publicationId);
+                
+            }
+            else
+            {
+                error = "Erreur lors de la suppression de l'encouragement à la publication.";
+                Console.WriteLine(await response.Content.ReadAsStringAsync());
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur : {ex.Message}");
+        }
+    }
+    #endregion
+  #region "Méthodes"
+    private string GetMediaTypeFromUrl(string mediaUrl)
+    {
+        // Extraire l'extension du fichier à partir de l'URL
+        var fileExtension = Path.GetExtension(mediaUrl).ToLower();
+
+        if (imageExtensions.Contains(fileExtension))
+        {
+            return "image";
+        }
+        else if (videoExtensions.Contains(fileExtension))
+        {
+            return "video";
+        }
+        else
+        {
+            return "unknown"; // Si l'extension ne correspond ni à une image ni à une vidéo
+        }
+    }
+
+  #endregion
 
 
 }

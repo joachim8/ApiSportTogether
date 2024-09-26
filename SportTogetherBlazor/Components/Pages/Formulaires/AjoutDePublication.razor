@@ -63,6 +63,7 @@
 
 @code {
     [Parameter] public int UtilisateurId { get; set; }
+    [Parameter] public EventCallback OnPublicationAdded { get; set; }
     private PublicationAjoutVue publicationRequest = new PublicationAjoutVue();
     private List<IBrowserFile> uploadedFiles = new List<IBrowserFile>();
     private bool isSubmitting = false;
@@ -175,8 +176,9 @@
             {
                 // Réinitialiser le formulaire après succès
                 publicationRequest = new PublicationAjoutVue();
+                publicationAjoutVue.Publication = new Publication();
                 uploadedFiles.Clear();
-
+                await OnPublicationAdded.InvokeAsync(null);
                 if(publicationAjouter != null)
                 {
                     ToastService.Notify(new(ToastType.Success, $"Votre publication {publicationAjoutVue.Publication.Contenu} a bien été publier."));

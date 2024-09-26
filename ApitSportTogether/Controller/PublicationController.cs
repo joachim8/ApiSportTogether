@@ -109,14 +109,40 @@ namespace ApiSportTogether.Controller
             return NoContent();
         }
 
-        // DELETE: ApiSportTogether/Publication/5
-        [HttpDelete("{id}")]
+        // DELETE: ApiSportTogether/Publication/DeletePublication/5
+        [HttpDelete("DeletePublication/{id}")]
         public IActionResult DeletePublication(int id)
         {
-            var publication = _context.Publications.Find(id);
+            Publication publication = _context.Publications.Include(p => p.EncouragementPublications).Include(p => p.PublicationImages).Include(p => p.PublicationCommentaires).ThenInclude(pc => pc.EncouragementPublicationCommentaires).Where(p => p.PublicationsId == id).FirstOrDefault()!;
             if (publication == null)
             {
                 return NotFound();
+            }
+            else
+            {
+                _context.PublicationImages.RemoveRange(publication.PublicationImages);
+                _context.SaveChanges();
+                
+                if (publication.PublicationCommentaires != null && publication.PublicationCommentaires.Any())
+                {
+                    foreach(PublicationCommentaire publicationCommentaire in publication.PublicationCommentaires)
+                    {
+                        _context.EncouragementPublicationCommentaires.RemoveRange(publicationCommentaire.EncouragementPublicationCommentaires);
+                        _context.SaveChanges();
+                    }
+                    _context.PublicationCommentaires.RemoveRange(publication.PublicationCommentaires);
+                    _context.SaveChanges();
+                }
+
+                
+               
+
+                if (publication.EncouragementPublications != null && publication.EncouragementPublications.Any())
+                {
+                    _context.EncouragementPublications.RemoveRange(publication.EncouragementPublications);
+                    _context.SaveChanges();
+                }
+              
             }
 
             _context.Publications.Remove(publication);

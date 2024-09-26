@@ -14,8 +14,8 @@ else
     <div class="d-flex justify-content-center flex-wrap">
         @foreach (var publicationId in publications)
         {
-           
-            <PublicationCard PublicationId="@publicationId" />
+
+            <PublicationCard PublicationId="@publicationId" OnDelete="OnDeletePublication" />
 
         }
     </div>
@@ -29,7 +29,7 @@ else
     {
         await GetPublicationsIdsByUtilisateur();
     }
-    private async Task GetPublicationsIdsByUtilisateur()
+    public async Task GetPublicationsIdsByUtilisateur()
     {
         var response = await Http.GetAsync($"Publication/GetPublicationsIdsByUtilisateur/{utilisateurId}");
         if (response.IsSuccessStatusCode)
@@ -42,5 +42,15 @@ else
             publications = new List<int>(); // En cas d'erreur, on initialise une liste vide
         }
     }
+    // Méthode appelée lors de la suppression d'une publication
+    private async Task OnDeletePublication(int publicationId)
+    {
+        // Supprimer la publication de la liste
+        publications.Remove(publicationId);
+
+        // Actualiser l'affichage
+        await InvokeAsync(StateHasChanged);
+    }
+  
    
 }
