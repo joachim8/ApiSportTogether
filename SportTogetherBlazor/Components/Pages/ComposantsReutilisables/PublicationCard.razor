@@ -48,13 +48,46 @@ else
             </div>
 
 
-            <!-- Image -->
-            <div class="image-section mb-3">
-                @if (publicationVue.MediaUrls != null && publicationVue.MediaUrls.Count > 0)
-                {
-                    <img src="@publicationVue.MediaUrls[0]" class="img-thumbnail rounded" alt="Image publication" style="max-height: 250px; width: 100%;" />
-                }
+       <div class="media-section mb-3">
+    @if (publicationVue.MediaUrls != null && publicationVue.MediaUrls.Count > 0)
+    {
+        if (publicationVue.MediaUrls.Count == 1)
+        {
+            // Afficher une seule image
+            <div class="image-section">
+                <img src="@publicationVue.MediaUrls[0]" class="img-thumbnail rounded" alt="Image publication" style="max-height: 250px; width: 100%;" />
             </div>
+        }
+        else if (publicationVue.MediaUrls.Count > 1)
+        {
+          //Afficher un carrousel pour plusieurs images
+            <div id="carouselExampleIndicators" class="carousel slide">
+                <div class="carousel-indicators">
+                    @for (int i = 0; i < publicationVue.MediaUrls.Count; i++)
+                    {
+                        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="@i" class="@(i == 0 ? "active" : "")" aria-current="@(i == 0 ? "true" : "false")" aria-label="Slide @(i + 1)"></button>
+                    }
+                </div>
+                <div class="carousel-inner">
+                    @for (int i = 0; i < publicationVue.MediaUrls.Count; i++)
+                    {
+                        <div class="carousel-item @(i == 0 ? "active" : "")">
+                                        <img src="@publicationVue.MediaUrls[i]" class="d-block w-100" alt="Image publication @(i + 1)" style="max-height: 250px; width: 100%;">
+                        </div>
+                    }
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        }
+    }
+</div>
 
             <!-- Contenu et autres informations épurées -->
             <p class="card-text text-muted">@publicationVue.Contenu</p>
@@ -479,6 +512,7 @@ else
                     try
                     {
                         await httpClient.DeleteAsync($"http://localhost:5400/ApiImageSportTogether/Images/DeleteMedia/{mediaType}/{nomDuFichier}");
+                        
                     }catch(Exception ex)
                     {
                         
@@ -487,6 +521,7 @@ else
                 }
 
                 await OnDelete.InvokeAsync(publicationId);
+                
                 
             }
             else

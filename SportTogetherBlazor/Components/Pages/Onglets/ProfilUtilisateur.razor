@@ -135,6 +135,7 @@ else
     private async Task RafraichirPublications()
     {
         await mesPublicationsRef.GetPublicationsIdsByUtilisateur(); // Méthode pour récupérer les publications
+        StateHasChanged();
     }
     private async Task GetUtilisateurVue()
     {

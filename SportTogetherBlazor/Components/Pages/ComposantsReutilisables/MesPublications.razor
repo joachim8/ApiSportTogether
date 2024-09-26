@@ -47,7 +47,7 @@ else
     {
         // Supprimer la publication de la liste
         publications.Remove(publicationId);
-
+        StateHasChanged();
         // Actualiser l'affichage
         await InvokeAsync(StateHasChanged);
     }
