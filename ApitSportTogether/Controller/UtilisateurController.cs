@@ -50,7 +50,18 @@ namespace ApiSportTogether.Controller
                 utilisateur.MotDePasse = HashPassword(utilisateur.MotDePasse);
                 _context.Utilisateurs.Add(utilisateur);
                 _context.SaveChanges();
-
+                if(utilisateur.UtilisateursId != 0)
+                {
+                    ProfileImage profileImage = new()
+                    {
+                        UtilisateursId = utilisateur.UtilisateursId,
+                        Timestamp = DateTime.Now,
+                        Type = "Profil",
+                        Url = "http://localhost:5000/Images/avatar-photo-profil.jpg"
+                    };
+                    _context.ProfileImages.Add(profileImage);
+                    _context.SaveChanges();
+                }
                 return CreatedAtAction(nameof(GetUtilisateurById), new { id = utilisateur.UtilisateursId }, utilisateur);
             }
             else
@@ -66,7 +77,7 @@ namespace ApiSportTogether.Controller
             {
                 return BadRequest();
             }
-
+            if(utilisateur.MotDePasse != HashPassword(utilisateur.MotDePasse))  utilisateur.MotDePasse = HashPassword(utilisateur.MotDePasse);
             _context.Entry(utilisateur).State = EntityState.Modified;
 
             try

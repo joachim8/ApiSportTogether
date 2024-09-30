@@ -110,6 +110,7 @@ namespace ApiSportTogether.Controller
         private bool VerifyPassword(string hashedPassword, string providedPassword)
         {
             var hasher = new PasswordHasher<object>();
+            string mdp = hasher.HashPassword(null, providedPassword);
             var result = hasher.VerifyHashedPassword(null, hashedPassword, providedPassword);
             return result == PasswordVerificationResult.Success;
         }

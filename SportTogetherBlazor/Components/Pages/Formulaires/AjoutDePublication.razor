@@ -33,15 +33,20 @@
         </EditForm>
     </div>
     <div class=" card-footer">
-        <!-- Affichage des badges pour chaque sport -->
-        <div class="mb-3">
-            @foreach (var sport in listSport)
-            {
-                <Badge Color="@(publicationRequest.Publication.SportTag == sport ? BadgeColor.Primary : BadgeColor.Secondary)" Style="cursor: pointer;" @onclick="() => AddSportTag(sport)">
-                    @sport
-                </Badge>
-            }
-        </div>
+        <Button Type="ButtonType.Button" Color="ButtonColor.None" @onclick="ToggleContentAsync"><Icon Name="@(isToggled ? IconName.CaretUpFill : IconName.CaretDownFill)" /></Button>
+        <Collapse @ref="collapse1">
+            <Card>
+                <CardBody>
+                        @foreach (var sport in listSport)
+                        {
+                            <Badge Color="@(publicationRequest.Publication.SportTag == sport ? BadgeColor.Primary : BadgeColor.Secondary)" Style="cursor: pointer;" @onclick="() => AddSportTag(sport)">
+                                @sport
+                            </Badge>
+                        }
+                </CardBody>
+            </Card>
+        </Collapse>
+        
     </div>
 </div>
 
@@ -69,6 +74,9 @@
     private bool isSubmitting = false;
     [Inject] protected ToastService ToastService { get; set; } = default!;
     private List<string> listSport = new();
+    Collapse collapse1 = default!;
+    private bool isToggled = false;
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -153,7 +161,11 @@
         publicationRequest.Publication.SportTag = sport;
 
     }
-
+    private async Task ToggleContentAsync()
+    {
+        isToggled = collapse1.Toggle;
+        await collapse1.ToggleAsync();
+    } 
     // Fonction pour soumettre la publication
     private async Task SubmitPublicationAsync()
     {

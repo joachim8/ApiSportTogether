@@ -9,35 +9,51 @@
 @inject SessionStorageServices session
 @if(utilisateurVue != null)
 {
-    <div class="container mt-5" style="color:#085f63;">
+    <div class="container mt-4" style="color:#085f63;">
         <div class="row justify-content-center">
             <div class="col-md-8">
                 <!-- Card contenant les informations de l'utilisateur -->
+             
                 <div class="card shadow-lg w-auto card">
                     <div class="card-body d-flex text-center">
                         <!-- Photo de profil à gauche -->
                         <div class="me-4">
                             <img src="@utilisateurVue.urlProfilImage" alt="Profile Picture" class="rounded-circle" id="img-profile" />
+                            <!-- Bouton "Modifier" qui apparaît au hover -->
+                            <Button Color="ButtonColor.Secondary" Class="btn-modifier position-absolute bottom-0 start-50 translate-middle-x" TooltipTitle="Modifier la photo de profil" Size="Size.Small">
+                                Modifier
+                            </Button>
                         </div>
                         <!-- Informations utilisateur à droite -->
-                        <div class="flex-grow-1">
+                        <div class="flex-grow-1 justify-content-center">
                             <h4 class="card-title"><strong>@utilisateurVue.Pseudo</strong></h4>
                             <!-- Séparateur -->
+                            <hr class="mb-1" style="width:50%; margin-left: auto;
+                    margin-right: auto;" />
+                            <!-- Âge -->
+                            <p class="card-text ">
+                                <Icon Name="IconName.Calendar" Color="IconColor.Success" class="me-1" /> @utilisateurVue.Age
+                            </p>
+
                             <hr class="mb-1 " style="width:50%; margin-left: auto;
-                                margin-right: auto;" />
+                    margin-right: auto;" />
+                            <!-- Sexe -->
                             <p class="card-text">
-                                <strong>Âge:</strong> @utilisateurVue.Age
+                                <Icon Name="IconName.GenderAmbiguous" Color="IconColor.Success" class="me-1" /> @utilisateurVue.Genre
                             </p>
                             <hr class="mb-1 " style="width:50%; margin-left: auto;
-                                margin-right: auto;" />
-                            <p class="card-text">
-                                <strong>Coéquipiers:</strong> @nombreAmis
-                            </p>
+                    margin-right: auto;" />
+                            <!-- Bouton coéquipiers avec compteur -->
+                            <Button Color="ButtonColor.Success" @onclick="AfficherListeAmis">
+                                <Icon Name="IconName.PersonHeart" class="me-1" /> @nombreAmis
+                            </Button>
                             <hr class="mb-1 " style="width:50%; margin-left: auto;
-                                margin-right: auto;" />
-                            <p class="card-text">
-                                <strong>Note moyenne des annonces:</strong> @utilisateurVue.NoteMoyenneDesAnnonces / 10
-                            </p>
+                    margin-right: auto;" />
+                            <Badge Color="BadgeColor.Secondary">
+                                @utilisateurVue.NoteMoyenneDesAnnonces / 10
+                            </Badge>
+                         
+
                         </div>
                     </div>
                     <!-- Description en bas (footer de la card) -->
@@ -45,6 +61,9 @@
                         <p class="text-muted">@utilisateurVue.Description</p>
                     </div>
                 </div>
+               
+              
+
             </div>
         </div>
 
@@ -91,7 +110,7 @@
                             <Icon Name="IconName.InfoCircleFill" /> Informations du profil
                         </TitleTemplate>
                         <Content>
-                            <p class="mt-3">Options pour gérer le profil utilisateur.</p>
+                           <FrmModificationUtilisateur utilisateur="utilisateurInfo"/>
                         </Content>
                     </Tab>
                 </Tabs>
@@ -113,6 +132,23 @@ else
         border-color: #085f63;
         
     }
+    /* Initialement cacher le bouton */
+    .btn-modifier {
+        visibility: hidden;
+        opacity: 0;
+
+    }
+
+    /* Afficher le bouton quand on survole l'image */
+    #img-profile:hover + .btn-modifier {
+        visibility: visible;
+        opacity: 1;
+    }
+
+
+        #card-info-user{
+       
+        }
 </style>
 
 @code {
@@ -122,6 +158,14 @@ else
     private HttpClient httpClient;
     private MesPublications mesPublicationsRef;
     private int nombreAmis = 0;
+    
+    private bool showModifierBtn = false;
+
+    // Méthode pour afficher la liste d'amis
+    private void AfficherListeAmis()
+    {
+        // Logique pour ouvrir la modal des amis (ou utiliser un autre composant)
+    }
 
     protected override async Task OnInitializedAsync()
     {
