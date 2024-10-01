@@ -5,7 +5,7 @@
 
 @using System.Text.Json.Serialization;
 <div class="container-fluid mt-2">
-    <EditForm Model="@utilisateur" OnValidSubmit="HandleValidSubmit">
+    <EditForm Model="@utilisateurPourModif" OnValidSubmit="HandleValidSubmit">
         <DataAnnotationsValidator />
         <ValidationSummary />
 
@@ -18,26 +18,26 @@
                     <div class="col-md-6 mb-3">
                         <div class="form-group">
                             <label class="small text-muted">Nom :</label>
-                            <InputText @bind-Value="utilisateur.Nom" class="form-control" />
+                            <InputText @bind-Value="utilisateurPourModif.Nom" class="form-control" />
                         </div>
                         <div class="form-group">
                             <label class="small text-muted">Prénom :</label>
-                            <InputText @bind-Value="utilisateur.Prenom" class="form-control" />
+                            <InputText @bind-Value="utilisateurPourModif.Prenom" class="form-control" />
                         </div>
                         <div class="form-group">
                             <label class="small text-muted">Pseudo :</label>
-                            <InputText @bind-Value="utilisateur.Pseudo" class="form-control" />
+                            <InputText @bind-Value="utilisateurPourModif.Pseudo" class="form-control" />
                         </div>
                         <div class="form-group">
                             <label class="small text-muted">Genre :</label>
-                            <InputSelect id="genre" class="form-control" @bind-Value="utilisateur.Genre">
+                            <InputSelect id="genre" class="form-control" @bind-Value="utilisateurPourModif.Genre">
                                 <option value="Femme">Femme</option>
                                 <option value="Homme">Homme</option>
                             </InputSelect>
                         </div>
                         <div class="form-group">
                             <label class="small text-muted">Ville :</label>
-                            <InputText id="rechercheVille" class="form-control" @bind-Value="utilisateur.Ville" @oninput="@(async (ChangeEventArgs e) => await RechercherVilles(e.Value.ToString()))" />
+                            <InputText id="rechercheVille" class="form-control" @bind-Value="utilisateurPourModif.Ville" @oninput="@(async (ChangeEventArgs e) => await RechercherVilles(e.Value.ToString()))" />
                             @if (villes.Any())
                             {
                                 <div class="list-group mt-2">
@@ -53,7 +53,7 @@
                         </div>
                         <div class="form-group">
                             <label class="small text-muted">Âge :</label>
-                            <InputNumber id="age" class="form-control" @bind-Value="utilisateur.Age" min="15" max="100" />
+                            <InputNumber id="age" class="form-control" @bind-Value="utilisateurPourModif.Age" min="15" max="100" />
                         </div>
                     </div>
 
@@ -61,7 +61,7 @@
                     <div class="col-md-6 mb-3">
                         <div class="form-group">
                             <label class="small text-muted">Email :</label>
-                            <InputText @bind-Value="utilisateur.Email" type="email" class="form-control" />
+                            <InputText @bind-Value="utilisateurPourModif.Email" type="email" class="form-control" />
                         </div>
                         <div class="form-group">
                             <label class="small text-muted">Ancien mot de passe :</label>
@@ -91,7 +91,7 @@
     </EditForm>
 </div>
 @code {
-    [Parameter] public Utilisateur utilisateur { get; set; }
+    [Parameter] public Utilisateur utilisateurPourModif { get; set; }
 
     private string ancienMotDePasse { get; set; }
     private string nouveauMotDePasse { get; set; }
@@ -104,7 +104,7 @@
     private async Task HandleValidSubmit()
     {
         // Vérification de l'ancien mot de passe
-        var utilisateurActuel = await httpClient.GetFromJsonAsync<Utilisateur>($"utilisateur/{utilisateur.UtilisateursId}");
+        var utilisateurActuel = await httpClient.GetFromJsonAsync<Utilisateur>($"utilisateur/{utilisateurPourModif.UtilisateursId}");
         if(ancienMotDePasse != null && ancienMotDePasse != string.Empty)
         {
             if (utilisateurActuel.MotDePasse != HashPassword(ancienMotDePasse))
@@ -123,17 +123,17 @@
             // Mise à jour du mot de passe si tout est correct
             if (!string.IsNullOrWhiteSpace(nouveauMotDePasse))
             {
-                utilisateur.MotDePasse = nouveauMotDePasse;
+                utilisateurPourModif.MotDePasse = nouveauMotDePasse;
             }
         }
         else
         {
-            utilisateur.MotDePasse = utilisateurActuel.MotDePasse;
+            utilisateurPourModif.MotDePasse = utilisateurActuel.MotDePasse;
         }
 
 
         // Envoi de la mise à jour au serveur
-        var response = await httpClient.PutAsJsonAsync($"utilisateur/{utilisateur.UtilisateursId}", utilisateur);
+        var response = await httpClient.PutAsJsonAsync($"utilisateur/{utilisateurPourModif.UtilisateursId}", utilisateurPourModif);
 
         if (response.IsSuccessStatusCode)
         {
@@ -143,8 +143,8 @@
             }
             else
             {
-                utilisateurActuel = await httpClient.GetFromJsonAsync<Utilisateur>($"utilisateur/{utilisateur.UtilisateursId}");
-                utilisateur = utilisateurActuel;
+                utilisateurActuel = await httpClient.GetFromJsonAsync<Utilisateur>($"utilisateur/{utilisateurPourModif.UtilisateursId}");
+                utilisateurPourModif = utilisateurActuel;
                 StateHasChanged();
             }
         }
@@ -162,7 +162,7 @@
     }
     private void SelectionnerVille(Ville ville)
     {
-        utilisateur.Ville = ville.Nom;
+        utilisateurPourModif.Ville = ville.Nom;
         villes.Clear(); // Cache les suggestions après la sélection
     }
     private async Task RechercherVilles(string recherche)

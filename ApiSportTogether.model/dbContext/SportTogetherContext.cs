@@ -296,7 +296,7 @@ public partial class SportTogetherContext : DbContext
             entity.Property(e => e.SportTag).HasColumnName("sport_tag");
             entity.Property(e => e.UtilisateurId).HasColumnName("UtilisateurID");
             entity.Property(e => e.NombreEncouragement).HasColumnName("nombre_encouragement");
-
+            entity.Property(e => e.Visibilite).HasColumnName("visibilite");
             entity.Property(e => e.DatePublication).HasColumnName("Date_publication");
 
             entity.HasOne(d => d.Utilisateur).WithMany(p => p.Publications)

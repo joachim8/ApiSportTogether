@@ -28,4 +28,6 @@ public partial class Publication
     public virtual Utilisateur? Utilisateur { get; set; }
     [JsonPropertyName("SportTag")]
     public string SportTag { get; set; }
+    [JsonPropertyName("Visibilite")]
+    public bool Visibilite { get; set; }
 }

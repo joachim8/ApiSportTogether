@@ -28,4 +28,6 @@ public partial class Publication
     public virtual ICollection<EncouragementPublication> EncouragementPublications { get; set; } = new List<EncouragementPublication>();
     [JsonPropertyName("SportTag")]
     public string? SportTag { get; set; }
+    [JsonPropertyName("Visibilite")]
+    public bool Visibilite { get; set; }
 }

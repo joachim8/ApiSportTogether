@@ -29,5 +29,7 @@ namespace SportTogetherBlazor.Models
         public bool IsEncourager { get; set; }
         [JsonPropertyName("SportTag")]
         public string? SportTag { get; set; }
+        [JsonPropertyName("Visibilite")]
+        public bool Visibilite { get; set; }
     }
 }

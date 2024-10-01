@@ -7,7 +7,7 @@
 @inject SessionStorageServices session
 
 <div class="container h-100" >
-    <Tabs EnableFadeEffect="true" NavStyle="NavStyle.Underline" Style="padding-top:20px; height:100%; background-color:aliceblue !important; color:black !important;" Class="custom-tabs">
+    <Tabs EnableFadeEffect="true" NavStyle="NavStyle.Underline" Style="padding-top:20px; height:100% !important; background-color:aliceblue !important; color:black !important;" Class="custom-tabs">
         
         <Tab Title="" IsActive="true" >
             <TitleTemplate>
@@ -15,8 +15,8 @@
             </TitleTemplate>
            
             <Content >
-                <div class="table-responsive mt-2" style="background-color: aliceblue">
-                            <table class="table table-hover align-middle h-100 text-center">
+                <div class="table-responsive mt-2 h-100 " style="background-color: aliceblue">
+                            <table class="table table-hover align-middle text-center">
                                 <thead class="table-light" >
                                     <tr >
                                 <th>Titre<span> <Button Color="ButtonColor.None" @onclick="() => SortByTitle(typeAuteur)"> <Icon Name="IconName.SortAlphaDown" /> </Button></span> </th>

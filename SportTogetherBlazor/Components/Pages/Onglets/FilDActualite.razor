@@ -1,0 +1,76 @@
+﻿@page "/SportTogether/Fil-D-Actualite"
+@using SportTogetherBlazor.Components.Pages.ComposantsReutilisables
+@using SportTogetherBlazor.Components.Pages.Formulaires
+@using SportTogetherBlazor.Models
+@using SportTogetherBlazor.Services
+@using System.Text.Json.Serialization
+@using System.Text.Json
+@inject NavigationManager navigation
+@inject SessionStorageServices session
+@inject HttpClient Http
+<PageTitle>Fil d'actualité | SportTogether</PageTitle>
+<div class="container-fluid">
+
+    <!-- Section des onglets -->
+    <div class="row justify-content-center">
+          <div class="mt-4">
+                <AjoutDePublication UtilisateurId="utilisateurInfo!.UtilisateursId" OnPublicationAdded="RafraichirPublications" />
+          </div>
+            @if (listClePublication == null)
+            {
+                <p>Chargement...</p>
+            }
+            else if (listClePublication.Count == 0)
+            {
+                <p>Aucune publication trouvée.</p>
+            }
+            else
+            {
+                <div class="d-flex justify-content-center flex-wrap">
+                    @foreach (var publicationId in listClePublication)
+                    {
+
+                        <PublicationCard PublicationId="@publicationId" OnDelete="OnDeletePublication" />
+
+                    }
+                </div>
+            }
+        </div>
+</div>
+@code {
+    private Utilisateur? utilisateurInfo;
+    private List<int> listClePublication;
+    protected override async Task OnInitializedAsync()
+    {
+            utilisateurInfo = session.GetUserFromSession()!;
+            await LoadPublication();
+    }
+
+    public async Task LoadPublication()
+    {
+        var response = await Http.GetAsync($"Publication/GetPublicationsIdsPourFilActualite/{utilisateurInfo!.UtilisateursId}");
+        if (response.IsSuccessStatusCode)
+        {
+            listClePublication = await response.Content.ReadFromJsonAsync<List<int>>();
+        }
+        else
+        {
+            listClePublication = new List<int>(); // En cas d'erreur, on initialise une liste vide
+        }
+    }
+    private async Task RafraichirPublications()
+    {
+        await LoadPublication(); // Méthode pour récupérer les publications
+        StateHasChanged();
+    }
+    // Méthode appelée lors de la suppression d'une publication
+    private async Task OnDeletePublication(int publicationId)
+    {
+        // Supprimer la publication de la liste
+        listClePublication!.Remove(publicationId);
+        StateHasChanged();
+        // Actualiser l'affichage
+        await InvokeAsync(StateHasChanged);
+    }
+
+}

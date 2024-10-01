@@ -5,6 +5,7 @@ using ApiSportTogether.SignalR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 
 namespace ApiSportTogether.Controller
 {
@@ -75,8 +76,8 @@ namespace ApiSportTogether.Controller
             return CreatedAtAction(nameof(GetPublicationById), new { id = publication.PublicationsId }, publication);
         }
 
-        // PUT: ApiSportTogether/Publication/{id}
-        [HttpPut("{id}")]
+        // PUT: ApiSportTogether/Publication/UpdatePublication/{id}
+        [HttpPut("UpdatePublication/{id}")]
         public async Task<IActionResult> UpdatePublication(int id, [FromBody] Publication publication)
         {
             if (id != publication.PublicationsId)
@@ -173,6 +174,7 @@ namespace ApiSportTogether.Controller
                     tempsDiff = GetDateDifference(p.DatePublication, DateTime.Now),
                     IsEncourager = p.EncouragementPublications.Any(ep => ep.UtilisateurId == p.UtilisateurId),
                     SportTag = p.SportTag,
+                    Visibilite = p.Visibilite,
 
                 })
                 .FirstOrDefault();
@@ -239,6 +241,74 @@ namespace ApiSportTogether.Controller
 
             return Ok(request);
         }
+
+        // GET: Publication/GetPublicationsIdsPourFilActualite/1
+        [HttpGet("GetPublicationsIdsPourFilActualite/{utilisateurId}")]
+        public ActionResult<IEnumerable<int>> GetPublicationsIdsPourFilActualite(int utilisateurId)
+        {
+            Utilisateur utilisateur = _context.Utilisateurs.Where(u => u.UtilisateursId == utilisateurId).Include(u => u.SportFavoris).ThenInclude(sf => sf.Sports).Include(u => u.Publications).FirstOrDefault()!;
+            List<Publication> listPublication = new();
+            List<int> listClePublication = new();
+
+            if (utilisateur == null) return NotFound("Il n'y a pas d'utilisateur avec cette id");
+            if(utilisateur.Publications != null)
+            {
+                listPublication.AddRange(utilisateur.Publications);
+            }
+
+
+            // Récupérer la liste des relations d'amitié impliquant l'utilisateur
+            List<Ami> listAmi = _context.Amis
+                                        .Where(a => a.UtilisateurId1 == utilisateurId || a.UtilisateurId2 == utilisateurId)
+                                        .Include(a => a.UtilisateurId1Navigation)
+                                        .Include(a => a.UtilisateurId2Navigation)
+                                        .ToList();
+            // Création de la liste des utilisateurs amis
+            List<Utilisateur> listUtilisateur = listAmi.Select(a =>
+                a.UtilisateurId1 == utilisateurId ? a.UtilisateurId2Navigation : a.UtilisateurId1Navigation
+            ).ToList()!;
+
+            if (listUtilisateur != null && listUtilisateur.Any())
+            {
+                foreach (Utilisateur u in listUtilisateur)
+                {
+                    var publicationIds = _context.Publications.Where(p => p.UtilisateurId == u.UtilisateursId)
+                .OrderByDescending(p => p.DatePublication)
+                .ToList();
+                    if (publicationIds != null   && publicationIds.Any())
+                    {
+                        listPublication.AddRange(publicationIds);
+                    }
+                    
+                }
+            }
+            List<string>? sportFavori = null;
+            if (utilisateur.SportFavoris != null)
+                sportFavori = utilisateur.SportFavoris.Select(sf => sf.Sports.Nom).ToList();
+
+            if(sportFavori != null)
+            {
+                foreach(string sf in sportFavori)
+                {
+                    List<Publication>? listPublicationParSport = _context.Publications.Where(p => p.SportTag == sf && p.UtilisateurId != utilisateurId).ToList();
+                    if(listPublicationParSport != null )
+                    listPublication.AddRange(listPublicationParSport);
+                }
+            }
+
+
+
+         
+
+            if (!listPublication.Any())
+            {
+                return NotFound("Aucune publication trouvée pour ce fil d'actualité");
+            }
+            listClePublication = listPublication.OrderByDescending(p => p.DatePublication).Select(p => p.PublicationsId).ToList();
+            return Ok(listClePublication.ToArray());
+        }
+
+
         public static string GetDateDifference(DateTime startDate, DateTime endDate)
         {
             // S'assurer que la date de fin est postérieure à la date de début

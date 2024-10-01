@@ -16,11 +16,10 @@
              
                 <div class="card shadow-lg w-auto card">
                     <div class="card-body d-flex text-center">
-                        <!-- Photo de profil à gauche -->
-                        <div class="me-4">
-                            <img src="@utilisateurVue.urlProfilImage" alt="Profile Picture" class="rounded-circle" id="img-profile" />
-                            <!-- Bouton "Modifier" qui apparaît au hover -->
-                            <Button Color="ButtonColor.Secondary" Class="btn-modifier position-absolute bottom-0 start-50 translate-middle-x" TooltipTitle="Modifier la photo de profil" Size="Size.Small">
+                        <div class="d-flex flex-column align-items-center">
+                            <img src="@utilisateurVue.urlProfilImage" alt="Profile Picture" class="rounded-circle mb-2" id="img-profile" />
+
+                            <Button Color="ButtonColor.Secondary" TooltipTitle="Modifier la photo de profil" Size="Size.Small">
                                 Modifier
                             </Button>
                         </div>
@@ -110,7 +109,7 @@
                             <Icon Name="IconName.InfoCircleFill" /> Informations du profil
                         </TitleTemplate>
                         <Content>
-                           <FrmModificationUtilisateur utilisateur="utilisateurInfo"/>
+                           <FrmModificationUtilisateur utilisateurPourModif="utilisateurInfo"/>
                         </Content>
                     </Tab>
                 </Tabs>
@@ -126,23 +125,11 @@ else
 
 <style>
     #img-profile {
-        width: 150px;
-        height: 150px;
+        width: 200px;
+        height: 200px;
         border:solid;
         border-color: #085f63;
         
-    }
-    /* Initialement cacher le bouton */
-    .btn-modifier {
-        visibility: hidden;
-        opacity: 0;
-
-    }
-
-    /* Afficher le bouton quand on survole l'image */
-    #img-profile:hover + .btn-modifier {
-        visibility: visible;
-        opacity: 1;
     }
 
 

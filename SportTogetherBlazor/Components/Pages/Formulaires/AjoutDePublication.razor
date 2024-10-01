@@ -10,7 +10,10 @@
         <EditForm Model="publicationRequest" OnValidSubmit="SubmitPublicationAsync" class="d-flex align-items-center gap-2">
             <DataAnnotationsValidator />
             <ValidationSummary />
-          
+            <Switch @bind-Value="publicationRequest.Publication.Visibilite"
+                    Label="@(publicationRequest.Publication.Visibilite ? "Public" : "Privée")" />
+
+
             <!-- Zone de texte pour le contenu de la publication -->
             <div class="form-group mb-0 flex-grow-1">
                 <InputTextArea id="contenu" @bind-Value="publicationRequest.Publication.Contenu" class="form-control" placeholder="Exprimez-vous ici..." />

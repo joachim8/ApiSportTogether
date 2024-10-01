@@ -17,6 +17,12 @@
         </a>
         <hr>
         <ul class="nav nav-pills flex-column mb-auto">
+            <li class="nav-item h-auto @(linkClickedStates["Fil-Actualite"] ? "clicked-style" : "")" @onclick="@(() => ToggleClick("Fil-Actualite"))">
+                <a href="/SportTogether/Fil-D-Actualite" class="nav-link text-white text-center text-capitalize">
+                    <Icon Name="IconName.BookHalf" Color="IconColor.Light" Size="IconSize.x4" class="p-2" />
+                    Fil d'actualité
+                </a>
+            </li>
             <li class="nav-item h-auto @(linkClickedStates["Annonces"] ? "clicked-style" : "")" @onclick="@(() => ToggleClick("Annonces"))">
                 <a href="/SportTogether/Annonces" class="nav-link text-white text-center text-capitalize">
                     <Icon Name="IconName.House" Color="IconColor.Light" Size="IconSize.x4" class="p-2" />
@@ -39,6 +45,7 @@
                     Mes annonces
                 </a>
             </li>
+          
         </ul>
 
         <div class="dropdown mt-auto">
@@ -73,6 +80,12 @@
             </a>
             <hr>
             <ul class="nav nav-pills flex-column mb-auto">
+                <li class="nav-item h-auto @(linkClickedStates["Fil-Actualite"] ? "clicked-style" : "")" @onclick="@(() => ToggleClick("Fil-Actualite"))">
+                    <a href="/SportTogether/Fil-D-Actualite" class="nav-link text-white text-center text-capitalize">
+                        <Icon Name="IconName.BookHalf" Color="IconColor.Light" Size="IconSize.x4" class="p-2" />
+                        Fil d'actualité
+                    </a>
+                </li>
                 <!-- Links similar to the larger screen version -->
                 <li class="nav-item h-auto @(linkClickedStates["Annonces"] ? "clicked-style" : "")" @onclick="@(() => ToggleClick("Annonces"))">
                     <a href="/SportTogether/Annonces" class="nav-link text-white text-center text-capitalize">
@@ -96,6 +109,7 @@
                         Mes annonces
                     </a>
                 </li>
+               
             </ul>
             <div class="dropdown mt-auto">
                 <hr>
@@ -137,11 +151,13 @@
 
     protected override async Task OnInitializedAsync()
     {
+        linkClickedStates.Add("Fil-Actualite", false);
         linkClickedStates.Add("Annonces", false);
         linkClickedStates.Add("Messagerie-instantane", false);
         linkClickedStates.Add("Mes-annonces", false);
         linkClickedStates.Add("Parametre", false);
         linkClickedStates.Add("Profile", false);
+        
 
         await LoadUserInfo();
         await LoadImageUrl();
