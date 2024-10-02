@@ -78,6 +78,8 @@ namespace ApiSportTogether.Controller
             {
                 return BadRequest("Les données sont invalides.");
             }
+            EncouragementPublicationCommentaire? ePubliCom = _context.EncouragementPublicationCommentaires.Where(epc => epc.UtilisateurId == encouragement.UtilisateurId && encouragement.PublicationCommentaireId == epc.PublicationCommentaireId).FirstOrDefault();
+            if (ePubliCom != null) return BadRequest("L'encouragement existe déjà");
             PublicationCommentaire? publicationCommentaire = _context.PublicationCommentaires.Find(encouragement.PublicationCommentaireId);
             _context.EncouragementPublicationCommentaires.Add(encouragement);
             _context.SaveChanges();

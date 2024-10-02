@@ -10,36 +10,41 @@
 @inject HttpClient Http
 <PageTitle>Fil d'actualité | SportTogether</PageTitle>
 <div class="container-fluid">
+    <FiltreParSports SportsSelected="@SportsSelected" OnFilterApplied="RechercherParSport" />
+    <div class="row d-flex justify-content-center">
 
-    <!-- Section des onglets -->
-    <div class="row justify-content-center">
-          <div class="mt-4">
+        <div class="col-lg-6 col-sm-12 mt-4">
                 <AjoutDePublication UtilisateurId="utilisateurInfo!.UtilisateursId" OnPublicationAdded="RafraichirPublications" />
-          </div>
-            @if (listClePublication == null)
-            {
-                <p>Chargement...</p>
-            }
-            else if (listClePublication.Count == 0)
-            {
-                <p>Aucune publication trouvée.</p>
-            }
-            else
-            {
-                <div class="d-flex justify-content-center flex-wrap">
-                    @foreach (var publicationId in listClePublication)
-                    {
-
-                        <PublicationCard PublicationId="@publicationId" OnDelete="OnDeletePublication" />
-
-                    }
-                </div>
-            }
+            </div>
+        <div class="row  d-flex justify-content-center">
+        <div class="col-lg-6 col-sm-12 mt-4">
+                @if (listClePublication == null)
+                {
+                    <p>Chargement...</p>
+                }
+                else if (listClePublication.Count == 0)
+                {
+                    <p>Aucune publication trouvée.</p>
+                }
+                else
+                {
+                    <div class="d-flex justify-content-center flex-wrap">
+                        @foreach (var publicationId in listClePublication)
+                        {
+                            <PublicationCard PublicationId="@publicationId" OnDelete="OnDeletePublication" />
+                        }
+                    </div>
+                }
+            </div>
         </div>
+
+    </div>
 </div>
+
 @code {
     private Utilisateur? utilisateurInfo;
     private List<int> listClePublication;
+    public List<string> SportsSelected { get; set; } = new List<string>();
     protected override async Task OnInitializedAsync()
     {
             utilisateurInfo = session.GetUserFromSession()!;

@@ -152,8 +152,8 @@ namespace ApiSportTogether.Controller
             return NoContent();
         }
         // GET: Publication/GetPublicationVueById/1
-        [HttpGet("GetPublicationVueById/{publicationId}")]
-        public ActionResult<PublicationVue> GetPublicationVueById(int publicationId)
+        [HttpGet("GetPublicationVueById/{publicationId}/{utilisateurId}")]
+        public ActionResult<PublicationVue> GetPublicationVueById(int publicationId, int utilisateurId)
         {
             var publications = _context.Publications
                 .Where(p => p.PublicationsId == publicationId)
@@ -172,7 +172,7 @@ namespace ApiSportTogether.Controller
                     MediaUrls = p.PublicationImages.Select(i => i.Url).ToArray()!, // URLs des médias (images/vidéos)
                     NombreEncouragements = p.NombreEncouragement,
                     tempsDiff = GetDateDifference(p.DatePublication, DateTime.Now),
-                    IsEncourager = p.EncouragementPublications.Any(ep => ep.UtilisateurId == p.UtilisateurId),
+                    IsEncourager = p.EncouragementPublications.Any(ep => ep.UtilisateurId == utilisateurId && ep.PublicationId == p.PublicationsId),
                     SportTag = p.SportTag,
                     Visibilite = p.Visibilite,
 
@@ -192,7 +192,7 @@ namespace ApiSportTogether.Controller
                 DateCommentaire = c.DateCommentaire,
                 NombreEncouragementCommentaire = c.NombreEncouragementCommentaire,
                 ImageUtilisateurUrl = _context.ProfileImages.Where(pi => pi.UtilisateursId == c.UtilisateurId).FirstOrDefault()!.Url, // URL de l'image de profil de l'utilisateur du commentaire
-                IsEncouragerCom = c.EncouragementPublicationCommentaires.Any(epc => epc.UtilisateurId == c.UtilisateurId)
+                IsEncouragerCom = c.EncouragementPublicationCommentaires.Any(epc => epc.UtilisateurId == utilisateurId && epc.PublicationCommentaireId == c.CommentaireId)
             }).ToArray();
             if (publications.Commentaires != null)
             {
@@ -290,16 +290,11 @@ namespace ApiSportTogether.Controller
             {
                 foreach(string sf in sportFavori)
                 {
-                    List<Publication>? listPublicationParSport = _context.Publications.Where(p => p.SportTag == sf && p.UtilisateurId != utilisateurId).ToList();
+                    List<Publication>? listPublicationParSport = _context.Publications.Where(p => p.SportTag == sf && p.UtilisateurId != utilisateurId && p.Visibilite == true).ToList();
                     if(listPublicationParSport != null )
                     listPublication.AddRange(listPublicationParSport);
                 }
             }
-
-
-
-         
-
             if (!listPublication.Any())
             {
                 return NotFound("Aucune publication trouvée pour ce fil d'actualité");

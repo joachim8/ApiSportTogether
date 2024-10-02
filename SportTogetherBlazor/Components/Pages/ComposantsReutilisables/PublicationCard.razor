@@ -60,46 +60,70 @@ else
 
 
 
-       <div class="media-section mb-3">
-    @if (publicationVue.MediaUrls != null && publicationVue.MediaUrls.Count > 0)
-    {
-        if (publicationVue.MediaUrls.Count == 1)
-        {
-            // Afficher une seule image
-            <div class="image-section">
-                <img src="@publicationVue.MediaUrls[0]" class="img-thumbnail rounded" alt="Image publication" style="max-height: 250px; width: 100%;" />
-            </div>
-        }
-        else if (publicationVue.MediaUrls.Count > 1)
-        {
-          //Afficher un carrousel pour plusieurs images
-            <div id="carouselExampleIndicators" class="carousel slide">
-                <div class="carousel-indicators">
-                    @for (int i = 0; i < publicationVue.MediaUrls.Count; i++)
+        <div class="media-section mb-3">
+            @if (publicationVue.MediaUrls != null && publicationVue.MediaUrls.Count > 0)
+            {
+                    @if (publicationVue.MediaUrls.Count == 1)
                     {
-                        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="@i" class="@(i == 0 ? "active" : "")" aria-current="@(i == 0 ? "true" : "false")" aria-label="Slide @(i + 1)"></button>
+                        // Vérifier si c'est une vidéo ou une image
+                        if (IsVideo(publicationVue.MediaUrls[0]))
+                        {
+                            // Afficher la vidéo
+                            <div class="video-section">
+                                <video controls class="video-player" style="max-height: 250px; width: 100%;">
+                                    <source src="@publicationVue.MediaUrls[0]" type="video/mp4">
+                                    Votre navigateur ne supporte pas la lecture vidéo.
+                                </video>
+                            </div>
+                        }
+                        else
+                        {
+                            // Afficher une seule image
+                            <div class="image-section">
+                                <img src="@publicationVue.MediaUrls[0]" class="img-thumbnail rounded" alt="Image publication" style="max-height: 250px; width: 100%;" />
+                            </div>
+                        }
                     }
-                </div>
-                <div class="carousel-inner">
-                    @for (int i = 0; i < publicationVue.MediaUrls.Count; i++)
+                    else if (publicationVue.MediaUrls.Count > 1)
                     {
-                        <div class="carousel-item @(i == 0 ? "active" : "")">
-                                        <img src="@publicationVue.MediaUrls[i]" class="d-block w-100" alt="Image publication @(i + 1)" style="max-height: 250px; width: 100%;">
+                        // Afficher un carrousel pour plusieurs médias (images et vidéos mélangés)
+                        <div id="carouselExampleIndicators" class="carousel slide">
+                            <div class="carousel-indicators">
+                                @for (int i = 0; i < publicationVue.MediaUrls.Count; i++)
+                                {
+                                    <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="@i" class="@(i == 0 ? "active" : "")" aria-current="@(i == 0 ? "true" : "false")" aria-label="Slide @(i + 1)"></button>
+                                }
+                            </div>
+                            <div class="carousel-inner">
+                                @for (int i = 0; i < publicationVue.MediaUrls.Count; i++)
+                                {
+                                    <div class="carousel-item @(i == 0 ? "active" : "")">
+                                        @if (IsVideo(publicationVue.MediaUrls[i]))
+                                        {
+                                            <video controls class="d-block w-100" style="max-height: 250px;">
+                                                <source src="@publicationVue.MediaUrls[i]" type="video/mp4">
+                                                Votre navigateur ne supporte pas la lecture vidéo.
+                                            </video>
+                                        }
+                                        else
+                                        {
+                                            <img src="@publicationVue.MediaUrls[i]" class="d-block w-100" alt="Image publication @(i + 1)" style="max-height: 250px; width: 100%;">
+                                        }
+                                    </div>
+                                }
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
                         </div>
                     }
-                </div>
-                <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Previous</span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Next</span>
-                </button>
-            </div>
-        }
-    }
-</div>
+            }
+        </div>
 
             <!-- Contenu et autres informations épurées -->
             <p class="card-text text-muted">@publicationVue.Contenu</p>
@@ -206,8 +230,10 @@ else
     #region "Init et dispose"
     protected override async Task OnInitializedAsync()
     {
-        await FetchPublicationDetails(PublicationId);
         utilisateurId = session.GetUserFromSession()!.UtilisateursId;
+
+        await FetchPublicationDetails(PublicationId);
+        
 
         _hubConnection = new HubConnectionBuilder()
             .WithUrl("http://localhost:5000/publicationHub")
@@ -400,7 +426,7 @@ else
         httpClient = HttpClientFactory.CreateClient("ApiSportTogetherClient");
         try
         {
-            var response = await httpClient.GetAsync($"Publication/GetPublicationVueById/{publicationId}");
+            var response = await httpClient.GetAsync($"Publication/GetPublicationVueById/{publicationId}/{utilisateurId}");
             if (response.IsSuccessStatusCode)
             {
                 publicationVue = await response.Content.ReadFromJsonAsync<PublicationVue?>();
@@ -624,6 +650,12 @@ else
         publicationVue.Visibilite = !isPublic;
         isPublic = publicationVue.Visibilite;
         await ModifierPublication();
+    }
+
+    private bool IsVideo(string mediaUrl)
+    {
+        var extension = Path.GetExtension(mediaUrl).ToLower();
+        return videoExtensions.Contains(extension);
     }
     #endregion
 
