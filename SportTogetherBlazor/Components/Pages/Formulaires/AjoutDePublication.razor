@@ -5,7 +5,6 @@
 
 <div class="card" style="background-color: #f8f9fa;">
     <div class="card-body">
-        <h3 class="text-center">Ajouter une publication</h3>
 
         <EditForm Model="publicationRequest" OnValidSubmit="SubmitPublicationAsync" class="d-flex align-items-center gap-2">
             <DataAnnotationsValidator />
@@ -38,16 +37,16 @@
     <div class=" card-footer">
         <Button Type="ButtonType.Button" Color="ButtonColor.None" @onclick="ToggleContentAsync"><Icon Name="@(isToggled ? IconName.CaretUpFill : IconName.CaretDownFill)" /></Button>
         <Collapse @ref="collapse1">
-            <Card>
-                <CardBody>
+            
+                
                         @foreach (var sport in listSport)
                         {
-                            <Badge Color="@(publicationRequest.Publication.SportTag == sport ? BadgeColor.Primary : BadgeColor.Secondary)" Style="cursor: pointer;" @onclick="() => AddSportTag(sport)">
+                            <Badge Color="@(publicationRequest.Publication.SportTag == sport ? BadgeColor.Primary : BadgeColor.Secondary)" Style="cursor: pointer;" @onclick="() => AddSportTag(sport)" Class="me-1">
                                 @sport
                             </Badge>
                         }
-                </CardBody>
-            </Card>
+          
+
         </Collapse>
         
     </div>

@@ -7,137 +7,149 @@
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager
 @inject SessionStorageServices session
-@if(utilisateurVue != null)
+
+@if (utilisateurVue != null)
 {
-    <div class="container mt-4" style="color:#085f63;">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <!-- Card contenant les informations de l'utilisateur -->
-             
-                <div class="card shadow-lg w-auto card">
-                    <div class="card-body d-flex text-center">
-                        <div class="d-flex flex-column align-items-center">
-                            <img src="@utilisateurVue.urlProfilImage" alt="Profile Picture" class="rounded-circle mb-2" id="img-profile" />
+    <div class="container mt-4" style="color: #085f63;">
 
-                            <Button Color="ButtonColor.Secondary" TooltipTitle="Modifier la photo de profil" Size="Size.Small">
-                                Modifier
-                            </Button>
-                        </div>
-                        <!-- Informations utilisateur à droite -->
-                        <div class="flex-grow-1 justify-content-center">
-                            <h4 class="card-title"><strong>@utilisateurVue.Pseudo</strong></h4>
-                            <!-- Séparateur -->
-                            <hr class="mb-1" style="width:50%; margin-left: auto;
-                    margin-right: auto;" />
-                            <!-- Âge -->
-                            <p class="card-text ">
-                                <Icon Name="IconName.Calendar" Color="IconColor.Success" class="me-1" /> @utilisateurVue.Age
-                            </p>
-
-                            <hr class="mb-1 " style="width:50%; margin-left: auto;
-                    margin-right: auto;" />
-                            <!-- Sexe -->
-                            <p class="card-text">
-                                <Icon Name="IconName.GenderAmbiguous" Color="IconColor.Success" class="me-1" /> @utilisateurVue.Genre
-                            </p>
-                            <hr class="mb-1 " style="width:50%; margin-left: auto;
-                    margin-right: auto;" />
-                            <!-- Bouton coéquipiers avec compteur -->
-                            <Button Color="ButtonColor.Success" @onclick="AfficherListeAmis">
-                                <Icon Name="IconName.PersonHeart" class="me-1" /> @nombreAmis
-                            </Button>
-                            <hr class="mb-1 " style="width:50%; margin-left: auto;
-                    margin-right: auto;" />
-                            <Badge Color="BadgeColor.Secondary">
-                                @utilisateurVue.NoteMoyenneDesAnnonces / 10
-                            </Badge>
-                         
-
-                        </div>
+            <!-- Photo de profil et bouton modifier -->
+            <div class="card shadow mb-4 text-center " style="border-top-right-radius: 15px; background-color: #49beb7;">
+                <div class="card-body">
+                <div class="d-flex align-items-center justify-content-center ">
+                        <img src="@utilisateurVue.urlProfilImage" alt="Profile Picture" class="rounded-circle shadow-lg" id="img-profile" />
+                        <h4 class="mt-2 mx-2">@utilisateurVue.Pseudo</h4>
                     </div>
-                    <!-- Description en bas (footer de la card) -->
-                    <div class="card-footer text-center">
-                        <p class="text-muted">@utilisateurVue.Description</p>
+                   
+                    <Button Color="ButtonColor.Secondary" TooltipTitle="Modifier la photo de profil" Size="Size.Small">
+                        Modifier
+                    </Button>
+                </div>
+
+        </div>
+       
+        <div class="row justify-content-center ">
+            <!-- Row principale avec Infos, Tabs et Badges -->
+            <div class="col-md-3 col-lg-12 w-auto">
+                <!-- Infos utilisateur et amis -->
+                <div class="card shadow-sm p-2 text-center" style="border-radius: 15px; background-color: #FFFFFF;">
+                    <div class="card-body">
+                        <h4 class="card-title ">Infos</h4>
+                        <!-- Âge -->
+                        <p class="card-text ">
+                            <Icon Name="IconName.Calendar" Color="IconColor.Success" class="me-1" /> @utilisateurVue.Age
+                        </p>
+                        <hr class="mb-1 " style="width:50%; margin-left: auto;
+                    margin-right: auto;" />
+                        <!-- Sexe -->
+                        <p class="card-text">
+                            <Icon Name="IconName.GenderAmbiguous" Color="IconColor.Success" class="me-1" /> @utilisateurVue.Genre
+                        </p>
+                        <hr class="mb-1 " style="width:50%; margin-left: auto;
+                    margin-right: auto;" />
+                        <!-- Bouton coéquipiers avec compteur -->
+                        <Button Color="ButtonColor.Success" @onclick="AfficherListeAmis">
+                            <Icon Name="IconName.PersonHeart" class="me-1" /> @nombreAmis
+                        </Button>
+                        <hr class="mb-1 " style="width:50%; margin-left: auto;
+                    margin-right: auto;" />
+                        <Badge Color="BadgeColor.Secondary">
+                            @utilisateurVue.NoteMoyenneDesAnnonces / 10
+                        </Badge>
+
+                       
                     </div>
                 </div>
-               
-              
-
             </div>
-        </div>
 
+            <!-- Section des Tabs au centre -->
+            <div class="col-md-6">
+               
 
-        <!-- Séparateur -->
-        <hr class="mb-4 mt-4" style="width:50%; margin-left: auto;
-            margin-right: auto;" />
-
-        <!-- Section des onglets -->
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <Tabs Class=" justify-content-center" EnableFadeEffect="true" NavStyle="NavStyle.Pills">
-                    <Tab Title="" IsActive="true">
+                <!-- Section des onglets (Tabs) -->
+                <Tabs Class="justify-content-center bg-light" EnableFadeEffect="true" NavStyle="NavStyle.Pills" >
+                    <Tab Title="" IsActive="true" >
                         <TitleTemplate>
                             <Icon Name="IconName.BookmarkCheckFill" /> Publications
                         </TitleTemplate>
                         <Content>
-                            <div class="mt-4">
-                                <AjoutDePublication UtilisateurId="utilisateurVue.UtilisateursId" OnPublicationAdded="RafraichirPublications" />
-                            </div>
-                            <div class="mt-4">
-                                <MesPublications @ref="mesPublicationsRef" utilisateurId="utilisateurVue.UtilisateursId" />
+                            <div class="container-fluid bg-light">
+                                <div class="mt-4 p-1">
+                                    <AjoutDePublication UtilisateurId="utilisateurVue.UtilisateursId" OnPublicationAdded="RafraichirPublications" />
+                                </div>
+                                <div class="mt-4">
+                                    <MesPublications @ref="mesPublicationsRef" utilisateurId="utilisateurVue.UtilisateursId" />
+                                </div>
                             </div>
                         </Content>
                     </Tab>
-                    <Tab Title="">
+                    <Tab Title="" >
                         <TitleTemplate>
                             <Icon Name="IconName.Activity" /> Mes stats
                         </TitleTemplate>
                         <Content>
-                            <MesStats utilisateurVue="@utilisateurVue"/>
+                             <div class="container-fluid bg-light">
+                                <MesStats utilisateurVue="@utilisateurVue" />
+                            </div>
                         </Content>
                     </Tab>
-                    <Tab Title="">
+                    <Tab Title="" >
                         <TitleTemplate>
                             <Icon Name="IconName.Heart" /> Mes préférences
                         </TitleTemplate>
                         <Content>
-                            <p class="mt-3">Préférences de l'utilisateur.</p>
+                             <div class="container-fluid bg-light">
+                                <p class="mt-3">Préférences de l'utilisateur.</p>
+                            </div>
                         </Content>
                     </Tab>
-                    <Tab Title="">
+                    <Tab Title="" >
                         <TitleTemplate>
                             <Icon Name="IconName.InfoCircleFill" /> Informations du profil
                         </TitleTemplate>
                         <Content>
-                           <FrmModificationUtilisateur utilisateurPourModif="utilisateurInfo"/>
+                             <div class="container-fluid bg-light">
+                                <FrmModificationUtilisateur utilisateurPourModif="utilisateurInfo" />
+                            </div>
                         </Content>
                     </Tab>
                 </Tabs>
+            </div>
+
+            <!-- Badges succès -->
+            <div class="col-md-3">
+                <div class="card shadow-sm p-3" style="background-color: #085f63; color: #FFFFFF; border-radius: 15px;">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Succès</h5>
+                        <Badge Color="BadgeColor.Light" class="me-1">Top Sportif</Badge>
+                        <Badge Color="BadgeColor.Light" class="me-1">Ambassadeur</Badge>
+                        <Badge Color="BadgeColor.Light">Ancien</Badge>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 }
 else
 {
-    
+    <p class="text-center">Chargement du profil...</p>
 }
-
 
 <style>
     #img-profile {
-        width: 200px;
-        height: 200px;
-        border:solid;
-        border-color: #085f63;
-        
+        width: 120px;
+        height: 120px;
+        border: 3px solid #085f63;
     }
 
+    .nav-pills .nav-link.active {
+        background-color: #49beb7;
+        color: #FFFFFF;
+    }
 
-        #card-info-user{
-       
-        }
+    .nav-pills .nav-link {
+        color: #085f63;
+    }
 </style>
-
 @code {
 
     public UtilisateurVue? utilisateurVue { get; set; } 

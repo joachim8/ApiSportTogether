@@ -2,56 +2,77 @@
 @using Microsoft.AspNetCore.Components
 
 
-<Modal @ref="modal" title="Couleurs des Sports" IsVerticallyCentered="true">
+<Modal @ref="modal" Title="Comment participer à une annonce ?" IsVerticallyCentered="true" Size="ModalSize.Large">
     <BodyTemplate>
-        <div class="container">
-            <div class="row">
-                @foreach (var sport in sportStyles)
-                {
-
-                    <div class="col-md-12 mb-2">
-                        <div class="d-flex align-items-center p-2" style="background-color: @sport.Value.color; color: white; border-radius: 5px;">
-                            <div class="flex-shrink-0" style="width: 20px; height: 20px; background-color: @sport.Value.color; border-radius: 50%;"></div>
-                            <div class="ms-2">
-                                <strong>@sport.Value.imageUrl</strong>
-                            </div>
-                        </div>
+        <Tabs EnableFadeEffect="true">
+            <!-- Étape 1 : Trouver une annonce -->
+            <Tab Active="true">
+                <TitleTemplate>
+                    <Badge Color="BadgeColor.Dark" IndicatorType="BadgeIndicatorType.RoundedPill">1</Badge><span class="text-black">Trouver une annonce</span>
+                </TitleTemplate>
+                <Content>
+                    <div class="text-center mt-3">
+                        <img src="images/etape1_filtrer.png" alt="Filtrer les annonces" class="img-fluid mb-2" style="max-height: 150px;">
+                        <p class="text-muted">Regardez et filtrez les annonces pour trouver celle qui vous fait envie.</p>
                     </div>
-                }
-            </div>
-        </div>
+                </Content>
+            </Tab>
+
+            <!-- Étape 2 : Lire les informations -->
+            <Tab>
+                <TitleTemplate >
+                    <Badge Color="BadgeColor.Dark" IndicatorType="BadgeIndicatorType.RoundedPill">2</Badge>  <span class="text-black">Lire les informations</span>
+                </TitleTemplate>
+                <Content>
+                    <div class="text-center mt-3">
+                        <img src="images/etape2_infos.png" alt="Lire les informations" class="img-fluid mb-2" style="max-height: 150px;">
+                        <p class="text-muted">Lisez attentivement les informations de l'annonce : lieu, date, type de sport, et participants.</p>
+                    </div>
+                </Content>
+            </Tab>
+
+            <!-- Étape 3 : Participer -->
+            <Tab>
+                <TitleTemplate >
+                    <Badge Color="BadgeColor.Dark" IndicatorType="BadgeIndicatorType.RoundedPill">3</Badge><span class="text-black">Participer</span>
+
+                </TitleTemplate>
+                <Content>
+                    <div class="text-center mt-3">
+                        <img src="images/etape3_participer.png" alt="Participer à l'annonce" class="img-fluid mb-2" style="max-height: 150px;">
+                        <p class="text-muted">Cliquez sur le bouton "Participer" pour rejoindre l'annonce.</p>
+                    </div>
+                </Content>
+            </Tab>
+
+            <!-- Étape 4 : Attendre l'acceptation -->
+            <Tab>
+                <TitleTemplate >
+
+                    <Badge Color="BadgeColor.Dark" IndicatorType="BadgeIndicatorType.RoundedPill">4</Badge>  <span class="text-black">Attendre l'acceptation</span>
+                </TitleTemplate>
+                <Content>
+                    <div class="text-center mt-3">
+                        <img src="images/etape4_confirmation.png" alt="Confirmation" class="img-fluid mb-2" style="max-height: 150px;">
+                        <p class="text-muted">Attendez que l'auteur de l'annonce accepte votre participation.</p>
+                    </div>
+                </Content>
+            </Tab>
+        </Tabs>
+
     </BodyTemplate>
     <FooterTemplate>
         <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Fermer</Button>
     </FooterTemplate>
 </Modal>
 
-<Button Color="ButtonColor.None" @onclick="OnShowModalClick" TooltipTitle="Découvrez les couleurs de chaque sport" Size="Size.Medium">
+<Button Color="ButtonColor.None" @onclick="OnShowModalClick" TooltipTitle="Comment participer à une annonce ?" Size="Size.Medium">
     <Icon Name="IconName.InfoCircleFill"  Color="IconColor.Dark" />
 </Button>
 
 @code {
     private Modal modal = default!;
-    private readonly Dictionary<int, (string color, string imageUrl)> sportStyles = new()
-    {
-        { 1, ("#bfd960", "Football") },
-        { 2, ("#391E67", "Basketball") },
-        { 4, ("#6B1D4B", "Tennis") },
-        { 5, ("#D8AC2C", "Athletisme") },
-        { 6, ("#B36EDD", "Gymnastique") },
-        { 8, ("#CCF3DB", "Natation") },
-        { 9, ("#2C1707", "Baseball") },
-        { 10, ("#2A87FD", "Cyclisme") },
-        { 11, ("#C084BF", "Volleyball") },
-        { 12, ("#A78DA3", "Rugby") },
-        { 14, ("#A78DA3", "Boxe") },
-        { 15, ("#927584", "Hockey") },
-        { 16, ("#9A7C43", "Tennis de table") },
-        { 17, ("#033786", "Badminton") },
-        { 18, ("#6BDE2A", "Salle de sport") },
-        { 21, ("#391E67", "Pétanque") },
-        { 22, ("#6B1D4B", "Yoga") },
-    };
+   
 
 
     private async Task OnShowModalClick()

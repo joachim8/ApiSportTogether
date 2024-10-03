@@ -4,12 +4,11 @@
 
 
 
-<div class="card shadow position-relative" style="border-color:@GetSportColor((int)annonceVue.SportId!); border-width:4px; border-top-left-radius:15px; border-top-right-radius:15px;">
+<div class="card shadow position-relative" style="border-color:#085f63; border-width:4px; border-top-left-radius:15px; border-top-right-radius:15px; box-shadow:10px 5px 5px #085f63;">
     <!-- Card Header with background image and hover effect -->
-    <div class="card-header position-relative p-0 overflow-hidden text-white" style="height: 200px; background: url('/images/@GetSportImageUrl((int)annonceVue.SportId!)') center center no-repeat; background-size: cover; border-top-left-radius:5px; border-top-right-radius:5px;">
+    <div class="card-header position-relative p-0 overflow-hidden text-white" style="height: 200px; background: url('/images/@GetSportImageUrl((int)annonceVue.SportId!)') center center no-repeat; background-size: cover; border-top-left-radius:10px; border-top-right-radius:10px;">
         <div class="overlay-header"></div>
-        <!-- Hover effect for zoom on image -->
-        <div class="hover-zoom"></div>
+       
 
         <!-- User Info: Profile Picture and Pseudo -->
         <div class="user-info d-flex align-items-center position-absolute top-0 w-100 mt-0">
@@ -110,7 +109,9 @@
 
 <!-- ProfileViewModal Component -->
 <style>
-
+    .card-header:hover{
+        cursor:pointer;
+    }
 </style>
 
 
@@ -270,15 +271,7 @@
         { 22, ("#6B1D4B", "yoga.jpg") },
     };
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="sportId"></param>
-    /// <returns></returns>
-    private string GetSportColor(int sportId)
-    {
-        return sportStyles.ContainsKey(sportId) ? sportStyles[sportId].color : "#FFFFFF";
-    }
+    
 
 
     /// <summary>

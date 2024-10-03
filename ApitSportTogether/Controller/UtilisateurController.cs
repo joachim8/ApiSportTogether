@@ -180,7 +180,7 @@ namespace ApiSportTogether.Controller
                 {
                     foreach (var annonce in listAnnonce)
                     {
-                        if(annonce.NoteAnnonce != null)
+                        if(annonce.NoteAnnonce != 0 && annonce.NoteAnnonce != null)
                         listNoteAnnonce.Add(annonce.NoteAnnonce);
                     }
                     decimal noteTotale = 0;
