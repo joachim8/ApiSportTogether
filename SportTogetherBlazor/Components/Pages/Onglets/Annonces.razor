@@ -13,10 +13,10 @@
     <div class="container-fluid">
         <div class="collapse navbar-collapse" id="navbarText">
            
-            <div class="p-2 col-3"
+            <div class="p-2 col-3">
             <Button Type="ButtonType.Link" Color="ButtonColor.Success" Size="Size.Medium" @onclick="AllerAAjoutAnnonce" TooltipTitle="Ajouter une annonce"> <Icon Name=" IconName.PlusCircle" Color="IconColor.White" /></Button>
             </div>
-            <div class="p-2 col-4"
+            <div class="p-2 col-4">
             <EditForm Model="@rechercheModel" OnSubmit="@RechercheSubmit" FormName="RechercheForm">
                 <DataAnnotationsValidator />
                 <ValidationSummary />
@@ -26,7 +26,7 @@
                     <Button Type="ButtonType.Submit" Color="ButtonColor.Light" Size="Size.Medium" TooltipTitle="Rechercher"> <Icon Name=" IconName.Search" /></Button>
                 </div>
             </EditForm>
-            </div
+            </div>
 
             <div class="p-2 col-4">
                 <div class="btn-group">
@@ -119,6 +119,9 @@
 
         SportsSelected = selectedSports;
         string sports = string.Join(",", SportsSelected);
+        // Met à jour l'URL avec les paramètres de filtre
+        navigation.NavigateTo($"/SportTogether/Annonces?sports={sports}&villes={string.Join(",", SelectedVilles)}&genre={SelectedGenre}");
+
         try
         {
             annonces.Clear();
@@ -144,12 +147,16 @@
 
         SelectedVilles = selectedVilles;
         string villes = string.Join(",", SelectedVilles);
+        // Met à jour l'URL avec les paramètres de filtre
+        navigation.NavigateTo($"/SportTogether/Annonces?sports={string.Join(",", SportsSelected)}&villes={villes}&genre={SelectedGenre}");
         try
         {
             annonces.Clear();
             PreloadService.Show(SpinnerColor.Light, "Recherche en cours...");
             annonces = ((await Http.GetFromJsonAsync<List<AnnonceVue>>($"/vue/villes/{villes}/{genreUtilisateur}"))!);
             PreloadService.Hide();
+
+
             StateHasChanged();
         }
         catch (Exception ex)
@@ -166,6 +173,7 @@
         }
 
         SelectedGenre = selectedGenre;
+        navigation.NavigateTo($"/SportTogether/Annonces?sports={string.Join(",", SportsSelected)}&villes={string.Join(",", SelectedVilles)}&genre={SelectedGenre}");
         try
         {
             annonces.Clear();
@@ -184,6 +192,23 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var uri = navigation.ToAbsoluteUri(navigation.Uri);
+        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+
+        if (query["sports"] != null)
+        {
+            SportsSelected = query["sports"].Split(',').ToList();
+        }
+
+        if (query["villes"] != null)
+        {
+            SelectedVilles = query["villes"].Split(',').ToList();
+        }
+
+        if (query["genre"] != null)
+        {
+            SelectedGenre = query["genre"];
+        }
 
         if (bFirstFiltreAnnonces)
         {

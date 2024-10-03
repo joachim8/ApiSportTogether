@@ -3,43 +3,67 @@
 @inject IHttpClientFactory HttpClientFactory
 
 
-<div class="card shadow p-3 position-relative" style="background-color #f1f1f1; background-size:cover; color: #34495e; border-color:@GetSportColor((int)annonceVue.SportId!); border-width:medium;">
-   
-   
-    <div class="card-header bg-transparent">
-        <h3 class="text-center">@annonceVue.Titre</h3>
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-md-4">
-                    <img class="img-fluid rounded-start" src="/images/@GetSportImageUrl((int)annonceVue.SportId!)" alt="image de sport">
-                </div>
-                <div class="col-md-8 text-center">
-                    <div class="d-flex align-items-center justify-content-center">
-                        <ProfilVueUtilisateurCard Auteur="@annonceVue.Auteur" userId="@annonceVue.AuteurId" sport="@annonceVue.SportName"/> 
-                    </div>
-                    <hr class="my-2" />
-                    <div class="d-flex align-items-center justify-content-center">
-                        <Icon Name="IconName.PinMap" Size="IconSize.x4" class="me-1" Style="color:#34495e"></Icon>
-                        <p class="m-0">@annonceVue.Ville</p>
-                    </div>
-                    <hr class="my-2" />
-                    <div class="d-flex align-items-center justify-content-center mb-3">
-                        <Icon Name="IconName.GenderAmbiguous" Style="color:#34495e" Size="IconSize.x4" class="me-1"></Icon>
-                        <p class="m-0">@annonceVue.GenreAttendu</p>
-                    </div>
-                </div>
+
+<div class="card shadow position-relative" style="border-color:@GetSportColor((int)annonceVue.SportId!); border-width:4px; border-top-left-radius:15px; border-top-right-radius:15px;">
+    <!-- Card Header with background image and hover effect -->
+    <div class="card-header position-relative p-0 overflow-hidden text-white" style="height: 200px; background: url('/images/@GetSportImageUrl((int)annonceVue.SportId!)') center center no-repeat; background-size: cover; border-top-left-radius:5px; border-top-right-radius:5px;">
+        <div class="overlay-header"></div>
+        <!-- Hover effect for zoom on image -->
+        <div class="hover-zoom"></div>
+
+        <!-- User Info: Profile Picture and Pseudo -->
+        <div class="user-info d-flex align-items-center position-absolute top-0 w-100 mt-0">
+            <div class="profile-pic ">
+              
+                    <ProfilVueUtilisateurCard Auteur="@annonceVue.Auteur" userId="@annonceVue.AuteurId" sport="@annonceVue.SportName" />
+               
+              
             </div>
+           
+        </div>
+
+        <!-- Ville au centre du header -->
+        <div class="position-absolute top-0 start-50 translate-middle-x"> <Badge Color="BadgeColor.Light">@annonceVue.Ville</Badge></div>
+
+
+        <div class="position-absolute top-0 end-0 p-2">
+            <Badge Color="BadgeColor.Light">@annonceVue.SportName</Badge>
         </div>
     </div>
-    <div class="card-body">
-        <details class="accordion">
-            <summary>Plus de détails</summary>
-            <p class="card-text">La description : @annonceVue.Description</p>
-            <p class="card-text">Lieu : @annonceVue.Lieu</p>
-        </details>
+
+    <!-- Card Body with overlapping effect -->
+    <div class="card-body text-center bg-light d-grid gap-3"
+         style="margin-top: -50px; z-index: 2; position: relative;  padding: 20px; border-top-left-radius:60px; border-top-right-radius: 60px; grid-template-columns: 1fr;">
+
+        <h4 class="card-title">@annonceVue.Titre</h4>
+
+        <!-- Genre Attendu (Icon and Text aligned) -->
+        <div class="d-flex align-items-center justify-content-center gap-1">
+            <Icon Name="IconName.GenderAmbiguous" Style="color:#34495e" ></Icon>
+            <p class="m-0">@annonceVue.GenreAttendu</p>
+        </div>
+
+        <!-- Description -->
+        <div class="d-flex align-items-center justify-content-center">
+            <p class="card-text text-wrap">@annonceVue.Description</p>
+        </div>
+
+        <!-- Lieu (Icon and Text aligned) -->
+        <div class="d-flex align-items-center justify-content-center gap-1">
+            <Icon Name="IconName.PinMap" Style="color:#34495e"></Icon>
+            <p class="m-0">@annonceVue.Lieu</p>
+        </div>
+
     </div>
+
+
+    <!-- Card Footer (unchanged) -->
     <div class="card-footer bg-transparent">
-        <p> Le @annonceVue.DateHeureAnnonce.ToString("dd/MM/yyyy") à @annonceVue.DateHeureAnnonce.ToString("HH:mm")</p>
+        <!-- Affichage de la date dans un badge avec couleur variable -->
+        <Badge Color="@GetBadgeColor(annonceVue.DateHeureAnnonce)" IndicatorType="BadgeIndicatorType.RoundedPill">
+            @annonceVue.DateHeureAnnonce.ToString("dd/MM/yyyy") à @annonceVue.DateHeureAnnonce.ToString("HH:mm")
+        </Badge>
+       
         <div class="d-flex justify-content-between align-items-center">
             <p class="m-0">Nombre de participants : @nombreDeParticipants / @annonceVue.NombreParticipants</p>
             @if (!isAuteur)
@@ -57,10 +81,11 @@
                     </Button>
                 }
             }
-            
         </div>
     </div>
 </div>
+
+
 
 <Modal @ref="addParticipationModal" title="Confirmer la participation" IsVerticallyCentered="true">
     <BodyTemplate>
@@ -84,15 +109,11 @@
 
 
 <!-- ProfileViewModal Component -->
-
 <style>
-    .badge {
-        font-size: 14px;
-        font-weight: bold;
-        color: white;
-        z-index: 1;
-    }
+
 </style>
+
+
 @code {
     [Parameter]
     public AnnonceVue annonceVue { get; set; }
@@ -268,5 +289,19 @@
     private string GetSportImageUrl(int sportId)
     {
         return sportStyles.ContainsKey(sportId) ? sportStyles[sportId].imageUrl : "default.jpg";
+    }
+    private BadgeColor GetBadgeColor(DateTime dateHeureAnnonce)
+    {
+        var timeDifference = dateHeureAnnonce - DateTime.Now;
+
+        if (timeDifference.TotalDays <= 2 && timeDifference.TotalDays > 0)
+        {
+            return BadgeColor.Danger; // Badge jaune pour une date dans 1 jour ou moins
+        }
+        
+        else
+        {
+            return BadgeColor.Warning; // Badge par défaut (bleu) si la date est dans plus d'un jour
+        }
     }
 }

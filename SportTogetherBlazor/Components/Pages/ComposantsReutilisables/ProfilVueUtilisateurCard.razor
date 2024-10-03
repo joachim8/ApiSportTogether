@@ -56,9 +56,12 @@
         <Button Color="ButtonColor.Secondary" @onclick="CloseModal">Fermer</Button>
     </FooterTemplate>
 </Modal>
-<Button Color="ButtonColor.None" @onclick="() => ShowProfileModal()" TooltipTitle="Profile Auteur" Class="d-flex align-items-center">
-    <Icon Name="IconName.Person" Size="IconSize.x3" class="me-1" Style="color:#34495e"></Icon>
-    <span>@Auteur</span>
+<Button  Color="ButtonColor.None" @onclick="() => ShowProfileModal()" TooltipTitle="@Auteur" Class="d-flex align-items-center text-dark" Size="Size.Medium">
+    <div class="btn-item" style="background-color:rgba(255, 255,255, 0.5);">
+        <Icon Name="IconName.Person" Color="IconColor.Dark"></Icon>
+        <span>@Auteur</span>
+    </div>
+    
 </Button>
 @code {
     private Modal profileModal = default!;
