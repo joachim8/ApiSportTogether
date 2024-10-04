@@ -1,6 +1,7 @@
 ﻿using ApiSportTogether.model.dbContext;
 using ApiSportTogether.model.ObjectContext;
 using ApiSportTogether.model.ObjectVue;
+using ApiSportTogether.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -47,6 +48,9 @@ namespace ApiSportTogether.Controller
         {
             if (utilisateur != null)
             {
+
+                
+
                 utilisateur.MotDePasse = HashPassword(utilisateur.MotDePasse);
                 _context.Utilisateurs.Add(utilisateur);
                 _context.SaveChanges();
@@ -73,6 +77,40 @@ namespace ApiSportTogether.Controller
         [HttpPut("{id}")]
         public ActionResult PutUtilisateur(int id, Utilisateur utilisateur)
         {
+            // Créer une instance de VerificateurDeTexte
+            VerificateurDeTexte verificateurDeTexte = new VerificateurDeTexte();
+            // Vérifier le texte pour des mots racistes ou sexistes
+            var (isClean, motsTrouves) = verificateurDeTexte.VerifierTexte(utilisateur.Description!);
+
+            if (!isClean)
+            {
+                return BadRequest(new
+                {
+                    Message = "Le texte contient des mots interdits.",
+                    MotsTrouves = motsTrouves
+                });
+            }// Vérifier le texte pour des mots racistes ou sexistes
+            var (isCleanDesc, motsTrouvesDesc) = verificateurDeTexte.VerifierTexte(utilisateur.DescriptionSport!);
+
+            if (!isCleanDesc)
+            {
+                return BadRequest(new
+                {
+                    Message = "Le texte contient des mots interdits.",
+                    MotsTrouves = motsTrouvesDesc
+                });
+            }// Vérifier le texte pour des mots racistes ou sexistes
+
+            var (isCleanFun, motsTrouvesFun) = verificateurDeTexte.VerifierTexte(utilisateur.FunFact!);
+
+            if (!isCleanFun)
+            {
+                return BadRequest(new
+                {
+                    Message = "Le texte contient des mots interdits.",
+                    MotsTrouves = motsTrouvesFun
+                });
+            }
             if (id != utilisateur.UtilisateursId)
             {
                 return BadRequest();
@@ -228,7 +266,7 @@ namespace ApiSportTogether.Controller
                                         .ToList()!;
             string urlProfilImage = _context.ProfileImages.Where(pi => pi.UtilisateursId == utilisateur_id).FirstOrDefault()!.Url!;
             // Convertir en UtilisateurVue
-            UtilisateurVue utilisateurVue = ConvertirEnUtilisateurVue(utilisateur, nombreAuteurAnnonce, nombreAnnonceEffectuer, noteMoyenneDesAnnonces ?? 0, annonceEffectuerParMoisMoyenne ?? 0, topTroisSport, urlProfilImage, listClassementAmi, pourcentageAugmentationAnnonce);
+            UtilisateurVue utilisateurVue = ConvertirEnUtilisateurVue(utilisateur, nombreAuteurAnnonce, nombreAnnonceEffectuer, noteMoyenneDesAnnonces ?? 0, annonceEffectuerParMoisMoyenne ?? 0, topTroisSport, urlProfilImage, listClassementAmi, pourcentageAugmentationAnnonce, utilisateur.DescriptionSport, utilisateur.FunFact, utilisateur.NiveauSport, utilisateur.Disponibilites, utilisateur.TypePartenaire);
             try
             {
                 // Retourner l'objet
@@ -240,7 +278,7 @@ namespace ApiSportTogether.Controller
             }
             
         }
-        private  UtilisateurVue ConvertirEnUtilisateurVue(Utilisateur utilisateur, int nombreAuteurAnnonce, int nombreAnnonceEffectuer, decimal noteMoyenneDesAnnonces, decimal annonceEffectuerParMoisMoyenne, List<string> topTroisSport, string url, Array? listClassementAmi, decimal? pourcentageAugmentationAnnonce)
+        private  UtilisateurVue ConvertirEnUtilisateurVue(Utilisateur utilisateur, int nombreAuteurAnnonce, int nombreAnnonceEffectuer, decimal noteMoyenneDesAnnonces, decimal annonceEffectuerParMoisMoyenne, List<string> topTroisSport, string url, Array? listClassementAmi, decimal? pourcentageAugmentationAnnonce,string descriptionSport ,string funFact, string niveauSport, string disponibilites, string typePartenaire)
         {
             return new UtilisateurVue
             {
@@ -260,6 +298,13 @@ namespace ApiSportTogether.Controller
                 urlProfilImage = url,
                 ClassementAmis = listClassementAmi,
                 PourcentageAugmentationAnnonceAuteur = pourcentageAugmentationAnnonce,
+                DescriptionSport = descriptionSport,
+                FunFact = funFact,
+                NiveauSport= niveauSport,
+                Disponibilites = disponibilites, 
+                TypePartenaire = typePartenaire,
+                
+
               
 
             };

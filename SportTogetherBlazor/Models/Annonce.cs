@@ -36,6 +36,8 @@ public partial class Annonce
     [Required(ErrorMessage = "Le lieu est requis.")]
     [JsonPropertyName("Lieu")]
     public string Lieu { get; set; } = null!;
+    [JsonPropertyName("Niveau")]
+    public string Niveau { get; set; } = null!;
 
     [Required(ErrorMessage = "La date et l'heure de l'annonce sont requises.")]
     [FutureOrTodayDate(ErrorMessage = "La date doit être aujourd'hui ou dans le futur.")]

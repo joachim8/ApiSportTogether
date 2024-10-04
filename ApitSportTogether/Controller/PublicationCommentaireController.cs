@@ -1,6 +1,7 @@
 ﻿using ApiSportTogether.model.dbContext;
 using ApiSportTogether.model.ObjectContext;
 using ApiSportTogether.model.ObjectVue;
+using ApiSportTogether.Services;
 using ApiSportTogether.SignalR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -52,7 +53,19 @@ namespace ApiSportTogether.Controller
             {
                 return BadRequest();
             }
+            // Créer une instance de VerificateurDeTexte
+            VerificateurDeTexte verificateurDeTexte = new VerificateurDeTexte();
+            // Vérifier le texte pour des mots racistes ou sexistes
+            var (isClean, motsTrouves) = verificateurDeTexte.VerifierTexte(commentaire.Contenu!);
 
+            if (!isClean)
+            {
+                return BadRequest(new
+                {
+                    Message = "Le texte contient des mots interdits.",
+                    MotsTrouves = motsTrouves
+                });
+            }
             _context.PublicationCommentaires.Add(commentaire);
             _context.SaveChanges();
 

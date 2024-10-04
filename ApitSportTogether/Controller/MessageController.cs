@@ -1,5 +1,6 @@
 ﻿using ApiSportTogether.model.dbContext;
 using ApiSportTogether.model.ObjectContext;
+using ApiSportTogether.Services;
 using ApiSportTogether.SignalR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -50,6 +51,19 @@ namespace ApiSportTogether.Controller
             if(message.GroupeId == 0) return NotFound();
             Groupe groupe = _context.Groupes.Include(g => g.MembreGroupes).Where(g => g.GroupesId == message.GroupeId).First()!;
             if( groupe == null ) return NotFound();
+            // Créer une instance de VerificateurDeTexte
+            VerificateurDeTexte verificateurDeTexte = new VerificateurDeTexte();
+            // Vérifier le texte pour des mots racistes ou sexistes
+            var (isClean, motsTrouves) = verificateurDeTexte.VerifierTexte(message.Contenu!);
+
+            if (!isClean)
+            {
+                return BadRequest(new
+                {
+                    Message = "Le texte contient des mots interdits.",
+                    MotsTrouves = motsTrouves
+                });
+            }
 
             message.urlProfilImage = _context.ProfileImages.Where(pi => pi.UtilisateursId == message.UtilisateurId).FirstOrDefault()!.Url!;
             _context.Messages.Add(message);

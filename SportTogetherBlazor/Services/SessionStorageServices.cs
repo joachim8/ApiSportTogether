@@ -1,4 +1,5 @@
 ﻿using SportTogetherBlazor.Models;
+using System.Net.Http;
 using System.Text.Json;
 using static SportTogetherBlazor.Components.Pages.InscriptionLogin.Inscription;
 
@@ -7,11 +8,12 @@ namespace SportTogetherBlazor.Services
     public  class SessionStorageServices
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IHttpClientFactory _httpClientFactory;
 
-
-        public SessionStorageServices(IHttpContextAccessor httpContextAccessor)
+        public SessionStorageServices(IHttpContextAccessor httpContextAccessor, IHttpClientFactory httpClientFactory)
         {
             _httpContextAccessor = httpContextAccessor;
+            _httpClientFactory = httpClientFactory;
         }
 
         public void SaveUserToSession(Utilisateur utilisateurInfo)
@@ -73,10 +75,14 @@ namespace SportTogetherBlazor.Services
                 return null;
             }
         }
-        public void Logout()
+        public async Task Logout()
         {
             try
             {
+                HttpClient http = _httpClientFactory.CreateClient("ApiSportTogetherClient");
+                var userInfoJson = _httpContextAccessor.HttpContext.Session.GetString("userInfo");
+                Utilisateur utili = JsonSerializer.Deserialize<Utilisateur>(userInfoJson);
+                await http.GetAsync($"auth/deconnexion/{utili!.UtilisateursId}");
 
                 _httpContextAccessor.HttpContext.Session.Clear();
             }

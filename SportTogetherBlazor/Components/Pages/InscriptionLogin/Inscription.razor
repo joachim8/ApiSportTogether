@@ -1,9 +1,14 @@
 ﻿@page "/SportTogether/Inscription"
 @inject HttpClient httpClient
 @using System.ComponentModel.DataAnnotations;
+@using SportTogetherBlazor.Components.Pages.Formulaires;
 @using System.Text.Json.Serialization;
+@using SportTogetherBlazor.Models;
 @inject NavigationManager NavigationManager
 @inject IJSRuntime jsRuntime
+@using SportTogetherBlazor.Services;
+@inject SessionStorageServices session
+@using System.Text.Json
 <PageTitle> Inscription | SportTogether</PageTitle>
 <style>
     /* Style pour le conteneur global pour centrer la section */
@@ -183,10 +188,15 @@
 
         </FooterTemplate>
     </Modal>
+   
+
+
+
 </div>
 
 
 @code {
+    private ProfileImage imageProfil;
     private Modal modal = default!;
     public InscriptionModel inscriptionModel = new InscriptionModel();
     private List<Ville> villes = new List<Ville>();
@@ -194,6 +204,7 @@
     private List<Sport> sportsList = new();
     private bool showModal = false;
     private UtilisateurInfo utilisateurInfo;
+    [Inject] protected ToastService ToastService { get; set; } = default!;
 
 
     private void SelectionnerVille(Ville ville)
@@ -255,17 +266,51 @@
 
             if (response.IsSuccessStatusCode)
             {
+                ToastService.Notify(new(ToastType.Success, $"Vos sports favoris ont bien été ajouté."));
+
             }
             else
             {
                 string errorMessage =   await response.Content.ReadAsStringAsync();
                 Console.WriteLine($"Pb d'ajout de sport en favori : {errorMessage}");
+                ToastService.Notify(new(ToastType.Danger, $"errorMessage"));
             }
         }
-        NavigationManager.NavigateTo($"SportTogether/Annonces");
+        await OnHideModalClick();
+        await enregistrerInfosUtilisateur();
 
+    }
 
+    private async Task enregistrerInfosUtilisateur()
+    {
 
+        Utilisateur utilisateur = await httpClient.GetFromJsonAsync<Utilisateur>($"utilisateur/{utilisateurInfo.UtilisateursId}");
+        if (utilisateur != null)
+        {
+            // Existing login logic
+            session.SaveUserToSession(utilisateur);
+
+            await GetImageAsync(utilisateur.UtilisateursId);
+            if (imageProfil != null)
+            {
+                session.SaveImageUrl(imageProfil.Url);
+            }
+            NavigationManager.NavigateTo($"/SportTogether/NouveauProfilSportif/{utilisateur.UtilisateursId}");
+        }
+      
+    }
+    private async Task GetImageAsync(int utilisateurId)
+    {
+        var response = await httpClient.GetAsync($"ProfileImage/GetProfileImageByUtilisateurId/{utilisateurId}");
+        if (response.IsSuccessStatusCode)
+        {
+            var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = false
+                };
+            var jsonString = await response.Content.ReadAsStringAsync();
+            imageProfil = JsonSerializer.Deserialize<ProfileImage>(jsonString, options)!;
+        }
     }
     private async Task HandleInscription()
     {
@@ -417,6 +462,7 @@
     {
 
         await modal.HideAsync();
-    }
+    }  
+   
 
 }

@@ -26,6 +26,17 @@ public partial class Utilisateur
     public string? Etat { get; set; }
     [JsonPropertyName("EnLigne")]
     public bool? EnLigne { get; set; }
+    [JsonPropertyName("NiveauSport")]
+    public string? NiveauSport { get; set; }
+    [JsonPropertyName("Disponibilites")]
+    public string? Disponibilites { get; set; }
+    [JsonPropertyName("DescriptionSport")]
+    public string? DescriptionSport { get; set; }
+
+    [JsonPropertyName("TypePartenaire")]
+    public string? TypePartenaire { get; set; }
+    [JsonPropertyName("FunFact")]
+    public string? FunFact { get; set; }
 
     [JsonIgnore]
     [JsonPropertyName("AmiUtilisateurId1Navigations")]

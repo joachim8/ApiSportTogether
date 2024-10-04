@@ -114,6 +114,7 @@ public partial class SportTogetherContext : DbContext
             entity.Property(e => e.SportId).HasColumnName("SportID");
             entity.Property(e => e.Titre).HasMaxLength(255);
             entity.Property(e => e.NoteAnnonce).HasColumnName("Note_annonce");
+            entity.Property(e => e.Niveau).HasColumnType("enum('Débutant','Intermédiaire','Avancé')");
             entity.Property(e => e.Ville)
                 .HasMaxLength(50)
                 .HasColumnName("ville");
@@ -424,7 +425,20 @@ public partial class SportTogetherContext : DbContext
             entity.Property(e => e.Description).HasColumnType("text");
             entity.Property(e => e.Email).HasMaxLength(255);
             entity.Property(e => e.Etat).HasColumnType("enum('Actif','Bloqué')");
-            entity.Property(e => e.Genre).HasColumnType("enum('Femme','Homme','Mixte', 'Non-genre')");
+            entity.Property(e => e.Genre).HasColumnType("enum('Femme','Homme')");
+            entity.Property(e => e.DescriptionSport)
+              .HasColumnType("text")
+              .HasColumnName("Description_sport");
+            entity.Property(e => e.Disponibilites).HasColumnType("enum('Semaine-matin','Semaine-après-midi','Semaine-soir','Tout le temps','Weekends')");
+            entity.Property(e => e.FunFact)
+              .HasColumnType("text")
+              .HasColumnName("Fun_fact");
+            entity.Property(e => e.NiveauSport)
+               .HasColumnType("enum('Débutant','Intermédiaire','Avancé')")
+               .HasColumnName("Niveau_sport");
+            entity.Property(e => e.TypePartenaire)
+              .HasColumnType("enum('Groupe d’amis','Compétiteurs','Personnes du même niveau','Coach')")
+              .HasColumnName("Type_partenaire");
 
             entity.Property(e => e.MotDePasse).HasMaxLength(100);
             entity.Property(e => e.Nom).HasMaxLength(255);

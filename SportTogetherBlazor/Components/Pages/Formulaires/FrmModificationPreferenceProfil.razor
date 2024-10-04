@@ -1,0 +1,165 @@
+﻿@inject HttpClient httpClient
+@inject NavigationManager NavigationManager
+@using SportTogetherBlazor.Models
+@using SportTogetherBlazor.Services
+@inject SessionStorageServices session
+@using System.Text.Json
+
+<style>
+    .form-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+    }
+
+    .form-box {
+        border: 5px solid #085f63;
+        box-shadow: 0 2px 4px #085f63;
+        padding: 20px;
+        background: white;
+        width: 50%;
+        border-radius: 5px;
+    }
+
+    .button-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+    }
+</style>
+@if (nouveauProfilSportif != null)
+{
+
+    <div class="form-container">
+        <div class="form-box">
+            <EditForm Model="@nouveauProfilSportif" OnValidSubmit="@HandleCreateProfilSportif" FormName="AjoutProfilSportif">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <h2>Créer un Nouveau Profil Sportif</h2>
+
+                <!-- Description -->
+                <div class="mb-3">
+                    <label class="form-label" for="description">Description</label>
+                    <InputTextArea id="description" class="form-control" @bind-Value="nouveauProfilSportif.Description" />
+                    <ValidationMessage For="@(() => nouveauProfilSportif.Description)" />
+                </div>
+
+                <!-- Niveau de Sport -->
+                <div class="mb-3">
+                    <label class="form-label" for="niveauSport">Niveau de Sport</label>
+                    <InputSelect id="niveauSport" class="form-control" @bind-Value="nouveauProfilSportif.NiveauSport">
+                        <option value="">Sélectionnez un niveau</option>
+                        <option value="Débutant">Débutant</option>
+                        <option value="Intermédiaire">Intermédiaire</option>
+                        <option value="Avancé">Avancé</option>
+                    </InputSelect>
+                    <ValidationMessage For="@(() => nouveauProfilSportif.NiveauSport)" />
+                </div>
+
+                <!-- Disponibilités -->
+                <div class="mb-3">
+                    <label class="form-label" for="disponibilites">Disponibilités</label>
+                    <InputSelect id="disponibilites" class="form-control" @bind-Value="nouveauProfilSportif.Disponibilites">
+                        <option value="">Sélectionnez vos disponibilités</option>
+                        <option value="Semaine-matin">Semaine-matin</option>
+                        <option value="Semaine-après-midi">Semaine-après-midi</option>
+                        <option value="Semaine-soir">Semaine-soir</option>
+                        <option value="Tout le temps">Tout le temps</option>
+                        <option value="Weekends">Weekends</option>
+                    </InputSelect>
+                    <ValidationMessage For="@(() => nouveauProfilSportif.Disponibilites)" />
+                </div>
+
+                <!-- Description du Sport -->
+                <div class="mb-3">
+                    <label class="form-label" for="descriptionSport">Description du Sport</label>
+                    <InputTextArea id="descriptionSport" class="form-control" @bind-Value="nouveauProfilSportif.DescriptionSport" />
+                    <ValidationMessage For="@(() => nouveauProfilSportif.DescriptionSport)" />
+                </div>
+
+                <!-- Type de Partenaire -->
+                <div class="mb-3">
+                    <label class="form-label" for="typePartenaire">Type de Partenaire</label>
+                    <InputSelect id="typePartenaire" class="form-control" @bind-Value="nouveauProfilSportif.TypePartenaire">
+                        <option value="">Sélectionnez un type de partenaire</option>
+                        <option value="Groupe d’amis">Groupe d’amis</option>
+                        <option value="Compétiteurs">Compétiteurs</option>
+                        <option value="Personnes du même niveau">Personnes du même niveau</option>
+                        <option value="Coach">Coach</option>
+                    </InputSelect>
+                    <ValidationMessage For="@(() => nouveauProfilSportif.TypePartenaire)" />
+                </div>
+
+                <!-- Fun Fact -->
+                <div class="mb-3">
+                    <label class="form-label" for="funFact">Fun Fact</label>
+                    <InputTextArea id="funFact" class="form-control" @bind-Value="nouveauProfilSportif.FunFact" />
+                    <ValidationMessage For="@(() => nouveauProfilSportif.FunFact)" />
+                </div>
+
+                <div class="button-container">
+                    <Button Type="ButtonType.Submit" class="btn btn-success">Créer Profil</Button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+
+
+}
+else
+{
+    <p>Veuillez patientez ça charge...</p>
+}
+
+
+@code {
+    private Utilisateur? nouveauProfilSportif;
+    [Parameter]
+    public int utilisateur_id { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            nouveauProfilSportif = await httpClient.GetFromJsonAsync<Utilisateur>($"utilisateur/{utilisateur_id}");
+            if (nouveauProfilSportif == null)
+            {
+                // Gérer le cas où l'annonce n'est pas trouvée
+                Console.WriteLine($"Aucune annonce trouvée avec l'ID : {utilisateur_id}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur lors de la récupération de l'annonce : {ex.Message}");
+        }
+    }
+
+
+    private async Task HandleCreateProfilSportif()
+    {
+        try
+        {
+            var response = await httpClient.PutAsJsonAsync($"utilisateur/{utilisateur_id}", nouveauProfilSportif);
+            if (response.IsSuccessStatusCode)
+            {
+
+                NavigationManager.NavigateTo($"SportTogether/annonces");
+            }
+            else
+            {
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Erreur lors de la création du profil sportif: {errorMessage}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception lors de la création du profil sportif: {ex.Message}");
+        }
+    }
+
+
+
+}

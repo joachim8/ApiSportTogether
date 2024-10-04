@@ -42,6 +42,8 @@ namespace SportTogetherBlazor.Models
         public DateTime DateHeureAnnonce { get; set; }
         [JsonIgnore]
         public bool isParticipate { get; set; } = false;
+        [JsonPropertyName("Niveau")]
+        public string Niveau { get; set; } = null!;
 
     }
 }

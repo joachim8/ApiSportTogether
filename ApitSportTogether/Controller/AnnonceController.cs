@@ -1,6 +1,7 @@
 ﻿using ApiSportTogether.model.dbContext;
 using ApiSportTogether.model.ObjectContext;
 using ApiSportTogether.model.ObjectVue;
+using ApiSportTogether.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -68,8 +69,31 @@ namespace ApiSportTogether.Controller
             {
                 return BadRequest("La date de l'annonce doit être égale ou supérieure à la date actuelle.");
             }
+            // Créer une instance de VerificateurDeTexte
+            VerificateurDeTexte verificateurDeTexte = new VerificateurDeTexte();
+            // Vérifier le texte pour des mots racistes ou sexistes
+            var (isClean, motsTrouves) = verificateurDeTexte.VerifierTexte(annonce.Titre);
 
+            if (!isClean)
+            {
+                return BadRequest(new
+                {
+                    Message = "Le texte contient des mots interdits.",
+                    MotsTrouves = motsTrouves
+                });
+            }
 
+            // Vérifier le texte pour des mots racistes ou sexistes
+            var (isCleanDesc, motsTrouvesDesc) = verificateurDeTexte.VerifierTexte(annonce.Description!);
+
+            if (!isCleanDesc)
+            {
+                return BadRequest(new
+                {
+                    Message = "Le texte contient des mots interdits.",
+                    MotsTrouves = motsTrouvesDesc
+                });
+            }
 
             _context.Annonces.Add(annonce);
             _context.SaveChanges();
@@ -223,6 +247,14 @@ namespace ApiSportTogether.Controller
 
                     listAnnonceVue.Add(annonceVue);
                 }
+                // Trier les annonces par NiveauUtilisateur et NiveauAnnonce
+                if (listAnnonceVue.Count > 0)
+                {
+                    listAnnonceVue = listAnnonceVue
+                        .OrderBy(a => _context.Utilisateurs.FirstOrDefault(u => u.UtilisateursId == a.AuteurId)?.NiveauSport) // Trier par niveau utilisateur
+                        .ThenBy(a => _context.Annonces.FirstOrDefault(an => an.AnnoncesId == a.AnnoncesId)?.Niveau) // Puis par niveau de l'annonce
+                        .ToList();
+                }
                 return listAnnonceVue.ToArray();
             }
             else
@@ -263,7 +295,13 @@ namespace ApiSportTogether.Controller
                     Titre = annonce.Titre,
                     Ville = annonce.Ville
                 }).ToList();
-
+                if (listAnnonceVue.Count > 0)
+                {
+                    listAnnonceVue = listAnnonceVue
+                        .OrderBy(a => _context.Utilisateurs.FirstOrDefault(u => u.UtilisateursId == a.AuteurId)?.NiveauSport) // Trier par niveau utilisateur
+                        .ThenBy(a => _context.Annonces.FirstOrDefault(an => an.AnnoncesId == a.AnnoncesId)?.Niveau) // Puis par niveau de l'annonce
+                        .ToList();
+                }
                 return listAnnonceVue.ToArray();
             }
             else
@@ -300,7 +338,13 @@ namespace ApiSportTogether.Controller
                     Titre = annonce.Titre,
                     Ville = annonce.Ville
                 }).ToList();
-
+                if (listAnnonceVue.Count > 0)
+                {
+                    listAnnonceVue = listAnnonceVue
+                        .OrderBy(a => _context.Utilisateurs.FirstOrDefault(u => u.UtilisateursId == a.AuteurId)?.NiveauSport) // Trier par niveau utilisateur
+                        .ThenBy(a => _context.Annonces.FirstOrDefault(an => an.AnnoncesId == a.AnnoncesId)?.Niveau) // Puis par niveau de l'annonce
+                        .ToList();
+                }
                 return listAnnonceVue.ToArray();
             }
             else
@@ -339,7 +383,13 @@ namespace ApiSportTogether.Controller
                     Titre = annonce.Titre,
                     Ville = annonce.Ville
                 }).ToList();
-
+                if (listAnnonceVue.Count > 0)
+                {
+                    listAnnonceVue = listAnnonceVue
+                        .OrderBy(a => _context.Utilisateurs.FirstOrDefault(u => u.UtilisateursId == a.AuteurId)?.NiveauSport) // Trier par niveau utilisateur
+                        .ThenBy(a => _context.Annonces.FirstOrDefault(an => an.AnnoncesId == a.AnnoncesId)?.Niveau) // Puis par niveau de l'annonce
+                        .ToList();
+                }
                 return listAnnonceVue.ToArray();
             }
             else
@@ -379,7 +429,13 @@ namespace ApiSportTogether.Controller
                     Titre = annonce.Titre,
                     Ville = annonce.Ville
                 }).ToList();
-
+                if (listAnnonceVue.Count > 0)
+                {
+                    listAnnonceVue = listAnnonceVue
+                        .OrderBy(a => _context.Utilisateurs.FirstOrDefault(u => u.UtilisateursId == a.AuteurId)?.NiveauSport) // Trier par niveau utilisateur
+                        .ThenBy(a => _context.Annonces.FirstOrDefault(an => an.AnnoncesId == a.AnnoncesId)?.Niveau) // Puis par niveau de l'annonce
+                        .ToList();
+                }
                 return listAnnonceVue.ToArray();
             }
             else
@@ -459,7 +515,13 @@ namespace ApiSportTogether.Controller
                         Titre = annonce.Titre,
                         Ville = annonce.Ville
                     }).ToList();
-
+                    if (listAnnonceVue.Count > 0)
+                    {
+                        listAnnonceVue = listAnnonceVue
+                            .OrderBy(a => _context.Utilisateurs.FirstOrDefault(u => u.UtilisateursId == a.AuteurId)?.NiveauSport) // Trier par niveau utilisateur
+                            .ThenBy(a => _context.Annonces.FirstOrDefault(an => an.AnnoncesId == a.AnnoncesId)?.Niveau) // Puis par niveau de l'annonce
+                            .ToList();
+                    }
                     return Ok(listAnnonceVue.ToArray());
                 }
                 else
@@ -522,7 +584,13 @@ namespace ApiSportTogether.Controller
                     Titre = annonce.Titre,
                     Ville = annonce.Ville
                 }).ToList();
-
+                if (listAnnonceVue.Count > 0)
+                {
+                    listAnnonceVue = listAnnonceVue
+                        .OrderBy(a => _context.Utilisateurs.FirstOrDefault(u => u.UtilisateursId == a.AuteurId)?.NiveauSport) // Trier par niveau utilisateur
+                        .ThenBy(a => _context.Annonces.FirstOrDefault(an => an.AnnoncesId == a.AnnoncesId)?.Niveau) // Puis par niveau de l'annonce
+                        .ToList();
+                }
                 return Ok(listAnnonceVue.ToArray());
             }
             else

@@ -39,6 +39,8 @@ namespace ApiSportTogether.model.ObjectVue
         public string Lieu { get; set; } = null!;
         [JsonPropertyName("DateHeureAnnonce")]
         public DateTime DateHeureAnnonce { get; set; }
+        [JsonPropertyName("Niveau")]
+        public string Niveau { get; set; } = null!;
 
     }
 }

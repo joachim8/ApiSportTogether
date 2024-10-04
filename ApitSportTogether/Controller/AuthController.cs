@@ -70,6 +70,31 @@ namespace ApiSportTogether.Controller
             }
         }
 
+
+        [HttpGet("deconnexion/{id}")]
+        public ActionResult Deconnexion(int id)
+        {
+            Utilisateur utilisateur = _context.Utilisateurs.Find(id)!;
+            utilisateur.EnLigne = false;
+            _context.Entry(utilisateur).State = EntityState.Modified;
+            try
+            {
+                _context.SaveChanges();
+
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!_context.Utilisateurs.Any(u => u.UtilisateursId == utilisateur.UtilisateursId))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            return Ok();
+        }
         private bool ValidateUser(UserCredentials credentials)
         {
             bool IsValid = false;

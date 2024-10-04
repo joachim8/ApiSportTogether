@@ -1,5 +1,6 @@
 //using ApiSportTogether.model.dbContext;
 using ApiSportTogether.model.dbContext;
+using ApiSportTogether.Services;
 using ApiSportTogether.SignalR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Features;
@@ -10,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IO.Compression;
 using System.Text;
 
+
 var builder = WebApplication.CreateBuilder(args);
 IConfigurationRoot configuration = new ConfigurationBuilder()
     .SetBasePath(Directory.GetCurrentDirectory())
@@ -17,6 +19,8 @@ IConfigurationRoot configuration = new ConfigurationBuilder()
     .Build();
 // Récupérer la chaîne de connexion
 string connectionString = configuration.GetConnectionString("DefaultConnection")!;
+// Ajouter le service VerificateurDeTexte
+builder.Services.AddScoped<VerificateurDeTexte>();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "API SportTogether", Version = "v1" });

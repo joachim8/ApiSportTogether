@@ -212,6 +212,16 @@
                             }
                         </InputSelect>
                     </div>
+                    <div class="form-outline">
+                        <label class="form-label" for="niveau">Niveau</label>
+                        <InputSelect id="niveau" class="form-control" @bind-Value="annonce.Niveau">
+                            <option value="">Sélectionnez le niveau</option>
+                            <option value="Femme">Débutant</option>
+                            <option value="Homme">Intermédiaire</option>
+                            <option value="Mixte">Avancé</option>
+                        </InputSelect>
+                        <ValidationMessage For="@(() => annonce.Niveau)" />
+                    </div>
                 </div>
             </div>
         </div>
