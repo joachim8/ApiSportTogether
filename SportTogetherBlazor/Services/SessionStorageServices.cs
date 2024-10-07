@@ -22,6 +22,11 @@ namespace SportTogetherBlazor.Services
             {
                 var serializedUser = JsonSerializer.Serialize(utilisateurInfo);
                 _httpContextAccessor.HttpContext.Session.SetString("userInfo", serializedUser);
+                // Si l'authentification réussit, générer un GUID
+                var userSessionId = Guid.NewGuid().ToString();
+
+                // Stocker le GUID dans le SessionStorage
+                _httpContextAccessor.HttpContext.Session.SetString("UserSessionId", userSessionId);
             }
             catch (Exception ex)
             {
@@ -45,7 +50,21 @@ namespace SportTogetherBlazor.Services
             }
            
         }
+        public string? GetUserSessionIdFromSession()
+        {
+            try
+            {
+                var userInfoJson = _httpContextAccessor.HttpContext.Session.GetString("UserSessionId");
+                return userInfoJson == null ? default : userInfoJson;
+            }
+            catch (Exception ex)
+            {
+                // Log this error or handle it accordingly
+                Console.WriteLine("Error saving user to session: " + ex.Message);
+                return null;
+            }
 
+        }
 
         public void SaveImageUrl(string imageURL)
         {

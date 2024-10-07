@@ -1,4 +1,4 @@
-﻿@page "/SportTogether/Annonces"
+﻿@page "/SportTogether/Annonces/{UserSessionId}"
 @using SportTogetherBlazor.Components.Pages.ComposantsReutilisables
 @using SportTogetherBlazor.Models
 @using SportTogetherBlazor.Services
@@ -82,6 +82,9 @@
 </style>
 
 @code {
+    [Parameter]
+    public string UserSessionId { get; set; }
+
     private List<AnnonceVue> annonces;
     private bool bFirstFiltreAnnonces = true;
     [Inject] protected PreloadService PreloadService { get; set; }

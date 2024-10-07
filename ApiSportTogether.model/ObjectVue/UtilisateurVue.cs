@@ -55,5 +55,6 @@ public class UtilisateurVue
     [JsonPropertyName("FunFact")]
     public string? FunFact { get; set; }
 
+
 }
 

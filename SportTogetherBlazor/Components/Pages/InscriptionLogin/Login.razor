@@ -77,7 +77,7 @@
     private Modal modal = default!;
     private Utilisateur utilisateur;
     private ProfileImage imageProfil;
-
+    private string? userSession = string.Empty;
     private async Task HandleLogin()
     {
         try
@@ -104,8 +104,8 @@
                                 session.SaveImageUrl(imageProfil.Url);
                             }
 
-
-                        NavigationManager.NavigateTo($"SportTogether/Annonces");
+                        userSession = session.GetUserSessionIdFromSession();
+                        NavigationManager.NavigateTo($"SportTogether/Annonces/{userSession}");
                     }
                     catch (Exception ex)
                     {

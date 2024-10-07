@@ -1,55 +1,77 @@
 ﻿ @using SportTogetherBlazor.Models
 @inject IHttpClientFactory HttpClientFactory
+@using SportTogetherBlazor.Services
+@inject NavigationManager NavigationManager
+@inject SessionStorageServices session
+
 
 <Modal @ref="profileModal" title="Profil Utilisateur" IsVerticallyCentered="true">
     <BodyTemplate>
         @if (profilUtilisateurVue != null)
         {
-            <section class="w-100 " style="border-radius: .5rem .5rem 0 0; background-color:#9de2ff;">
-                <div class="card w-100" >
-                    <div class="card-body" style="border-radius: 15px;">
-                                <div class="d-flex">
-                                    <div class="flex-shrink-0">
-                                        <img src="@profilUtilisateurVue.urlProfilImage"
-                                             alt="Profile image" class="img-fluid" style="width: 180px; border-radius: 10px;">
+          
+                <section class="w-100 text-white" style="border-radius: .5rem .5rem 0 0;">
+                    <div class="card w-100" style="border-radius: 15px;">
+                        <div class="card-body">
+                            <!-- Section Photo de profil, Pseudo, Genre, Bouton Coequipier -->
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <img src="@profilUtilisateurVue.urlProfilImage"
+                                         alt="Profile image" class="img-fluid" style="width: 150px; border-radius: 50%;">
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h5 class="mb-1">@profilUtilisateurVue.Pseudo</h5>
+                                    <p class="mb-1">@profilUtilisateurVue.Genre</p>
+                                @if(userId != utilisateurEnCoursId)
+                                {
+                                    
+                                        <Button Color="ButtonColor.Secondary" @onclick="() => AllerAuProfil()"><Icon Name="IconName.EyeFill"></Icon>Voir son profil</Button>
+                                   
+                                }
+                                
+                                </div>
+                            </div>
+
+                            <!-- Section Description et Sports Favoris -->
+                            <div class="mt-4">
+                                <p class="mb-2"><strong>Description :</strong> @profilUtilisateurVue.Description</p>
+                                <div class="d-flex justify-content-start mb-2">
+                                    @if (profilUtilisateurVue.TopTroisSport != null && profilUtilisateurVue.TopTroisSport.Any())
+                                    {
+                                        @foreach (var sport in profilUtilisateurVue.TopTroisSport)
+                                        {
+                                            <div class="me-2">
+                                                <div class="d-flex align-items-center bg-light border rounded-pill px-3 py-1">
+                                                    <Icon Name="IconName.Star" Color="IconColor.Success" Class="me-1"></Icon>
+                                                    <span>@sport</span>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Footer de la card avec Stats Utilisateur -->
+                            <div class="mt-4 bg-light p-3 rounded">
+                                <div class="d-flex justify-content-between text-center">
+                                    <div>
+                                        <p class="small text-muted mb-1">Annonces créées</p>
+                                        <p class="mb-0">@profilUtilisateurVue.NombreAuteurAnnonce</p>
                                     </div>
-                                    <div class="flex-grow-1 ms-3">
-                                        <h5 class="mb-1">@profilUtilisateurVue.Pseudo</h5>
-                                        <p class="mb-2 pb-1">@profilUtilisateurVue.Description</p>
-                                        <div class="d-flex justify-content-start rounded-3 p-2 mb-2 bg-body-tertiary">
-                                            <div>
-                                                <p class="small text-muted mb-1">Nombre d'annonces créées</p>
-                                                <p class="mb-0">@profilUtilisateurVue.NombreAuteurAnnonce</p>
-                                            </div>
-                                            <div class="px-3">
-                                                <p class="small text-muted mb-1">Nombre d'annonces effectuées</p>
-                                                <p class="mb-0">@profilUtilisateurVue.NombreAnnonceEffectuer</p>
-                                            </div>
-                                            <div>
-                                                <p class="small text-muted mb-1">Note moyenne</p>
-                                                <p class="mb-0">@profilUtilisateurVue.NoteMoyenneDesAnnonces!.Value.ToString("0.00")</p>
-                                            </div>
-                                        </div>
-                                        <!-- Top 3 Sports Section -->
-                                        <div class="d-flex justify-content-start mb-2" style="padding-right:25px;">
-                                            @if (profilUtilisateurVue.TopTroisSport != null && profilUtilisateurVue.TopTroisSport.Any())
-                                            {
-                                                @foreach (var sport in profilUtilisateurVue.TopTroisSport)
-                                                {
-                                                    <div class="me-2">
-                                                        <div class="d-flex align-items-start bg-light border rounded-circle w-100 h-100">
-                                                            <Icon Name="IconName.Star" Color="IconColor.Success" Class="m-1"></Icon> 
-                                                            @sport
-                                                        </div>
-                                                    </div>
-                                                }
-                                            }
-                                        </div>
+                                    <div>
+                                        <p class="small text-muted mb-1">Annonces effectuées</p>
+                                        <p class="mb-0">@profilUtilisateurVue.NombreAnnonceEffectuer</p>
+                                    </div>
+                                    <div>
+                                        <p class="small text-muted mb-1">Note moyenne</p>
+                                    <p class="mb-0">@profilUtilisateurVue.NoteMoyenneDesAnnonces?.ToString("0.00")</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
-            </section>
+                    </div>
+                </section>
+            
         }
     </BodyTemplate>
     <FooterTemplate>
@@ -69,6 +91,7 @@
     [Parameter] public string Auteur { get; set; }
     [Parameter] public int userId { get; set; }
     [Parameter] public string sport { get; set; }
+    [Parameter] public int utilisateurEnCoursId { get; set; }
     private HttpClient httpClient;
     /// <summary>
     /// Initialisation de la page
@@ -79,7 +102,7 @@
         httpClient = HttpClientFactory.CreateClient("ApiSportTogetherClient");
         try
         {
-            profilUtilisateurVue = await httpClient.GetFromJsonAsync<ProfilUtilisateurVu>($"Utilisateur/GetProfilUtilisateurByIdParMois/{userId}")!;
+            profilUtilisateurVue = await httpClient.GetFromJsonAsync<ProfilUtilisateurVu>($"Utilisateur/GetProfilUtilisateurVueByIdParMois/{userId}/{utilisateurEnCoursId}")!;
         }
         catch (HttpRequestException ex)
         {
@@ -90,17 +113,31 @@
             Console.WriteLine($"Erreur inattendue : {ex.Message}");
         }
 
-       
+
     }
     public async Task ShowProfileModal()
     {
-      
+
         await profileModal.ShowAsync();
     }
 
     private async Task CloseModal()
     {
-       await profileModal.HideAsync();
+        await profileModal.HideAsync();
     }
+    private async Task AllerAuProfil()
+    {
+        await CloseModal();
+       
+        var auteurId = userId;
+        string userSessionId = session.GetUserSessionIdFromSession();
+        if (auteurId != 0)
+        {
+            NavigationManager.NavigateTo($"/SportTogether/Profil-utilisateur-vue/{userSessionId}?utilisateur={auteurId}");
+            StateHasChanged();
+        }
+        
+    }
+   
 }
  

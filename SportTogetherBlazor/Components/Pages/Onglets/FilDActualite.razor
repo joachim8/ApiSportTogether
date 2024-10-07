@@ -1,4 +1,4 @@
-﻿@page "/SportTogether/Fil-D-Actualite"
+﻿@page "/SportTogether/Fil-D-Actualite/{UserSessionId}"
 @using SportTogetherBlazor.Components.Pages.ComposantsReutilisables
 @using SportTogetherBlazor.Components.Pages.Formulaires
 @using SportTogetherBlazor.Models
@@ -42,6 +42,8 @@
 </div>
 
 @code {
+    [Parameter]
+    public string UserSessionId { get; set; }
     private Utilisateur? utilisateurInfo;
     private List<int> listClePublication;
     public List<string> SportsSelected { get; set; } = new List<string>();

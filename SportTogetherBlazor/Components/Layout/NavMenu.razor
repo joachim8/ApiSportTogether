@@ -17,19 +17,19 @@
         <hr>
         <ul class="nav nav-pills flex-column mb-auto">
             <li class="nav-item h-auto @(linkClickedStates["Fil-Actualite"] ? "clicked-style" : "")" @onclick="@(() => ToggleClick("Fil-Actualite"))">
-                <a href="/SportTogether/Fil-D-Actualite" class="nav-link text-white text-center text-capitalize">
+                <a href="/SportTogether/Fil-D-Actualite/@userSession" class="nav-link text-white text-center text-capitalize">
                     <Icon Name="IconName.BookHalf" Color="IconColor.Light" Size="IconSize.x4" class="p-2" />
                     Fil d'actualité
                 </a>
             </li>
             <li class="nav-item h-auto @(linkClickedStates["Annonces"] ? "clicked-style" : "")" @onclick="@(() => ToggleClick("Annonces"))">
-                <a href="/SportTogether/Annonces" class="nav-link text-white text-center text-capitalize">
+                <a href="/SportTogether/Annonces/@userSession" class="nav-link text-white text-center text-capitalize">
                     <Icon Name="IconName.House" Color="IconColor.Light" Size="IconSize.x4" class="p-2" />
                     Annonces
                 </a>
             </li>
             <li class="nav-item h-auto @(linkClickedStates["Messagerie-instantane"] ? "clicked-style" : "")" @onclick="@(() => ToggleClick("Messagerie-instantane"))">
-                <a href="/SportTogether/Messagerie-instantane" class="nav-link text-white text-center text-capitalize">
+                <a href="/SportTogether/Messagerie-instantane/@userSession" class="nav-link text-white text-center text-capitalize">
                     <Icon Name="IconName.Messenger" Color="IconColor.Light" Size="IconSize.x4" class="p-2" />
                     Messagerie
                     @if (messageCount)
@@ -39,7 +39,7 @@
                 </a>
             </li>
             <li class="nav-item h-auto @(linkClickedStates["Mes-annonces"] ? "clicked-style" : "")" @onclick="@(() => ToggleClick("Mes-annonces"))">
-                <a href="/SportTogether/Mes-annonces" class="nav-link text-white text-center text-capitalize">
+                <a href="/SportTogether/Mes-annonces/@userSession" class="nav-link text-white text-center text-capitalize">
                     <Icon Name="IconName.Calendar2Week" Color="IconColor.Light" Size="IconSize.x4" class="p-2" />
                     Mes annonces
                 </a>
@@ -147,9 +147,10 @@
     bool isClicked = false;
     bool messageCount = false;
     int nbrMessages = 0;
-
+    private string? userSession = string.Empty;
     protected override async Task OnInitializedAsync()
     {
+        userSession = session.GetUserSessionIdFromSession();
         linkClickedStates.Add("Fil-Actualite", false);
         linkClickedStates.Add("Annonces", false);
         linkClickedStates.Add("Messagerie-instantane", false);

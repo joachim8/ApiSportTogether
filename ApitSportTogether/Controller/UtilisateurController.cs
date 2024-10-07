@@ -140,10 +140,10 @@ namespace ApiSportTogether.Controller
         [HttpPut("ModifierMotDePasse/{id}")]
         public ActionResult ModifierMotDePasse(int id, [FromBody] string password)
         {
-            Utilisateur utilisateur = _context.Utilisateurs.Find(id);
+            Utilisateur? utilisateur = _context.Utilisateurs.Find(id);
             if (utilisateur == null)
             {
-                return NoContent();
+                return NotFound("L'utilisateur n'a pas été trouvée.");
             }
             utilisateur.MotDePasse = HashPassword(password);
             _context.Entry(utilisateur).State = EntityState.Modified;
@@ -443,11 +443,11 @@ namespace ApiSportTogether.Controller
 
 
         // GET: utilisateur/GetProfilUtilisateurByIdParMois/5
-        [HttpGet("GetProfilUtilisateurByIdParMois/{id}")]
-        public ActionResult<ProfilUtilisateurVu> GetProfilUtilisateurByIdParMois(int id)
+        [HttpGet("GetProfilUtilisateurVueByIdParMois/{utilisateur_id}/{utilisateur_en_cours_id}")]
+        public ActionResult<ProfilUtilisateurVu> GetProfilUtilisateurByIdParMois(int utilisateur_id, int utilisateur_en_cours_id)
         {
             // Récupérer l'utilisateur depuis la base de données
-            var utilisateur = _context.Utilisateurs.FirstOrDefault(u => u.UtilisateursId == id);
+            var utilisateur = _context.Utilisateurs.FirstOrDefault(u => u.UtilisateursId == utilisateur_id);
 
             if (utilisateur == null)
             {
@@ -455,12 +455,14 @@ namespace ApiSportTogether.Controller
             }
             decimal? pourcentageAugmentationAnnonce = null;
             // Exemple : Récupérer les données supplémentaires (à ajuster selon ton modèle et tes calculs)
-            int nombreAuteurAnnonce = _context.Annonces.Count(a => a.Auteur == id);
-            int nombreAnnonceEffectuer = _context.Participations.Count(p => p.UtilisateurId == id);
-            List<Annonce>? listAnnonce = _context.Annonces.Where(a => a.Auteur == id).ToList();
+            int nombreAuteurAnnonce = _context.Annonces.Count(a => a.Auteur == utilisateur_id);
+            int nombreAnnonceEffectuer = _context.Participations.Count(p => p.UtilisateurId == utilisateur_id);
+            List<Annonce>? listAnnonce = _context.Annonces.Where(a => a.Auteur == utilisateur_id).ToList();
             List<decimal?> listNoteAnnonce = new();
             decimal? noteMoyenneDesAnnonces = null;
-            var listAmi = GetListAmi(id);
+            var listAmi = GetListAmi(utilisateur_id);
+            Utilisateur? utilisateurEnLigne = _context.Utilisateurs.FirstOrDefault(u => u.UtilisateursId == utilisateur_en_cours_id);
+            bool bIsCoequipier = false;
 
 
             if (listAnnonce != null)
@@ -486,7 +488,7 @@ namespace ApiSportTogether.Controller
             }
 
             var premiereParticipationOuAnnonce = _context.Participations
-    .Where(p => p.UtilisateurId == id)
+    .Where(p => p.UtilisateurId == utilisateur_id)
     .OrderBy(p => p.DateParticipation)
     .Select(p => p.DateParticipation)
     .FirstOrDefault();  // Récupérer la première date de participation
@@ -510,16 +512,29 @@ namespace ApiSportTogether.Controller
 
             // Exemple : Récupérer les sports favoris (adapter selon tes relations)
             List<string> topTroisSport = _context.SportFavoris
-                                        .Where(s => s.UtilisateursId == id)
+                                        .Where(s => s.UtilisateursId == utilisateur_id)
                                         .Take(3)
                                         .Include(sf => sf.Sports)
                                         .Select(s => s.Sports!.Nom)
                                         .ToList()!;
-            string urlProfilImage = _context.ProfileImages.Where(pi => pi.UtilisateursId == id).FirstOrDefault()!.Url!;
+            string urlProfilImage = _context.ProfileImages.Where(pi => pi.UtilisateursId == utilisateur_id).FirstOrDefault()!.Url!;
+
+            if (utilisateur_id != utilisateur_en_cours_id)
+            {
+                if (listAmi.Any())
+                {
+                    if (listAmi!.Contains(utilisateurEnLigne))
+                    {
+                        bIsCoequipier = true;
+                    }
+
+                }
+            }
+               
             // Convertir en UtilisateurVue
             ProfilUtilisateurVu profilUtilisateurVu = new()
             {
-                UtilisateursId = id,
+                UtilisateursId = utilisateur_id,
                 urlProfilImage = urlProfilImage,
                 Age = utilisateur.Age,
                 Description = utilisateur.Description,
@@ -532,7 +547,13 @@ namespace ApiSportTogether.Controller
                 NombreAnnonceEffectuer = nombreAnnonceEffectuer,
                 NombreAuteurAnnonce = nombreAuteurAnnonce,
                 NoteMoyenneDesAnnonces = noteMoyenneDesAnnonces,
-                TopTroisSport = topTroisSport.ToArray()
+                TopTroisSport = topTroisSport.ToArray(),
+                isCoequipier = bIsCoequipier,
+                FunFact = utilisateur.FunFact,
+                DescriptionSport = utilisateur.DescriptionSport,
+                Disponibilites = utilisateur.Disponibilites,
+                NiveauSport = utilisateur.NiveauSport,
+                TypePartenaire = utilisateur.TypePartenaire
                 
             };
 

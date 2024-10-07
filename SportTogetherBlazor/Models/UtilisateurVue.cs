@@ -53,5 +53,6 @@ namespace SportTogetherBlazor.Models
         [JsonPropertyName("FunFact")]
         public string? FunFact { get; set; }
 
+
     }
 }

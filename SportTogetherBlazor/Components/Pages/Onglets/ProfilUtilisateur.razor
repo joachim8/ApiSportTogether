@@ -113,16 +113,45 @@
                 </Tabs>
             </div>
 
-            <!-- Badges succès -->
-            <div class="col-md-3">
-                <div class="card shadow-sm p-3" style="background-color: #085f63; color: #FFFFFF; border-radius: 15px;">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">Succès</h5>
-                        <Badge Color="BadgeColor.Light" class="me-1">Top Sportif</Badge>
-                        <Badge Color="BadgeColor.Light" class="me-1">Ambassadeur</Badge>
-                        <Badge Color="BadgeColor.Light">Ancien</Badge>
+
+                <div class="col-md-3">
+                    <div class="card shadow-sm p-3 mb-3" style="border-radius: 15px;">
+                        <div class="card-body">
+                            <!-- Section Titre -->
+                            <h5 class="card-title text-center mb-3" style="color: #085f63;">Informations sur le sport</h5>
+
+                            <!-- Section Niveau Sport et Disponibilités -->
+                            <div class="d-flex justify-content-between mb-4">
+                                <div>
+                                    <h6 class="mb-1">Niveau Sport</h6>
+                                    <p class="text-muted">@utilisateurVue.NiveauSport</p>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">Disponibilités</h6>
+                                    <p class="text-muted">@utilisateurVue.Disponibilites</p>
+                                </div>
+                            </div>
+
+                            <!-- Section Description Sport et Type Partenaire -->
+                            <div class="mb-4">
+                                <h6 class="mb-1">Description Sport</h6>
+                                <p class="text-muted">@utilisateurVue.DescriptionSport</p>
+                            </div>
+
+                            <div class="mb-4">
+                                <h6 class="mb-1">Type de Partenaire</h6>
+                                <p class="text-muted">@utilisateurVue.TypePartenaire</p>
+                            </div>
+
+                            <!-- Section Fun Fact -->
+                            <div class="mb-4">
+                                <h6 class="mb-1">Fun Fact</h6>
+                                <p class="text-muted">@utilisateurVue.FunFact</p>
+                            </div>
+                        </div>
                     </div>
-                </div>
+
+
             </div>
         </div>
     </div>

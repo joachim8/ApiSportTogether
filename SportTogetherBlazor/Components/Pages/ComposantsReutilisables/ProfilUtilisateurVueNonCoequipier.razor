@@ -1,0 +1,206 @@
+﻿@page "/SportTogether/Profil-utilisateur-vue/{UserSessionId}"
+@using SportTogetherBlazor.Models
+@using System.Net.Http.Json
+
+@using SportTogetherBlazor.Components.Pages.ComposantsReutilisables
+@using SportTogetherBlazor.Components.Pages.Formulaires
+@inject IHttpClientFactory HttpClientFactory
+@using SportTogetherBlazor.Services
+@inject SessionStorageServices session
+
+
+@if (profilUtilisateurVu != null)
+{
+    <div class="container mt-4" style="color: #085f63;">
+
+        <!-- Photo de profil et bouton modifier -->
+        <div class="card shadow mb-4 text-center " style="border-top-right-radius: 15px; background-color: #49beb7;">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-center ">
+                    <img src="@profilUtilisateurVu.urlProfilImage" alt="Profile Picture" class="rounded-circle shadow-lg" id="img-profile" />
+                    <h4 class="mt-2 mx-2">@profilUtilisateurVu.Pseudo</h4>
+                </div>
+                <div class="mt-2">
+                    @if ((bool)profilUtilisateurVu.isCoequipier!)
+                    {
+
+                        <Button Color="ButtonColor.Success" TooltipTitle="Vous êtes coéquipier">Coequipier</Button>
+                    }
+                    else
+                    {
+                        <Button Color="ButtonColor.Primary" TooltipTitle="Vous n'êtes pas coéquipier">Ajouter</Button>
+                    }
+                </div>
+            </div>
+
+        </div>
+
+        <div class="row justify-content-center ">
+            <!-- Row principale avec Infos, Tabs et Badges -->
+            <div class="col-md-3 col-lg-12 w-auto">
+                <!-- Infos utilisateur et amis -->
+                <div class="card shadow-sm p-2 text-center" style="border-radius: 15px; background-color: #FFFFFF;">
+                    <div class="card-body">
+                        <h4 class="card-title ">Infos</h4>
+                        <!-- Âge -->
+                        <p class="card-text ">
+                            <Icon Name="IconName.Calendar" Color="IconColor.Success" class="me-1" /> @profilUtilisateurVu.Age
+                        </p>
+                        <hr class="mb-1 " style="width:50%; margin-left: auto;
+                    margin-right: auto;" />
+                        <!-- Sexe -->
+                        <p class="card-text">
+                            <Icon Name="IconName.GenderAmbiguous" Color="IconColor.Success" class="me-1" /> @profilUtilisateurVu.Genre
+                        </p>
+                        <hr class="mb-1 " style="width:50%; margin-left: auto;
+                    margin-right: auto;" />
+                        <!-- Bouton coéquipiers avec compteur -->
+                        <Button Color="ButtonColor.Success" @onclick="AfficherListeAmis">
+                            <Icon Name="IconName.PersonHeart" class="me-1" /> @nombreAmis
+                        </Button>
+                        <hr class="mb-1 " style="width:50%; margin-left: auto;
+                    margin-right: auto;" />
+                        <Badge Color="BadgeColor.Secondary">
+                            @profilUtilisateurVu.NoteMoyenneDesAnnonces / 10
+                        </Badge>
+
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section des Tabs au centre -->
+            <div class="col-md-6">
+
+
+                <!-- Section des onglets (Tabs) -->
+                <Tabs Class="justify-content-center bg-light" EnableFadeEffect="true" NavStyle="NavStyle.Pills">
+                    <Tab Title="" IsActive="true">
+                        <TitleTemplate>
+                            <Icon Name="IconName.BookmarkCheckFill" /> Ses publications
+                        </TitleTemplate>
+                        <Content>
+                            <div class="container-fluid bg-light">
+                                <div class="mt-4 p-1">
+                                    <AjoutDePublication UtilisateurId="profilUtilisateurVu.UtilisateursId" OnPublicationAdded="RafraichirPublications" />
+                                </div>
+                                <div class="mt-4">
+                                    <MesPublications @ref="mesPublicationsRef" utilisateurId="profilUtilisateurVu.UtilisateursId" />
+                                </div>
+                            </div>
+                        </Content>
+                    </Tab>
+                </Tabs>
+            </div>
+
+            <!-- Badges succès -->
+            <div class="col-md-3">
+                <div class="card shadow-sm p-3 mb-3" style="border-radius: 15px;">
+                    <div class="card-body">
+                        <!-- Section Titre -->
+                        <h5 class="card-title text-center mb-3" style="color: #085f63;">Informations sur le sport</h5>
+
+                        <!-- Section Niveau Sport et Disponibilités -->
+                        <div class="d-flex justify-content-between mb-4">
+                            <div>
+                                <h6 class="mb-1">Niveau Sport</h6>
+                                <p class="text-muted">@profilUtilisateurVu.NiveauSport</p>
+                            </div>
+                            <div>
+                                <h6 class="mb-1">Disponibilités</h6>
+                                <p class="text-muted">@profilUtilisateurVu.Disponibilites</p>
+                            </div>
+                        </div>
+
+                        <!-- Section Description Sport et Type Partenaire -->
+                        <div class="mb-4">
+                            <h6 class="mb-1">Description Sport</h6>
+                            <p class="text-muted">@profilUtilisateurVu.DescriptionSport</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <h6 class="mb-1">Type de Partenaire</h6>
+                            <p class="text-muted">@profilUtilisateurVu.TypePartenaire</p>
+                        </div>
+
+                        <!-- Section Fun Fact -->
+                        <div class="mb-4">
+                            <h6 class="mb-1">Fun Fact</h6>
+                            <p class="text-muted">@profilUtilisateurVu.FunFact</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <p class="text-center">Chargement du profil...</p>
+}
+
+<style>
+    #img-profile {
+        width: 120px;
+        height: 120px;
+        border: 3px solid #085f63;
+    }
+
+    .nav-pills .nav-link.active {
+        background-color: #49beb7;
+        color: #FFFFFF;
+    }
+
+    .nav-pills .nav-link {
+        color: #085f63;
+    }
+</style>
+@code {
+    [SupplyParameterFromQuery(Name = "utilisateur")]
+    public int utilisateur_id { get; set; } = 0;
+    [Parameter]
+    public string UserSessionId { get; set; } = string.Empty;
+
+    private int utilisateurEnCoursId { get; set; }
+
+    public ProfilUtilisateurVu profilUtilisateurVu { get; set; }
+    private HttpClient httpClient;
+    private MesPublications mesPublicationsRef;
+    private int nombreAmis = 0;
+
+    private bool showModifierBtn = false;
+    
+    // Méthode pour afficher la liste d'amis
+    private void AfficherListeAmis()
+    {
+        // Logique pour ouvrir la modal des amis (ou utiliser un autre composant)
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Appel API pour récupérer l'utilisateur
+        httpClient = HttpClientFactory.CreateClient("ApiSportTogetherClient");
+        utilisateurEnCoursId = session.GetUserFromSession().UtilisateursId;
+        try
+        {
+            profilUtilisateurVu = await httpClient.GetFromJsonAsync<ProfilUtilisateurVu>($"Utilisateur/GetProfilUtilisateurVueByIdParMois/{utilisateur_id}/{utilisateurEnCoursId}")!;
+        }
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine($"Erreur lors de la requête : {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur inattendue : {ex.Message}");
+        }
+        // Appel API pour récupérer le nombre d'amis
+        nombreAmis = await httpClient.GetFromJsonAsync<int>($"Ami/GetNombreAmi/{profilUtilisateurVu.UtilisateursId}");
+    }
+    private async Task RafraichirPublications()
+    {
+        await mesPublicationsRef.GetPublicationsIdsByUtilisateur(); // Méthode pour récupérer les publications
+        StateHasChanged();
+    }
+  
+}

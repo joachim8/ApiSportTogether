@@ -1,4 +1,4 @@
-﻿@page "/SportTogether/Mes-annonces"
+﻿@page "/SportTogether/Mes-annonces/{UserSessionId}"
 @using SportTogetherBlazor.Models
 @using SportTogetherBlazor.Services
 @using System.Linq
@@ -292,6 +292,8 @@
 </style>
 @code {
     #region "Variable"
+    [Parameter]
+    public string UserSessionId { get; set; }
     private List<AnnonceVue> annoncesAuteur;
     private List<AnnonceVue> annoncesParticipant;
     private List<AnnonceVue> historiqueAnnonce;
