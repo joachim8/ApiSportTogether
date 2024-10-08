@@ -7,7 +7,7 @@
 @inject NavigationManager NavigationManager
 @inject IJSRuntime jsRuntime
 @using SportTogetherBlazor.Services;
-@inject SessionStorageServices session
+@inject LocalStorageServices localStorage
 @using System.Text.Json
 <PageTitle> Inscription | SportTogether</PageTitle>
 <style>
@@ -288,14 +288,14 @@
         if (utilisateur != null)
         {
             // Existing login logic
-            session.SaveUserToSession(utilisateur);
+          await localStorage.SaveUserToLocalStorage(utilisateur);
 
             await GetImageAsync(utilisateur.UtilisateursId);
             if (imageProfil != null)
             {
-                session.SaveImageUrl(imageProfil.Url);
+                await localStorage.SaveImageUrl(imageProfil.Url);
             }
-            NavigationManager.NavigateTo($"/SportTogether/NouveauProfilSportif/{utilisateur.UtilisateursId}");
+            NavigationManager.NavigateTo($"/SportTogether/NouveauProfilSportif/{utilisateur.UtilisateursId}/{false}");
         }
       
     }

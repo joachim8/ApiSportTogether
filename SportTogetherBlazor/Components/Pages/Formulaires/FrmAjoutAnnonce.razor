@@ -1,5 +1,5 @@
 ﻿@page "/SportTogether/Annonces/AjoutAnnonce"
-@page "/SportTogether/NouvelleAnnonce"
+
 @inject HttpClient httpClient
 @using SportTogetherBlazor.Models
 @using SportTogetherBlazor.Components.Pages.ComposantsReutilisables
@@ -13,7 +13,8 @@
 @inject ILogger<FrmAjoutAnnonce> Logger
 
 
-@inject SessionStorageServices session
+@inject LocalStorageServices localStorage
+
 <PageTitle>Nouvelle Annonce | SportTogether</PageTitle>
 
 <style>
@@ -272,7 +273,7 @@
     protected override async Task OnInitializedAsync()
     {
         await GetListOfSport();
-        utilisateurInfo = session.GetUserFromSession()!;
+        utilisateurInfo = await localStorage.GetUserFromLocalStorage()!;
         annonce.DateHeureAnnonce = DateTime.Now;
         annonce.Auteur = utilisateurInfo.UtilisateursId;
         annonce.AuteurNavigation = utilisateurInfo;

@@ -2,7 +2,7 @@
 @inject NavigationManager NavigationManager
 @using SportTogetherBlazor.Models
 @using SportTogetherBlazor.Services
-@inject SessionStorageServices session
+@inject LocalStorageServices localStorage
 @using System.Text.Json
 
 <style>
@@ -11,16 +11,13 @@
         justify-content: center;
         align-items: center;
         min-height: 100vh;
-    }
-
-    .form-box {
         border: 5px solid #085f63;
         box-shadow: 0 2px 4px #085f63;
-        padding: 20px;
         background: white;
-        width: 50%;
         border-radius: 5px;
     }
+
+   
 
     .button-container {
         display: flex;
@@ -36,8 +33,15 @@
             <EditForm Model="@nouveauProfilSportif" OnValidSubmit="@HandleCreateProfilSportif" FormName="AjoutProfilSportif">
                 <DataAnnotationsValidator />
                 <ValidationSummary />
-
-                <h2>Créer un Nouveau Profil Sportif</h2>
+                @if (!isModif)
+                {
+                    <h2>Créer votre profil sportif</h2>
+                }
+                else
+                {
+                    <h2>Modifier votre profil sportif</h2>
+                }
+              
 
                 <!-- Description -->
                 <div class="mb-3">
@@ -48,7 +52,7 @@
 
                 <!-- Niveau de Sport -->
                 <div class="mb-3">
-                    <label class="form-label" for="niveauSport">Niveau de Sport</label>
+                    <label class="form-label" for="niveauSport">Niveau de sport</label>
                     <InputSelect id="niveauSport" class="form-control" @bind-Value="nouveauProfilSportif.NiveauSport">
                         <option value="">Sélectionnez un niveau</option>
                         <option value="Débutant">Débutant</option>
@@ -74,14 +78,14 @@
 
                 <!-- Description du Sport -->
                 <div class="mb-3">
-                    <label class="form-label" for="descriptionSport">Description du Sport</label>
+                    <label class="form-label" for="descriptionSport">Description du sport</label>
                     <InputTextArea id="descriptionSport" class="form-control" @bind-Value="nouveauProfilSportif.DescriptionSport" />
                     <ValidationMessage For="@(() => nouveauProfilSportif.DescriptionSport)" />
                 </div>
 
                 <!-- Type de Partenaire -->
                 <div class="mb-3">
-                    <label class="form-label" for="typePartenaire">Type de Partenaire</label>
+                    <label class="form-label" for="typePartenaire">Type de partenaire</label>
                     <InputSelect id="typePartenaire" class="form-control" @bind-Value="nouveauProfilSportif.TypePartenaire">
                         <option value="">Sélectionnez un type de partenaire</option>
                         <option value="Groupe d’amis">Groupe d’amis</option>
@@ -94,13 +98,24 @@
 
                 <!-- Fun Fact -->
                 <div class="mb-3">
-                    <label class="form-label" for="funFact">Fun Fact</label>
+                    <label class="form-label" for="funFact">Fun fact</label>
                     <InputTextArea id="funFact" class="form-control" @bind-Value="nouveauProfilSportif.FunFact" />
                     <ValidationMessage For="@(() => nouveauProfilSportif.FunFact)" />
                 </div>
 
                 <div class="button-container">
-                    <Button Type="ButtonType.Submit" class="btn btn-success">Créer Profil</Button>
+                    @if (!isModif)
+                    {
+                        <Button Type="ButtonType.Submit" class="btn btn-success">Créer</Button>
+                    }
+                    else
+                    {
+                        <Button Type="ButtonType.Submit" class="btn btn-success">Modifier</Button>
+                    }
+
+                        
+                        
+
                 </div>
             </EditForm>
         </div>
@@ -118,7 +133,8 @@ else
     private Utilisateur? nouveauProfilSportif;
     [Parameter]
     public int utilisateur_id { get; set; }
-
+    [Parameter]
+    public bool isModif { get; set; }
 
     protected override async Task OnInitializedAsync()
     {

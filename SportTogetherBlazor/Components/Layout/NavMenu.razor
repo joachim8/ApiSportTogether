@@ -2,10 +2,10 @@
 @using SportTogetherBlazor.Services
 @using SportTogetherBlazor.Models
 @inject NavigationManager NavigationManager
-@inject SessionStorageServices session
+@inject LocalStorageServices localStorage
 @inject IHttpClientFactory ClientFactory
 @inject IJSRuntime JS
-
+@inject TaskNotificationServices NotificationService
 
 
 <!-- Normal Menu for larger screens -->
@@ -44,10 +44,48 @@
                     Mes annonces
                 </a>
             </li>
-          
-        </ul>
 
+        </ul>
+      
         <div class="dropdown mt-auto">
+            <Dropdown AutoClose="true"  AutoCloseBehavior="DropdownAutoCloseBehavior.Outside" Direction="DropdownDirection.Dropup">
+                <DropdownToggleButton Color="ButtonColor.None">
+                    <Icon Name="IconName.BellFill" Color="IconColor.Light" />
+                    @if (listNotif.Any(n => !n.Vu))
+                    {
+                        <Badge Color="BadgeColor.Danger">@listNotif.Count(n => !n.Vu)</Badge>
+                    }
+                </DropdownToggleButton>
+                <DropdownMenu>
+                    @if (listNotif.Any())
+                    {
+                        @foreach (NotificationUtilisateur notification in listNotif)
+                        {
+                            <div class="@(notification.Vu ? "" : "bg-light")">
+                                <DropdownItem To="#" Type="ButtonType.Link" Class="d-flex align-items-start" @onclick="() => MarkAsRead(notification.NotificationId)">
+
+                                    <!-- Badge avec les initiales et la couleur dépendant du type de notification -->
+                                    <span class="badge badge-pill bg-info" style="width: 40px; height: 40px; font-size: 16px; line-height: 40px;">
+                                        @GetInitials(notification.TypeNotification)
+                                    </span>
+
+                                    <!-- Contenu au milieu -->
+                                    <div class="ms-3">
+                                        <div>@notification.Contenu</div>
+                                        <!-- Date formatée en bas -->
+                                        <div class="text-muted small">@notification.DateNotification.ToString("dd/MM/yyyy")</div>
+                                    </div>
+                                </DropdownItem>
+                            </div>
+                        }
+
+                    }
+                    else
+                    {
+                        <DropdownItem>Aucune notification</DropdownItem>
+                    }
+                </DropdownMenu>
+            </Dropdown>
             <hr>
             <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
                 @if (utilisateurInfo != null)
@@ -68,89 +106,143 @@
         </div>
     </div>
 </div>
-
-<!-- Offcanvas for smaller screens -->
-<Offcanvas @ref="offcanvas" Placement="Placement.Start" IsScrollable="true" class="d-md-none" Size="OffcanvasSize.Small" Style="background-color: $bg-dark;">
-    <BodyTemplate>
-        <div class="d-flex flex-column p-3 text-white bg-dark flex-grow-1 h-100">
-            <a href="/SportTogether" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-                <img src="images/logo-blanc.png" class="img-fluid align-self-center p-1" style="width:70px; height:70px;" />
-                <span class="fs-4">SportTogether</span>
-            </a>
-            <hr>
-            <ul class="nav nav-pills flex-column mb-auto">
-                <li class="nav-item h-auto @(linkClickedStates["Fil-Actualite"] ? "clicked-style" : "")" @onclick="@(() => ToggleClick("Fil-Actualite"))">
-                    <a href="/SportTogether/Fil-D-Actualite" class="nav-link text-white text-center text-capitalize">
-                        <Icon Name="IconName.BookHalf" Color="IconColor.Light" Size="IconSize.x4" class="p-2" />
-                        Fil d'actualité
-                    </a>
-                </li>
-                <!-- Links similar to the larger screen version -->
-                <li class="nav-item h-auto @(linkClickedStates["Annonces"] ? "clicked-style" : "")" @onclick="@(() => ToggleClick("Annonces"))">
-                    <a href="/SportTogether/Annonces" class="nav-link text-white text-center text-capitalize">
-                        <Icon Name="IconName.House" Color="IconColor.Light" Size="IconSize.x4" class="p-2" />
-                        Annonces
-                    </a>
-                </li>
-                <li class="nav-item h-auto @(linkClickedStates["Messagerie-instantane"] ? "clicked-style" : "")" @onclick="@(() => ToggleClick("Messagerie-instantane"))">
-                    <a href="/SportTogether/Messagerie-instantane" class="nav-link text-white text-center text-capitalize">
-                        <Icon Name="IconName.Messenger" Color="IconColor.Light" Size="IconSize.x4" class="p-2" />
-                        Messagerie
-                        @if (messageCount)
-                        {
-                            <span class="ms-3"><Badge Color="BadgeColor.Danger" Placement="BadgePlacement.MiddleRight">@nbrMessages</Badge></span>
-                        }
-                    </a>
-                </li>
-                <li class="nav-item h-auto @(linkClickedStates["Mes-annonces"] ? "clicked-style" : "")" @onclick="@(() => ToggleClick("Mes-annonces"))">
-                    <a href="/SportTogether/Mes-annonces" class="nav-link text-white text-center text-capitalize">
-                        <Icon Name="IconName.Calendar2Week" Color="IconColor.Light" Size="IconSize.x4" class="p-2" />
-                        Mes annonces
-                    </a>
-                </li>
-               
-            </ul>
-            <div class="dropdown mt-auto">
-                <hr>
-                <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
-                    @if (utilisateurInfo != null)
+<!-- Bottom navigation for mobile and medium screens -->
+<nav class="navbar navbar-dark bg-dark d-lg-none d-md-none fixed-bottom">
+    <div class="d-flex justify-content-between align-items-center w-100 px-3">
+        <!-- Left side: nav items (Centered) -->
+        <ul class="navbar-nav d-flex flex-row justify-content-center w-75">
+            <li class="nav-item d-flex align-items-center justify-content-center @(linkClickedStates["Fil-Actualite"] ? "clicked-style" : "")" @onclick="@(() => ToggleClick("Fil-Actualite"))">
+                <a href="/SportTogether/Fil-D-Actualite/@userSession" class="nav-link text-center" style="width: 40px;">
+                    <Icon Name="IconName.BookHalf" Color="IconColor.Light" />
+                </a>
+            </li>
+            <li class="nav-item d-flex align-items-center justify-content-center @(linkClickedStates["Annonces"] ? "clicked-style" : "")" @onclick="@(() => ToggleClick("Annonces"))">
+                <a href="/SportTogether/Annonces/@userSession" class="nav-link text-center" style="width: 40px;">
+                    <Icon Name="IconName.House" Color="IconColor.Light" />
+                </a>
+            </li>
+            <li class="nav-item d-flex align-items-center justify-content-center @(linkClickedStates["Messagerie-instantane"] ? "clicked-style" : "")" @onclick="@(() => ToggleClick("Messagerie-instantane"))">
+                <a href="/SportTogether/Messagerie-instantane/@userSession" class="nav-link text-center" style="width: 40px;">
+                    <Icon Name="IconName.Messenger" Color="IconColor.Light" />
+                    @if (messageCount)
                     {
-                        <img src="@urlPhotoProfil" alt="" width="32" height="32" class="rounded-circle me-2">
-                        <strong>@utilisateurInfo.Pseudo</strong>
+                        <span class="ms-1">
+                            <Badge Color="BadgeColor.Danger" Placement="BadgePlacement.MiddleRight">@nbrMessages</Badge>
+                        </span>
+                    }
+                </a>
+            </li>
+            <li class="nav-item d-flex align-items-center justify-content-center @(linkClickedStates["Mes-annonces"] ? "clicked-style" : "")" @onclick="@(() => ToggleClick("Mes-annonces"))">
+                <a href="/SportTogether/Mes-annonces/@userSession" class="nav-link text-center" style="width: 40px;">
+                    <Icon Name="IconName.Calendar2Week" Color="IconColor.Light" />
+                </a>
+            </li>
+        </ul>
+
+        <!-- Right side: dropdown (Notification and User Profile) -->
+        <div class="dropup d-flex align-items-center justify-content-center w-25">
+            <Dropdown AutoClose="true" AutoCloseBehavior="DropdownAutoCloseBehavior.Outside">
+                <DropdownToggleButton Color="ButtonColor.Light">
+                    <Icon Name="IconName.BellFill" />
+                    @if (listNotif.Any(n => !n.Vu))
+                    {
+                        <Badge Color="BadgeColor.Danger">@listNotif.Count(n => !n.Vu)</Badge>
+                    }
+                </DropdownToggleButton>
+                <DropdownMenu>
+                    @if (listNotif.Any())
+                    {
+                        @foreach (NotificationUtilisateur notification in listNotif)
+                        {
+                            <div class="@(notification.Vu ? "" : "bg-light")">
+                                <DropdownItem To="#" Type="ButtonType.Link" Class="d-flex align-items-start" @onclick="() => MarkAsRead(notification.NotificationId)">
+                                    <!-- Badge avec les initiales et la couleur dépendant du type de notification -->
+                                    <span class="badge badge-pill bg-info" style="width: 40px; height: 40px; font-size: 16px; line-height: 40px;">
+                                        @GetInitials(notification.TypeNotification)
+                                    </span>
+                                    <!-- Contenu au milieu -->
+                                    <div class="ms-3">
+                                        <div>@notification.Contenu</div>
+                                        <div class="text-muted small">@notification.DateNotification.ToString("dd/MM/yyyy")</div>
+                                    </div>
+                                </DropdownItem>
+                            </div>
+                        }
                     }
                     else
                     {
-                        <strong>mdo</strong>
+                        <DropdownItem>Aucune notification</DropdownItem>
                     }
-                </a>
-                <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
-                    <li><a class="dropdown-item" href="/SportTogether/Parametre">Paramètre</a></li>
-                    <li><a class="dropdown-item" href="/SportTogether/Profil-utilisateur">Profil</a></li>
-                    <li><a class="dropdown-item" @onclick="Logout">Se déconnecter</a></li>
-                </ul>
-            </div>
-        </div>
-    </BodyTemplate>
-</Offcanvas>
+                </DropdownMenu>
+            </Dropdown>
 
-<!-- Toggle button for smaller screens -->
-<button class="navbar-toggler d-md-none position-sticky " style="top:0" type="button" @onclick="() => OnShowOffcanvasClick(Placement.Start)">
-    <span class="navbar-toggler-icon"><Icon Name="IconName.List" Color="IconColor.Dark" /></span>
-</button>
+            <div class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
+                <img src="@urlPhotoProfil" alt="" width="32" height="32" class="rounded-circle me-2">
+                <strong>@utilisateurInfo.Pseudo</strong>
+            </div>
+            <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
+                <li><a class="dropdown-item" href="/SportTogether/Parametre">Paramètre</a></li>
+                <li><a class="dropdown-item" href="/SportTogether/Profil-utilisateur">Profil</a></li>
+                <li><a class="dropdown-item" @onclick="Logout">Se déconnecter</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
 
 @code {
     private Offcanvas offcanvas = default!;
     private bool isMenuVisible = false;
-    private Utilisateur utilisateurInfo;
+    private Utilisateur utilisateurInfo = new();
     private string urlPhotoProfil = string.Empty;
     private Dictionary<string, bool> linkClickedStates = new Dictionary<string, bool>();
     bool isClicked = false;
     bool messageCount = false;
     int nbrMessages = 0;
     private string? userSession = string.Empty;
+    private bool _firstRender = true;
+    private List<NotificationUtilisateur> listNotif = new();
+    private int unreadCount = 0;
+    private string GetInitials(string type)
+    {
+        return type switch
+        {
+            "Commentaire" => "C",
+            "Encouragement_publication" => "EP",
+            "Encouragement_commentaire" => "EC",
+            "Participation" => "P",
+            "ajout en amis" => "A",
+            _ => "N/A"
+        };
+    }
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_firstRender) // Eviter les appels multiples
+        {
+            _firstRender = false;
+
+            userSession = await localStorage.GetUserSessionIdFromLocalStorage();
+            await LoadUserInfo();
+            await LoadImageUrl();
+            if (utilisateurInfo != null)
+            {
+                await GetAllNombreMessageVu();
+            }
+            var result = await NotificationService.GetNotificationsAsync();
+            if (result.IsSuccess)
+            {
+                listNotif = result.Notifications;
+                CountUnreadNotifications(); // Calculer le nombre de notifications non lues
+            }
+            StateHasChanged();
+        }
+    }
     protected override async Task OnInitializedAsync()
     {
-        userSession = session.GetUserSessionIdFromSession();
+       
         linkClickedStates.Add("Fil-Actualite", false);
         linkClickedStates.Add("Annonces", false);
         linkClickedStates.Add("Messagerie-instantane", false);
@@ -159,17 +251,33 @@
         linkClickedStates.Add("Profile", false);
         
 
-        await LoadUserInfo();
-        await LoadImageUrl();
-        if (utilisateurInfo != null)
-        {
-            await GetAllNombreMessageVu();
-        }
+       
+    }
+    private void CountUnreadNotifications()
+    {
+        unreadCount = listNotif.Count(n => !n.Vu); // Compter les notifications non lues
     }
 
+    private async Task MarkAsRead(int notificationId)
+    {
+        var result = await NotificationService.MarkNotificationAsReadAsync(notificationId);
+        if (result.IsSuccess)
+        {
+            var notification = listNotif.FirstOrDefault(n => n.NotificationId == notificationId);
+            if (notification != null)
+            {
+                notification.Vu = true; // Met à jour l'état local pour refléter le changement
+                CountUnreadNotifications(); // Recalculer le nombre de notifications non lues
+            }
+        }
+        else
+        {
+            // Gérer l'erreur ici
+        }
+    }
     private async Task LoadUserInfo()
     {
-        utilisateurInfo = session.GetUserFromSession()!;
+        utilisateurInfo = await localStorage.GetUserFromLocalStorage();
         if (utilisateurInfo == null)
         {
             NavigationManager.NavigateTo("/SportTogether/Connexion");
@@ -178,16 +286,16 @@
 
     private async Task LoadImageUrl()
     {
-        urlPhotoProfil = session.GetImageUrl()!;
+        urlPhotoProfil = await localStorage.GetImageUrl()!;
         if (urlPhotoProfil == string.Empty)
         {
             NavigationManager.NavigateTo("/SportTogether/Connexion");
         }
     }
 
-    private void Logout()
+    private async Task Logout()
     {
-        session.Logout();
+        await localStorage.Logout();
         NavigationManager.NavigateTo("/SportTogether/Connexion");
     }
 

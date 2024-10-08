@@ -6,7 +6,7 @@
 @using SportTogetherBlazor.Components.Pages.Formulaires
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager NavigationManager
-@inject SessionStorageServices session
+@inject LocalStorageServices localStorage
 
 @if (utilisateurVue != null)
 {
@@ -97,7 +97,7 @@
                             <Icon Name="IconName.Heart" /> Mes préférences
                         </TitleTemplate>
                         <Content>
-                            <FrmModificationPreferenceProfil utilisateur_id="@utilisateurVue.UtilisateursId"/>
+                            <FrmModificationPreferenceProfil utilisateur_id="@utilisateurVue.UtilisateursId" isModif="true"/>
                         </Content>
                     </Tab>
                     <Tab Title="" >
@@ -106,7 +106,7 @@
                         </TitleTemplate>
                         <Content>
                              <div class="container-fluid bg-light">
-                                <FrmModificationUtilisateur utilisateurPourModif="utilisateurInfo" />
+                                <FrmModificationUtilisateur utilisateurPourModif="utilisateurInfo"  />
                             </div>
                         </Content>
                     </Tab>
@@ -250,7 +250,7 @@ else
     }
     private async Task LoadUserInfo()
     {
-        utilisateurInfo = session.GetUserFromSession()!;
+        utilisateurInfo = await localStorage.GetUserFromLocalStorage()!;
         if (utilisateurInfo == null)
         {
             NavigationManager.NavigateTo("/SportTogether/Connexion");

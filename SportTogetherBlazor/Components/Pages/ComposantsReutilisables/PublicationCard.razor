@@ -4,10 +4,16 @@
 @using SportTogetherBlazor.Models
 @using Microsoft.AspNetCore.SignalR.Client
 @using SportTogetherBlazor.Services
-@inject SessionStorageServices session
+@inject LocalStorageServices localStorage
+@inject TaskNotificationServices NotificationService
 
 
-@if (hasError || publicationVue == null)
+@if (publicationVue == null)
+{
+    <div class="d-flex justify-content-center">
+        <Spinner Type="SpinnerType.Border" />
+    </div>
+}else if (hasError)
 {
     <p class="text-danger">Erreur lors du chargement de la publication. Veuillez réessayer plus tard. @error</p>
 }
@@ -230,10 +236,10 @@ else
     #region "Init et dispose"
     protected override async Task OnInitializedAsync()
     {
-        utilisateurId = session.GetUserFromSession()!.UtilisateursId;
+        utilisateurId = (await localStorage.GetUserFromLocalStorage()!).UtilisateursId;
 
         await FetchPublicationDetails(PublicationId);
-        
+
 
         _hubConnection = new HubConnectionBuilder()
             .WithUrl("http://localhost:5000/publicationHub")
@@ -323,15 +329,16 @@ else
         newCommentaire.PublicationId = PublicationId;
         newCommentaire.DateCommentaire = DateTime.UtcNow;
         // Remplacez `UtilisateurId` par l'ID de l'utilisateur authentifié
-        newCommentaire.UtilisateurId = publicationVue.UtilisateurId;
+        newCommentaire.UtilisateurId = utilisateurId;
 
         var response = await httpClient.PostAsJsonAsync("PublicationCommentaire/CreateCommentaire", newCommentaire);
 
         if (response.IsSuccessStatusCode)
         {
             var addedCommentaire = await response.Content.ReadFromJsonAsync<PublicationCommentaire>();
-            newCommentaire = new PublicationCommentaire(); // Réinitialiser le formulaire
-            StateHasChanged(); // Re-render the component
+            string pseudo = (await localStorage.GetUserFromLocalStorage()).Pseudo;
+            string contenu = $"{pseudo} a commenter votre publication : \n  {addedCommentaire.Contenu}";
+            await SendNotificationToAuthor(contenu, "Commentaire");
         }
         else
         {
@@ -358,14 +365,9 @@ else
 
             if (response.IsSuccessStatusCode)
             {
-                // Mise à jour du nombre d'encouragements du commentaire
-                var commentaire = publicationVue.Commentaires.FirstOrDefault(c => c.CommentaireId == encouragement.PublicationCommentaireId);
-                if (commentaire != null)
-                {
-                    commentaire.NombreEncouragementCommentaire++;
-                    commentaire.IsEncouragerCom = true; // Met à jour l'état d'encouragement du commentaire
-                    StateHasChanged(); // Re-render le composant
-                }
+                string pseudo = (await localStorage.GetUserFromLocalStorage()).Pseudo;
+                string contenu = $"{pseudo} vous encourage pour le commentaire :  {commentaireVue.Contenu}";
+                await SendNotificationToAuthor(contenu, "Encouragement_commentaire", encouragement.PublicationCommentaireId);
             }
             else
             {
@@ -423,6 +425,7 @@ else
     /// <returns></returns>
     private async Task FetchPublicationDetails(int publicationId)
     {
+
         httpClient = HttpClientFactory.CreateClient("ApiSportTogetherClient");
         try
         {
@@ -450,7 +453,7 @@ else
         }
     }
     /// <summary>
-    /// 
+    /// To do
     /// </summary>
     /// <returns></returns>
     private async Task AjoutNombreEncouragement()
@@ -467,10 +470,11 @@ else
 
             if (response.IsSuccessStatusCode)
             {
-                // Mise à jour du nombre d'encouragements de la publication
-                publicationVue.NombreEncouragements++;
-                publicationVue.IsEncourager = true; // Met à jour l'état d'encouragement de la publication
-                StateHasChanged(); // Re-render le composant
+                string pseudo = (await localStorage.GetUserFromLocalStorage()).Pseudo;
+                string contenu = $"{pseudo} vous encourage pour la publication : {publicationVue.Contenu}";
+
+                await SendNotificationToAuthor(contenu, "Encouragement_publication");
+
             }
             else
             {
@@ -485,7 +489,7 @@ else
     }
 
     /// <summary>
-    /// 
+    /// to do
     /// </summary>
     /// <returns></returns>
     private async Task SupprimerNombreEncouragement()
@@ -516,7 +520,7 @@ else
         }
     }
     /// <summary>
-    /// 
+    /// to do
     /// </summary>
     /// <returns></returns>
     private async Task DeletePublication()
@@ -575,9 +579,8 @@ else
         }
     }
     /// <summary>
-    /// 
+    /// to do
     /// </summary>
-
     /// <returns></returns>
     private async Task ModifierPublication()
     {
@@ -658,6 +661,52 @@ else
         return videoExtensions.Contains(extension);
     }
     #endregion
+    #region "Task Notification"
+    // Méthode pour envoyer une notification à l'auteur
+    private async Task SendNotificationToAuthor(string contenu, string type, int? cle = null)
+    {
+        
+        var notification = new NotificationUtilisateur
+            {
+                DateNotification = DateTime.Now,
+                UtilisateurId = publicationVue.UtilisateurId,
+                TypeNotification =  type,
+                Contenu = contenu,
+                Vu = false
+            };
 
+        var result = await NotificationService.CreateNotificationAsync(notification);
+        if (result.IsSuccess)
+        {
+            switch (type)
+            {
+                case "Commentaire":
+                    newCommentaire = new PublicationCommentaire(); // Réinitialiser le formulaire
+                    StateHasChanged(); // Re-render the component
+                    break;
+                case "Encouragement_publication":
+                    // Mise à jour du nombre d'encouragements de la publication
+                    publicationVue.NombreEncouragements++;
+                    publicationVue.IsEncourager = true; // Met à jour l'état d'encouragement de la publication
+                    StateHasChanged(); // Re-render le composant
+                    break;
+                case "Encouragement_commentaire":
+                    // Mise à jour du nombre d'encouragements du commentaire
+                    var commentaire = publicationVue.Commentaires.FirstOrDefault(c => c.CommentaireId == cle);
+                    if (commentaire != null)
+                    {
+                        commentaire.NombreEncouragementCommentaire++;
+                        commentaire.IsEncouragerCom = true; // Met à jour l'état d'encouragement du commentaire
+                        StateHasChanged(); // Re-render le composant
+                    }
+                    break;
+                default:
+                    break;
+            }
+           
+        }
+
+    }
+    #endregion
 
 }

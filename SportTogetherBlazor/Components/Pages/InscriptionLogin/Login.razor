@@ -6,7 +6,7 @@
 @inject IJSRuntime jsRuntime
 @inject HttpClient httpClient
 @inject NavigationManager NavigationManager
-@inject SessionStorageServices session;
+@inject LocalStorageServices localStorage
 <PageTitle> Connexion | SportTogether</PageTitle>
 <section class="vh-100" style="background-color: #13222F;">
     <div class="container h-100">
@@ -96,15 +96,15 @@
                     try
                     {
                         // Existing login logic
-                        session.SaveUserToSession(utilisateurInfo);
+                       await localStorage.SaveUserToLocalStorage(utilisateurInfo);
                       
                             await GetImageAsync(utilisateurInfo.UtilisateursId);
                             if(imageProfil != null)
                             {
-                                session.SaveImageUrl(imageProfil.Url);
+                                await localStorage.SaveImageUrl(imageProfil.Url);
                             }
 
-                        userSession = session.GetUserSessionIdFromSession();
+                        userSession = await localStorage.GetUserSessionIdFromLocalStorage();
                         NavigationManager.NavigateTo($"SportTogether/Annonces/{userSession}");
                     }
                     catch (Exception ex)

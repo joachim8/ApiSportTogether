@@ -1,7 +1,10 @@
 ﻿@using SportTogetherBlazor.Models
 @using System.Net.Http.Json
+@using SportTogetherBlazor.Services
 @inject IHttpClientFactory HttpClientFactory
-
+@inject TaskNotificationServices NotificationService
+@using SportTogetherBlazor.Services
+@inject LocalStorageServices localStorage
 
 
 <div class="card shadow position-relative" style="border-color:#085f63; border-width:4px; border-top-left-radius:15px; border-top-right-radius:15px; box-shadow:10px 5px 5px #085f63;">
@@ -199,9 +202,10 @@
         var response = await httpClient.PostAsJsonAsync("Participation/CreateParticipation", participation);
         if (response.IsSuccessStatusCode)
         {
-            nombreDeParticipants++;
-            ToastService.Notify(new(ToastType.Success, $"Votre participation à l'annonce '{annonceVue.Titre}' est bien enregistrée"));
-            isParticipant = true;
+            string pseudo = (await localStorage.GetUserFromLocalStorage()).Pseudo;
+            string contenu = $"{pseudo} participe a votre annonce {annonceVue.Titre}";
+
+            await SendNotificationToAuthor(contenu);
             StateHasChanged();
         }
         else
@@ -210,7 +214,28 @@
             ToastService.Notify(new(ToastType.Danger, $"Votre participation à l'annonce '{annonceVue.Titre}' n'a pas pu s'enregistrer. Veuillez réessayer."));
         }
     }
+    // Méthode pour envoyer une notification à l'auteur
+    private async Task SendNotificationToAuthor(string contenu)
+    {
+        var notification = new NotificationUtilisateur
+            {
+                DateNotification = DateTime.Now,
+                UtilisateurId = annonceVue.AuteurId,
+                TypeNotification = "Participation",
+                Contenu = contenu,
+                Vu = false
+            };
 
+        var result = await NotificationService.CreateNotificationAsync(notification);
+        if (result.IsSuccess)
+        {
+
+            nombreDeParticipants++;
+            ToastService.Notify(new(ToastType.Success, $"Votre participation à l'annonce '{annonceVue.Titre}' est bien enregistrée"));
+            isParticipant = true;
+        }
+       
+    }
     /// <summary>
     /// Fonction de suppression de participant
     /// </summary>
@@ -230,7 +255,7 @@
         {
             nombreDeParticipants--;
             isParticipant = false;
-            ToastService.Notify(new(ToastType.Success, $"Participation pour l'annonce '{annonceVue.Titre}' retirée avec succès !"));
+            ToastService.Notify(new(ToastType.Warning, $"Participation pour l'annonce '{annonceVue.Titre}' retirée avec succès !"));
             StateHasChanged();
         }
         else

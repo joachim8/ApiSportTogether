@@ -28,6 +28,7 @@ public partial class SportTogetherContext : DbContext
     public virtual DbSet<Groupe> Groupes { get; set; }
     public virtual DbSet<MembreGroupe> MembreGroupes { get; set; }
     public virtual DbSet<Message> Messages { get; set; }
+    public virtual DbSet<NotificationUtilisateur> NotificationUtilisateurs { get; set; }
 
     public virtual DbSet<Participation> Participations { get; set; }
 
@@ -262,7 +263,31 @@ public partial class SportTogetherContext : DbContext
                .OnDelete(DeleteBehavior.Cascade)
                .HasConstraintName("fk_messages_UtilisateurID");
         });
+        modelBuilder.Entity<NotificationUtilisateur>(entity =>
+        {
+            entity.HasKey(e => e.NotificationId).HasName("PRIMARY");
 
+            entity.ToTable("notification_utilisateur");
+
+            entity.HasIndex(e => e.UtilisateurId, "fk_notification_utilisateur_utilisateur_id");
+
+            entity.Property(e => e.NotificationId).HasColumnName("notification_id");
+            entity.Property(e => e.Contenu)
+                .HasColumnType("text")
+                .HasColumnName("contenu");
+            entity.Property(e => e.DateNotification)
+                .HasColumnType("datetime")
+                .HasColumnName("date_notification");
+            entity.Property(e => e.TypeNotification)
+                .HasColumnType("enum('Participation','Ajout en ami','Commentaire','Encouragement_commentaire','Encouragement_publication')")
+                .HasColumnName("type_notification");
+            entity.Property(e => e.UtilisateurId).HasColumnName("utilisateur_id");
+            entity.Property(e => e.Vu).HasColumnName("vu");
+
+            entity.HasOne(d => d.Utilisateur).WithMany(p => p.NotificationUtilisateurs)
+                .HasForeignKey(d => d.UtilisateurId)
+                .HasConstraintName("fk_notification_utilisateur_utilisateur_id");
+        });
         modelBuilder.Entity<Participation>(entity =>
         {
             entity.HasKey(e => e.ParticipationsId).HasName("PRIMARY");

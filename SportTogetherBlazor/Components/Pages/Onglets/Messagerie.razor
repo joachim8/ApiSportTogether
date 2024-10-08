@@ -3,7 +3,7 @@
 @using System.Net.Http.Json
 @inject IHttpClientFactory HttpClientFactory
 @using SportTogetherBlazor.Services
-@inject SessionStorageServices session
+@inject LocalStorageServices localStorage
 @using Microsoft.AspNetCore.SignalR.Client
 @implements IDisposable
 <div class="container" >
@@ -278,7 +278,7 @@
         _hubConnection = new HubConnectionBuilder()
     .WithUrl($"http://localhost:5000/chatHubSportTogether")
     .Build();
-        Utilisateur utilisateurInfo = session.GetUserFromSession()!;
+        Utilisateur utilisateurInfo = await localStorage.GetUserFromLocalStorage();
         if (utilisateurInfo != null) { utilisateurID = utilisateurInfo.UtilisateursId;
             nomUtilisateur = utilisateurInfo.Pseudo!;
         }

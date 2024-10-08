@@ -72,6 +72,9 @@ public partial class Utilisateur
     [JsonPropertyName("PublicationCommentaires")]
     public virtual ICollection<PublicationCommentaire> PublicationCommentaires { get; set; } = new List<PublicationCommentaire>();
     [JsonIgnore]
+    [JsonPropertyName("NotificationUtilisateurs")]
+    public virtual ICollection<NotificationUtilisateur> NotificationUtilisateurs { get; set; } = new List<NotificationUtilisateur>();
+    [JsonIgnore]
     [JsonPropertyName("EncouragementPublicationCommentaires")]
     public virtual ICollection<EncouragementPublicationCommentaire> EncouragementPublicationCommentaires { get; set; } = new List<EncouragementPublicationCommentaire>();
     [JsonIgnore]

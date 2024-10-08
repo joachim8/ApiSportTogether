@@ -2,7 +2,7 @@
 @inject IHttpClientFactory HttpClientFactory
 @using SportTogetherBlazor.Services
 @inject NavigationManager NavigationManager
-@inject SessionStorageServices session
+@inject LocalStorageServices localStorage
 
 
 <Modal @ref="profileModal" title="Profil Utilisateur" IsVerticallyCentered="true">
@@ -130,7 +130,7 @@
         await CloseModal();
        
         var auteurId = userId;
-        string userSessionId = session.GetUserSessionIdFromSession();
+        string userSessionId = await localStorage.GetUserSessionIdFromLocalStorage();
         if (auteurId != 0)
         {
             NavigationManager.NavigateTo($"/SportTogether/Profil-utilisateur-vue/{userSessionId}?utilisateur={auteurId}");

@@ -6,7 +6,7 @@
 @using SportTogetherBlazor.Components.Pages.Formulaires
 @inject IHttpClientFactory HttpClientFactory
 @using SportTogetherBlazor.Services
-@inject SessionStorageServices session
+@inject LocalStorageServices localStorage
 
 
 @if (profilUtilisateurVu != null)
@@ -170,7 +170,7 @@ else
     private int nombreAmis = 0;
 
     private bool showModifierBtn = false;
-    
+
     // Méthode pour afficher la liste d'amis
     private void AfficherListeAmis()
     {
@@ -181,7 +181,7 @@ else
     {
         // Appel API pour récupérer l'utilisateur
         httpClient = HttpClientFactory.CreateClient("ApiSportTogetherClient");
-        utilisateurEnCoursId = session.GetUserFromSession().UtilisateursId;
+        utilisateurEnCoursId =  (await localStorage.GetUserFromLocalStorage()).UtilisateursId;
         try
         {
             profilUtilisateurVu = await httpClient.GetFromJsonAsync<ProfilUtilisateurVu>($"Utilisateur/GetProfilUtilisateurVueByIdParMois/{utilisateur_id}/{utilisateurEnCoursId}")!;

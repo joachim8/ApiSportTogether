@@ -8,12 +8,14 @@
 <link href="_content/Blazor.Bootstrap/blazor.bootstrap.css" rel="stylesheet" />
 
 
+  
+
 <div class="page">
+
     @if (NavigationManager.Uri != (NavigationManager.BaseUri + "SportTogether") && NavigationManager.Uri != (NavigationManager.BaseUri + "SportTogether/Connexion") && NavigationManager.Uri != (NavigationManager.BaseUri + "SportTogether/Inscription"))
     {
-       <NavMenu />
+        <NavMenu />
     }
-
     <main style="background:#ececec;">
         <Preload LoadingText="Chargemant..." />
         @Body
@@ -42,8 +44,6 @@
   
     protected override async Task  OnInitializedAsync()
     {
-
-       
         NavigationManager.LocationChanged += HandleLocationChanged;
         await TestApiConnection();
     }

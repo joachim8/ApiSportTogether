@@ -5,7 +5,7 @@
 @using System.Text.Json.Serialization
 @using System.Text.Json
 @inject NavigationManager navigation
-@inject SessionStorageServices session
+@inject LocalStorageServices localStorage
 @inject HttpClient Http
 <PageTitle>Annonces | SportTogether</PageTitle>
 
@@ -130,9 +130,9 @@
             annonces.Clear();
             annonces = ((await Http.GetFromJsonAsync<List<AnnonceVue>>($"/vue/sports/{sports}/{villeUtilisateur}/{genreUtilisateur}"))!);
             PreloadService.Show(SpinnerColor.Light, "Recherche en cours...");
-         
-                PreloadService.Hide();
-                StateHasChanged();
+
+            PreloadService.Hide();
+            StateHasChanged();
 
         }
         catch (Exception ex)
@@ -215,10 +215,14 @@
 
         if (bFirstFiltreAnnonces)
         {
-            Utilisateur utilisateurInfo = session.GetUserFromSession()!;
-            villeUtilisateur = utilisateurInfo.Ville;
-            genreUtilisateur = utilisateurInfo.Genre;
-            utilisateurId = utilisateurInfo.UtilisateursId;
+            Utilisateur? utilisateurInfo = await localStorage.GetUserFromLocalStorage()!;
+            if(utilisateurInfo != null)
+            {
+                villeUtilisateur = utilisateurInfo.Ville;
+                genreUtilisateur = utilisateurInfo.Genre;
+                utilisateurId = utilisateurInfo.UtilisateursId;
+            }
+           
             if (listGenre.Any()) listGenre.Clear();
             switch (genreUtilisateur)
             {

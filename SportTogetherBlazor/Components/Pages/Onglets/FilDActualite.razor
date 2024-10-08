@@ -6,7 +6,7 @@
 @using System.Text.Json.Serialization
 @using System.Text.Json
 @inject NavigationManager navigation
-@inject SessionStorageServices session
+@inject LocalStorageServices localStorage
 @inject HttpClient Http
 <PageTitle>Fil d'actualité | SportTogether</PageTitle>
 <div class="container-fluid">
@@ -14,7 +14,11 @@
     <div class="row d-flex justify-content-center">
 
         <div class="col-lg-6 col-sm-12 mt-4">
-            <AjoutDePublication UtilisateurId="utilisateurInfo!.UtilisateursId" OnPublicationAdded="RafraichirPublications" />
+            @if (!_firstRender)
+            {
+                <AjoutDePublication UtilisateurId="utilisateurInfo!.UtilisateursId" OnPublicationAdded="RafraichirPublications" />
+            }
+           
          </div>
         <div class="row  d-flex justify-content-center">
         <div class="col-lg-6 col-sm-12 mt-4">
@@ -45,13 +49,22 @@
     [Parameter]
     public string UserSessionId { get; set; }
     private Utilisateur? utilisateurInfo;
-    private List<int> listClePublication;
+    private List<int>? listClePublication = new();
     public List<string> SportsSelected { get; set; } = new List<string>();
-    protected override async Task OnInitializedAsync()
+
+    private bool _firstRender = true;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-            utilisateurInfo = session.GetUserFromSession()!;
+        if (_firstRender) // Eviter les appels multiples
+        {
+            _firstRender = false;
+            utilisateurInfo = await localStorage.GetUserFromLocalStorage();
             await LoadPublication();
+            StateHasChanged();
+        }
     }
+   
 
     public async Task LoadPublication()
     {
