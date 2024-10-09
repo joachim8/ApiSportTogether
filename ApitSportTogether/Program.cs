@@ -21,6 +21,8 @@ IConfigurationRoot configuration = new ConfigurationBuilder()
 string connectionString = configuration.GetConnectionString("DefaultConnection")!;
 // Ajouter le service VerificateurDeTexte
 builder.Services.AddScoped<VerificateurDeTexte>();
+builder.Services.AddScoped<NotificationService>();
+builder.Services.AddHostedService<NotificationBackgroundService>();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "API SportTogether", Version = "v1" });

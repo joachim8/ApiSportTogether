@@ -51,9 +51,7 @@ public partial class Annonce
     [JsonIgnore]
     [JsonPropertyName("Groupes")]
     public virtual ICollection<Groupe> Groupes { get; set; } = new List<Groupe>();
-    [JsonIgnore]
-    [JsonPropertyName("AnnonceImages")]
-    public virtual ICollection<AnnonceImage> AnnonceImages { get; set; } = new List<AnnonceImage>();
+ 
 
 
     [JsonPropertyName("Sport")]

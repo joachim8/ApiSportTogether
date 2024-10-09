@@ -16,10 +16,11 @@ public partial class SportTogetherContext : DbContext
     }
 
     public virtual DbSet<Ami> Amis { get; set; }
-    public virtual DbSet<AnnonceImage> AnnonceImages { get; set; }
+
     public virtual DbSet<ProfileImage> ProfileImages { get; set; }
 
     public virtual DbSet<PublicationImage> PublicationImages { get; set; }
+    public virtual DbSet<NoteAnnonce> NoteAnnonces { get; set; }
 
     public virtual DbSet<Annonce> Annonces { get; set; }
     public virtual DbSet<EncouragementPublication> EncouragementPublications { get; set; }
@@ -74,26 +75,7 @@ public partial class SportTogetherContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("fk_amis_UtilisateurID2");
         });
-        modelBuilder.Entity<AnnonceImage>(entity =>
-        {
-            entity.HasKey(e => e.ImageId).HasName("PRIMARY");
 
-            entity.ToTable("annonce_images");
-
-            entity.HasIndex(e => e.Url, "URL").IsUnique();
-
-            entity.HasIndex(e => e.AnnoncesId, "fk_annonce_images_Annonce");
-
-            entity.Property(e => e.ImageId).HasColumnName("image_id");
-            entity.Property(e => e.AnnoncesId).HasColumnName("annonces_id");
-            entity.Property(e => e.Timestamp).HasColumnType("datetime");
-            entity.Property(e => e.Url).HasColumnName("URL");
-
-            entity.HasOne(d => d.Annonces).WithMany(p => p.AnnonceImages)
-                .HasForeignKey(d => d.AnnoncesId)
-                .OnDelete(DeleteBehavior.SetNull)
-                .HasConstraintName("fk_annonce_images_Annonce");
-        });
         modelBuilder.Entity<Annonce>(entity =>
         {
             entity.HasKey(e => e.AnnoncesId).HasName("PRIMARY");
@@ -104,18 +86,21 @@ public partial class SportTogetherContext : DbContext
 
             entity.HasIndex(e => e.Auteur, "fk_annonces_UtilisateurID");
 
-
             entity.Property(e => e.AnnoncesId).HasColumnName("annonces_id");
+            entity.Property(e => e.DateHeureAnnonce)
+                .HasColumnType("datetime")
+                .HasColumnName("date_heure_annonce");
             entity.Property(e => e.Description).HasColumnType("text");
             entity.Property(e => e.GenreAttendu).HasColumnType("enum('Femme','Homme','Mixte')");
             entity.Property(e => e.Lieu)
                 .HasMaxLength(100)
                 .HasColumnName("lieu");
-            entity.Property(e => e.DateHeureAnnonce).HasColumnType("datetime").HasColumnName("date_heure_annonce");
+            entity.Property(e => e.Niveau).HasColumnType("enum('Débutant','Intermédiaire','Avancé')");
+            entity.Property(e => e.NoteAnnonce)
+                .HasPrecision(10)
+                .HasColumnName("Note_annonce");
             entity.Property(e => e.SportId).HasColumnName("SportID");
             entity.Property(e => e.Titre).HasMaxLength(255);
-            entity.Property(e => e.NoteAnnonce).HasColumnName("Note_annonce");
-            entity.Property(e => e.Niveau).HasColumnType("enum('Débutant','Intermédiaire','Avancé')");
             entity.Property(e => e.Ville)
                 .HasMaxLength(50)
                 .HasColumnName("ville");
@@ -124,12 +109,12 @@ public partial class SportTogetherContext : DbContext
                 .HasForeignKey(d => d.Auteur)
                 .HasConstraintName("fk_annonces_UtilisateurID");
 
-
             entity.HasOne(d => d.Sport).WithMany(p => p.Annonces)
                 .HasForeignKey(d => d.SportId)
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("fk_annonces_SportID");
         });
+
         modelBuilder.Entity<EncouragementPublication>(entity =>
         {
             entity.HasKey(e => e.EncouragementPublicationId).HasName("PRIMARY");
@@ -150,12 +135,10 @@ public partial class SportTogetherContext : DbContext
 
             entity.HasOne(d => d.Publication).WithMany(p => p.EncouragementPublications)
                 .HasForeignKey(d => d.PublicationId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_encouragement_publication_publication_id");
 
             entity.HasOne(d => d.Utilisateur).WithMany(p => p.EncouragementPublications)
                 .HasForeignKey(d => d.UtilisateurId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_encouragement_publication_utilisateur_id");
         });
 
@@ -179,19 +162,19 @@ public partial class SportTogetherContext : DbContext
 
             entity.HasOne(d => d.PublicationCommentaire).WithMany(p => p.EncouragementPublicationCommentaires)
                 .HasForeignKey(d => d.PublicationCommentaireId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_encouragement_publication_commentaire_commentaire_id");
 
             entity.HasOne(d => d.Utilisateur).WithMany(p => p.EncouragementPublicationCommentaires)
                 .HasForeignKey(d => d.UtilisateurId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_encouragement_publication_commentaire_utilisateur_id");
         });
+
         modelBuilder.Entity<Groupe>(entity =>
         {
             entity.HasKey(e => e.GroupesId).HasName("PRIMARY");
 
             entity.ToTable("groupes");
+
             entity.HasIndex(e => e.ChefDuGroupe, "fk_chef_du_groupe");
 
             entity.HasIndex(e => e.AnnonceId, "fk_groupes_AnnonceID");
@@ -200,18 +183,19 @@ public partial class SportTogetherContext : DbContext
             entity.Property(e => e.AnnonceId).HasColumnName("AnnonceID");
             entity.Property(e => e.DateCreation).HasColumnType("datetime");
             entity.Property(e => e.DateSuppression).HasColumnType("datetime");
-            entity.Property(e => e.Nom).HasColumnName("Nom");
-            entity.Property(e => e.LastMessage).HasColumnName("LastMessage");
+            entity.Property(e => e.LastMessage).HasColumnName("lastMessage");
+            entity.Property(e => e.Nom).HasMaxLength(100);
+
             entity.HasOne(d => d.Annonce).WithMany(p => p.Groupes)
-               .HasForeignKey(d => d.AnnonceId)
-               .OnDelete(DeleteBehavior.Cascade)
-               .HasConstraintName("fk_groupes_AnnonceID");
+                .HasForeignKey(d => d.AnnonceId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_groupes_AnnonceID");
 
             entity.HasOne(d => d.ChefDuGroupeNavigation).WithMany(p => p.Groupes)
-                           .HasForeignKey(d => d.ChefDuGroupe)
-                           .OnDelete(DeleteBehavior.ClientSetNull)
-                           .HasConstraintName("fk_chef_du_groupe");
+                .HasForeignKey(d => d.ChefDuGroupe)
+                .HasConstraintName("fk_chef_du_groupe");
         });
+
         modelBuilder.Entity<MembreGroupe>(entity =>
         {
             entity.HasKey(e => e.IdMembreGroupe).HasName("PRIMARY");
@@ -231,7 +215,6 @@ public partial class SportTogetherContext : DbContext
 
             entity.HasOne(d => d.Groupe).WithMany(p => p.MembreGroupes)
                 .HasForeignKey(d => d.GroupeId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_groupe_membre_groupe");
 
             entity.HasOne(d => d.Utilisateur).WithMany(p => p.MembreGroupes)
@@ -253,16 +236,47 @@ public partial class SportTogetherContext : DbContext
             entity.Property(e => e.MessagesId).HasColumnName("messages_id");
             entity.Property(e => e.Contenu).HasColumnType("text");
             entity.Property(e => e.GroupeId).HasColumnName("GroupeID");
-
-            entity.Property(e => e.Timestamp).HasColumnType("datetime");
+            entity.Property(e => e.NomUtilisateur)
+                .HasMaxLength(100)
+                .HasColumnName("nom_utilisateur");
+            entity.Property(e => e.Timestamp)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("datetime");
+            entity.Property(e => e.urlProfilImage)
+                .HasColumnType("text")
+                .HasColumnName("url_profil_image");
             entity.Property(e => e.UtilisateurId).HasColumnName("UtilisateurID");
-            entity.Property(e => e.NomUtilisateur).HasColumnName("nom_utilisateur");
-            entity.Property(e => e.urlProfilImage).HasColumnName("url_profil_image");
-            entity.HasOne(d => d.UtilisateurNavigation).WithMany(e => e.Messages)
-               .HasForeignKey(d => d.UtilisateurId)
-               .OnDelete(DeleteBehavior.Cascade)
-               .HasConstraintName("fk_messages_UtilisateurID");
         });
+
+        modelBuilder.Entity<NoteAnnonce>(entity =>
+        {
+            entity.HasKey(e => e.NoteAnnonceId).HasName("PRIMARY");
+
+            entity.ToTable("note_annonce");
+
+            entity.HasIndex(e => e.AnnonceId, "fk_note_annonce_annonce_id");
+
+            entity.HasIndex(e => e.UtilisateurId, "fk_note_annonce_utilisateur_id");
+
+            entity.Property(e => e.NoteAnnonceId).HasColumnName("note_annonce_id");
+            entity.Property(e => e.AnnonceId).HasColumnName("annonce_id");
+            entity.Property(e => e.Commentaire)
+                .HasColumnType("text")
+                .HasColumnName("commentaire");
+            entity.Property(e => e.Note)
+                .HasPrecision(10)
+                .HasColumnName("note");
+            entity.Property(e => e.UtilisateurId).HasColumnName("utilisateur_id");
+
+            entity.HasOne(d => d.Annonce).WithMany(p => p.NoteAnnonces)
+                .HasForeignKey(d => d.AnnonceId)
+                .HasConstraintName("fk_note_annonce_annonce_id");
+
+            entity.HasOne(d => d.Utilisateur).WithMany(p => p.NoteAnnonces)
+                .HasForeignKey(d => d.UtilisateurId)
+                .HasConstraintName("fk_note_annonce_utilisateur_id");
+        });
+
         modelBuilder.Entity<NotificationUtilisateur>(entity =>
         {
             entity.HasKey(e => e.NotificationId).HasName("PRIMARY");
@@ -279,7 +293,7 @@ public partial class SportTogetherContext : DbContext
                 .HasColumnType("datetime")
                 .HasColumnName("date_notification");
             entity.Property(e => e.TypeNotification)
-                .HasColumnType("enum('Participation','Ajout en ami','Commentaire','Encouragement_commentaire','Encouragement_publication')")
+                .HasColumnType("enum('Participation','Ajout en ami','Commentaire','Encouragement_commentaire','Encouragement_publication','Note')")
                 .HasColumnName("type_notification");
             entity.Property(e => e.UtilisateurId).HasColumnName("utilisateur_id");
             entity.Property(e => e.Vu).HasColumnName("vu");
@@ -288,23 +302,61 @@ public partial class SportTogetherContext : DbContext
                 .HasForeignKey(d => d.UtilisateurId)
                 .HasConstraintName("fk_notification_utilisateur_utilisateur_id");
         });
+
         modelBuilder.Entity<Participation>(entity =>
         {
             entity.HasKey(e => e.ParticipationsId).HasName("PRIMARY");
 
             entity.ToTable("participations");
 
-            entity.HasIndex(e => e.AnnonceId, "fk_participations_AnnonceID");
+            entity.HasIndex(e => e.AnnonceId, "fk_participations_annonce_id");
 
-            entity.HasIndex(e => e.GroupeId, "fk_participations_GroupeID");
+            entity.HasIndex(e => e.GroupeId, "fk_participations_groupe_id");
 
-            entity.HasIndex(e => e.UtilisateurId, "fk_participations_UtilisateurID");
+            entity.HasIndex(e => e.UtilisateurId, "fk_participations_utilisateur_id");
 
             entity.Property(e => e.ParticipationsId).HasColumnName("participations_id");
             entity.Property(e => e.AnnonceId).HasColumnName("AnnonceID");
             entity.Property(e => e.DateParticipation).HasColumnType("datetime");
             entity.Property(e => e.GroupeId).HasColumnName("GroupeID");
             entity.Property(e => e.UtilisateurId).HasColumnName("UtilisateurID");
+
+            entity.HasOne(d => d.Annonce).WithMany(p => p.Participations)
+                .HasForeignKey(d => d.AnnonceId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_participations_annonce_id");
+
+            entity.HasOne(d => d.Groupe).WithMany(p => p.Participations)
+                .HasForeignKey(d => d.GroupeId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_participations_groupe_id");
+
+            entity.HasOne(d => d.Utilisateur).WithMany(p => p.Participations)
+                .HasForeignKey(d => d.UtilisateurId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_participations_utilisateur_id");
+        });
+
+        modelBuilder.Entity<ProfileImage>(entity =>
+        {
+            entity.HasKey(e => e.ImageId).HasName("PRIMARY");
+
+            entity.ToTable("profile_images");
+
+            entity.HasIndex(e => e.UtilisateursId, "fk_profile_images_utilisateur");
+
+            entity.Property(e => e.ImageId).HasColumnName("image_id");
+            entity.Property(e => e.Timestamp).HasColumnType("datetime");
+            entity.Property(e => e.Type).HasColumnType("enum('Profil','Photos')");
+            entity.Property(e => e.Url)
+                .HasMaxLength(255)
+                .HasColumnName("URL");
+            entity.Property(e => e.UtilisateursId).HasColumnName("utilisateurs_id");
+
+            entity.HasOne(d => d.Utilisateurs).WithMany(p => p.ProfileImages)
+                .HasForeignKey(d => d.UtilisateursId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("fk_profile_images_utilisateur");
         });
 
         modelBuilder.Entity<Publication>(entity =>
@@ -315,20 +367,23 @@ public partial class SportTogetherContext : DbContext
 
             entity.HasIndex(e => e.UtilisateurId, "fk_publications_UtilisateurID");
 
-        
-
             entity.Property(e => e.PublicationsId).HasColumnName("publications_id");
             entity.Property(e => e.Contenu).HasColumnType("text");
-            entity.Property(e => e.SportTag).HasColumnName("sport_tag");
-            entity.Property(e => e.UtilisateurId).HasColumnName("UtilisateurID");
+            entity.Property(e => e.DatePublication)
+                .HasColumnType("datetime")
+                .HasColumnName("Date_publication");
             entity.Property(e => e.NombreEncouragement).HasColumnName("nombre_encouragement");
+            entity.Property(e => e.SportTag)
+                .HasMaxLength(100)
+                .HasColumnName("sport_tag");
+            entity.Property(e => e.UtilisateurId).HasColumnName("UtilisateurID");
             entity.Property(e => e.Visibilite).HasColumnName("visibilite");
-            entity.Property(e => e.DatePublication).HasColumnName("Date_publication");
 
             entity.HasOne(d => d.Utilisateur).WithMany(p => p.Publications)
                 .HasForeignKey(d => d.UtilisateurId)
                 .HasConstraintName("fk_publications_UtilisateurID");
         });
+
         modelBuilder.Entity<PublicationCommentaire>(entity =>
         {
             entity.HasKey(e => e.CommentaireId).HasName("PRIMARY");
@@ -339,7 +394,6 @@ public partial class SportTogetherContext : DbContext
 
             entity.HasIndex(e => e.UtilisateurId, "fk_publication_commentaire_utilisateur_id");
 
-
             entity.Property(e => e.CommentaireId).HasColumnName("commentaire_id");
             entity.Property(e => e.Contenu)
                 .HasColumnType("text")
@@ -347,51 +401,19 @@ public partial class SportTogetherContext : DbContext
             entity.Property(e => e.DateCommentaire)
                 .HasColumnType("datetime")
                 .HasColumnName("date_commentaire");
+            entity.Property(e => e.NombreEncouragementCommentaire).HasColumnName("nombre_encouragement_commentaire");
             entity.Property(e => e.PublicationId).HasColumnName("publication_id");
             entity.Property(e => e.UtilisateurId).HasColumnName("utilisateur_id");
-            entity.Property(e => e.NombreEncouragementCommentaire).HasColumnName("nombre_encouragement_commentaire");
 
             entity.HasOne(d => d.Publication).WithMany(p => p.PublicationCommentaires)
                 .HasForeignKey(d => d.PublicationId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_publication_commentaire_publication_id");
 
             entity.HasOne(d => d.Utilisateur).WithMany(p => p.PublicationCommentaires)
                 .HasForeignKey(d => d.UtilisateurId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("fk_publication_commentaire_utilisateur_id");
         });
-        modelBuilder.Entity<ProfileImage>(entity =>
-        {
-            entity.HasKey(e => e.ImageId).HasName("PRIMARY");
 
-            entity.ToTable("profile_images");
-
-            entity.HasIndex(e => e.Url, "URL").IsUnique();
-
-            entity.HasIndex(e => e.UtilisateursId, "fk_profile_images_utilisateur");
-
-            entity.Property(e => e.ImageId).HasColumnName("image_id");
-            entity.Property(e => e.Timestamp).HasColumnType("datetime");
-            entity.Property(e => e.Type).HasColumnType("enum('Profil','Photos')");
-            entity.Property(e => e.Url).HasColumnName("URL");
-            entity.Property(e => e.UtilisateursId).HasColumnName("utilisateurs_id");
-
-            entity.HasOne(d => d.Utilisateurs).WithMany(p => p.ProfileImages)
-                .HasForeignKey(d => d.UtilisateursId)
-                .OnDelete(DeleteBehavior.SetNull)
-                .HasConstraintName("fk_profile_images_utilisateur");
-        });
-
-        modelBuilder.Entity<Sport>(entity =>
-        {
-            entity.HasKey(e => e.SportsId).HasName("PRIMARY");
-
-            entity.ToTable("sports");
-
-            entity.Property(e => e.SportsId).HasColumnName("sports_id");
-            entity.Property(e => e.Nom).HasMaxLength(255);
-        });
         modelBuilder.Entity<PublicationImage>(entity =>
         {
             entity.HasKey(e => e.ImageId).HasName("PRIMARY");
@@ -405,13 +427,25 @@ public partial class SportTogetherContext : DbContext
             entity.Property(e => e.ImageId).HasColumnName("image_id");
             entity.Property(e => e.PublicationsId).HasColumnName("publications_id");
             entity.Property(e => e.Timestamp).HasColumnType("datetime");
+            entity.Property(e => e.Type).HasColumnType("enum('Image','Video')");
             entity.Property(e => e.Url).HasColumnName("URL");
 
             entity.HasOne(d => d.Publications).WithMany(p => p.PublicationImages)
                 .HasForeignKey(d => d.PublicationsId)
-                .OnDelete(DeleteBehavior.SetNull)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("fk_publication_images_Publication");
         });
+
+        modelBuilder.Entity<Sport>(entity =>
+        {
+            entity.HasKey(e => e.SportsId).HasName("PRIMARY");
+
+            entity.ToTable("sports");
+
+            entity.Property(e => e.SportsId).HasColumnName("sports_id");
+            entity.Property(e => e.Nom).HasMaxLength(255);
+        });
+
         modelBuilder.Entity<SportFavori>(entity =>
         {
             entity.HasKey(e => e.SportFavoriId).HasName("PRIMARY");
@@ -444,41 +478,40 @@ public partial class SportTogetherContext : DbContext
 
             entity.ToTable("utilisateurs");
 
-          
+            entity.HasIndex(e => e.Pseudo, "Pseudo").IsUnique();
 
             entity.Property(e => e.UtilisateursId).HasColumnName("utilisateurs_id");
             entity.Property(e => e.Description).HasColumnType("text");
+            entity.Property(e => e.DescriptionSport)
+                .HasColumnType("text")
+                .HasColumnName("Description_sport");
+            entity.Property(e => e.Disponibilites).HasColumnType("enum('Semaine-matin','Semaine-après-midi','Semaine-soir','Tout le temps','Weekends')");
             entity.Property(e => e.Email).HasMaxLength(255);
             entity.Property(e => e.Etat).HasColumnType("enum('Actif','Bloqué')");
-            entity.Property(e => e.Genre).HasColumnType("enum('Femme','Homme')");
-            entity.Property(e => e.DescriptionSport)
-              .HasColumnType("text")
-              .HasColumnName("Description_sport");
-            entity.Property(e => e.Disponibilites).HasColumnType("enum('Semaine-matin','Semaine-après-midi','Semaine-soir','Tout le temps','Weekends')");
             entity.Property(e => e.FunFact)
-              .HasColumnType("text")
-              .HasColumnName("Fun_fact");
-            entity.Property(e => e.NiveauSport)
-               .HasColumnType("enum('Débutant','Intermédiaire','Avancé')")
-               .HasColumnName("Niveau_sport");
-            entity.Property(e => e.TypePartenaire)
-              .HasColumnType("enum('Groupe d’amis','Compétiteurs','Personnes du même niveau','Coach')")
-              .HasColumnName("Type_partenaire");
-
+                .HasColumnType("text")
+                .HasColumnName("Fun_fact");
+            entity.Property(e => e.Genre).HasColumnType("enum('Femme','Homme')");
             entity.Property(e => e.MotDePasse).HasMaxLength(100);
+            entity.Property(e => e.NiveauSport)
+                .HasColumnType("enum('Débutant','Intermédiaire','Avancé')")
+                .HasColumnName("Niveau_sport");
             entity.Property(e => e.Nom).HasMaxLength(255);
             entity.Property(e => e.Prenom).HasMaxLength(25);
             entity.Property(e => e.Pseudo).HasMaxLength(25);
+            entity.Property(e => e.TypePartenaire)
+                .HasColumnType("enum('Groupe d’amis','Compétiteurs','Personnes du même niveau','Coach')")
+                .HasColumnName("Type_partenaire");
             entity.Property(e => e.Ville).HasMaxLength(255);
-
         });
+
         modelBuilder.Entity<VuMessage>(entity =>
         {
             entity.HasKey(e => e.IdMessageVu).HasName("PRIMARY");
 
             entity.ToTable("vu_message");
 
-            entity.HasIndex(e => e.messages_id, "fk_messages_vu_message");
+            entity.HasIndex(e => e.messages_id, "fk_messages_vuMessage");
 
             entity.HasIndex(e => e.UtilisateurId, "fk_utilisateurs_vu_message");
 
@@ -489,10 +522,12 @@ public partial class SportTogetherContext : DbContext
 
             entity.HasOne(d => d.IdMessageNavigation).WithMany(p => p.VuMessages)
                 .HasForeignKey(d => d.messages_id)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("fk_messages_vuMessage");
 
             entity.HasOne(d => d.Utilisateur).WithMany(p => p.VuMessages)
                 .HasForeignKey(d => d.UtilisateurId)
+                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("fk_utilisateurs_vu_message");
         });
 

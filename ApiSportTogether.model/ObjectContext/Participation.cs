@@ -16,4 +16,13 @@ public partial class Participation
 
     [JsonPropertyName("DateParticipation")]
     public DateTime? DateParticipation { get; set; }
+    [JsonIgnore]
+    [JsonPropertyName("Annonce")]
+    public virtual Annonce? Annonce { get; set; }
+    [JsonIgnore]
+    [JsonPropertyName("Groupe")]
+    public virtual Groupe? Groupe { get; set; }
+    [JsonIgnore]
+    [JsonPropertyName("Utilisateur")]
+    public virtual Utilisateur? Utilisateur { get; set; }
 }

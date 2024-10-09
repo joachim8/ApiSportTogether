@@ -56,7 +56,7 @@
                         <Badge Color="BadgeColor.Danger">@listNotif.Count(n => !n.Vu)</Badge>
                     }
                 </DropdownToggleButton>
-                <DropdownMenu>
+                <DropdownMenu tyle="">
                     @if (listNotif.Any())
                     {
                         @foreach (NotificationUtilisateur notification in listNotif)
@@ -93,10 +93,7 @@
                     <img src="@urlPhotoProfil" alt="" width="32" height="32" class="rounded-circle me-2">
                     <strong>@utilisateurInfo.Pseudo</strong>
                 }
-                else
-                {
-                    <strong>mdo</strong>
-                }
+                
             </a>
             <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
                 <li><a class="dropdown-item" href="/SportTogether/Parametre">Paramètre</a></li>
@@ -108,83 +105,88 @@
 </div>
 <!-- Bottom navigation for mobile and medium screens -->
 <nav class="navbar navbar-dark bg-dark d-lg-none d-md-none fixed-bottom">
-    <div class="d-flex justify-content-between align-items-center w-100 px-3">
-        <!-- Left side: nav items (Centered) -->
-        <ul class="navbar-nav d-flex flex-row justify-content-center w-75">
-            <li class="nav-item d-flex align-items-center justify-content-center @(linkClickedStates["Fil-Actualite"] ? "clicked-style" : "")" @onclick="@(() => ToggleClick("Fil-Actualite"))">
-                <a href="/SportTogether/Fil-D-Actualite/@userSession" class="nav-link text-center" style="width: 40px;">
-                    <Icon Name="IconName.BookHalf" Color="IconColor.Light" />
-                </a>
-            </li>
-            <li class="nav-item d-flex align-items-center justify-content-center @(linkClickedStates["Annonces"] ? "clicked-style" : "")" @onclick="@(() => ToggleClick("Annonces"))">
-                <a href="/SportTogether/Annonces/@userSession" class="nav-link text-center" style="width: 40px;">
-                    <Icon Name="IconName.House" Color="IconColor.Light" />
-                </a>
-            </li>
-            <li class="nav-item d-flex align-items-center justify-content-center @(linkClickedStates["Messagerie-instantane"] ? "clicked-style" : "")" @onclick="@(() => ToggleClick("Messagerie-instantane"))">
-                <a href="/SportTogether/Messagerie-instantane/@userSession" class="nav-link text-center" style="width: 40px;">
-                    <Icon Name="IconName.Messenger" Color="IconColor.Light" />
-                    @if (messageCount)
-                    {
-                        <span class="ms-1">
-                            <Badge Color="BadgeColor.Danger" Placement="BadgePlacement.MiddleRight">@nbrMessages</Badge>
-                        </span>
-                    }
-                </a>
-            </li>
-            <li class="nav-item d-flex align-items-center justify-content-center @(linkClickedStates["Mes-annonces"] ? "clicked-style" : "")" @onclick="@(() => ToggleClick("Mes-annonces"))">
-                <a href="/SportTogether/Mes-annonces/@userSession" class="nav-link text-center" style="width: 40px;">
-                    <Icon Name="IconName.Calendar2Week" Color="IconColor.Light" />
-                </a>
-            </li>
-        </ul>
+    <div class="container ">
+        <div class="row justify-content-between">
+            <!-- Left side: nav items (Centered) -->
+           
+            <div class="col-8">
+                <ul class="navbar-nav flex-row text-center">
+                    <li class="nav-item text-center  " @onclick="@(() => ToggleClick("Fil-Actualite"))">
+                        <a href="/SportTogether/Fil-D-Actualite/@userSession" class="nav-link " style="width: 40px;">
+                            <Icon Name="IconName.BookHalf" Color="IconColor.Light" />
+                        </a>
+                    </li>
+                        <li class="nav-item  text-center " @onclick="@(() => ToggleClick("Annonces"))">
+                        <a href="/SportTogether/Annonces/@userSession" class="nav-link " style="width: 40px;">
+                            <Icon Name="IconName.House" Color="IconColor.Light" />
+                        </a>
+                    </li>
+                    <li class="nav-item  text-center " @onclick="@(() => ToggleClick("Messagerie-instantane"))">
+                        <a href="/SportTogether/Messagerie-instantane/@userSession" class="nav-link " style="width: 40px;">
+                            <Icon Name="IconName.Messenger" Color="IconColor.Light" />
+                            @if (messageCount)
+                            {
+                                <span class="ms-1">
+                                    <Badge Color="BadgeColor.Danger" Placement="BadgePlacement.MiddleRight">@nbrMessages</Badge>
+                                </span>
+                            }
+                        </a>
+                    </li>
+                    <li class="nav-item text-center " @onclick="@(() => ToggleClick("Mes-annonces"))">
+                        <a href="/SportTogether/Mes-annonces/@userSession" class="nav-link " style="width: 40px;">
+                            <Icon Name="IconName.Calendar2Week" Color="IconColor.Light" />
+                        </a>
+                    </li>
+                </ul>
 
-        <!-- Right side: dropdown (Notification and User Profile) -->
-        <div class="dropup d-flex align-items-center justify-content-center w-25">
-            <Dropdown AutoClose="true" AutoCloseBehavior="DropdownAutoCloseBehavior.Outside">
-                <DropdownToggleButton Color="ButtonColor.Light">
-                    <Icon Name="IconName.BellFill" />
-                    @if (listNotif.Any(n => !n.Vu))
-                    {
-                        <Badge Color="BadgeColor.Danger">@listNotif.Count(n => !n.Vu)</Badge>
-                    }
-                </DropdownToggleButton>
-                <DropdownMenu>
-                    @if (listNotif.Any())
-                    {
-                        @foreach (NotificationUtilisateur notification in listNotif)
-                        {
-                            <div class="@(notification.Vu ? "" : "bg-light")">
-                                <DropdownItem To="#" Type="ButtonType.Link" Class="d-flex align-items-start" @onclick="() => MarkAsRead(notification.NotificationId)">
-                                    <!-- Badge avec les initiales et la couleur dépendant du type de notification -->
-                                    <span class="badge badge-pill bg-info" style="width: 40px; height: 40px; font-size: 16px; line-height: 40px;">
-                                        @GetInitials(notification.TypeNotification)
-                                    </span>
-                                    <!-- Contenu au milieu -->
-                                    <div class="ms-3">
-                                        <div>@notification.Contenu</div>
-                                        <div class="text-muted small">@notification.DateNotification.ToString("dd/MM/yyyy")</div>
-                                    </div>
-                                </DropdownItem>
-                            </div>
-                        }
-                    }
-                    else
-                    {
-                        <DropdownItem>Aucune notification</DropdownItem>
-                    }
-                </DropdownMenu>
-            </Dropdown>
-
-            <div class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
-                <img src="@urlPhotoProfil" alt="" width="32" height="32" class="rounded-circle me-2">
-                <strong>@utilisateurInfo.Pseudo</strong>
             </div>
-            <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
-                <li><a class="dropdown-item" href="/SportTogether/Parametre">Paramètre</a></li>
-                <li><a class="dropdown-item" href="/SportTogether/Profil-utilisateur">Profil</a></li>
-                <li><a class="dropdown-item" @onclick="Logout">Se déconnecter</a></li>
-            </ul>
+
+            <!-- Right side: dropdown (Notification and User Profile) -->
+            <div class="col-4 dropup d-flex justify-content-end align-items-center">
+                <Dropdown AutoClose="true" AutoCloseBehavior="DropdownAutoCloseBehavior.Outside">
+                    <DropdownToggleButton Color="ButtonColor.Light">
+                        <Icon Name="IconName.BellFill" />
+                        @if (listNotif.Any(n => !n.Vu))
+                        {
+                            <Badge Color="BadgeColor.Danger">@listNotif.Count(n => !n.Vu)</Badge>
+                        }
+                    </DropdownToggleButton>
+                    <DropdownMenu Class="col-sp">
+                        @if (listNotif.Any())
+                        {
+                            @foreach (NotificationUtilisateur notification in listNotif)
+                            {
+                                <div class="@(notification.Vu ? "" : "bg-light")">
+                                    <DropdownItem To="#" Type="ButtonType.Link" Class="d-flex align-items-start" @onclick="() => MarkAsRead(notification.NotificationId)">
+                                        <!-- Badge avec les initiales et la couleur dépendant du type de notification -->
+                                        <span class="badge badge-pill bg-info" style="width: 40px; height: 40px; font-size: 16px; line-height: 40px;">
+                                            @GetInitials(notification.TypeNotification)
+                                        </span>
+                                        <!-- Contenu au milieu -->
+                                        <div class="ms-3">
+                                            <div>@notification.Contenu</div>
+                                            <div class="text-muted small">@notification.DateNotification.ToString("dd/MM/yyyy")</div>
+                                        </div>
+                                    </DropdownItem>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <DropdownItem>Aucune notification</DropdownItem>
+                        }
+                    </DropdownMenu>
+                </Dropdown>
+
+                <div class="d-flex align-items-center dropdown-toggle ms-3" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
+                    <img src="@urlPhotoProfil" alt="" width="32" height="32" class="rounded-circle me-2">
+                </div>
+                <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
+                    <li><a class="dropdown-item" href="/SportTogether/Parametre">Paramètre</a></li>
+                    <li><a class="dropdown-item" href="/SportTogether/Profil-utilisateur">Profil</a></li>
+                    <li><a class="dropdown-item" @onclick="Logout">Se déconnecter</a></li>
+                </ul>
+            </div>
         </div>
     </div>
 </nav>
@@ -213,6 +215,7 @@
             "Encouragement_commentaire" => "EC",
             "Participation" => "P",
             "ajout en amis" => "A",
+            "Note" => "N",
             _ => "N/A"
         };
     }
@@ -231,10 +234,10 @@
             {
                 await GetAllNombreMessageVu();
             }
-            var result = await NotificationService.GetNotificationsAsync();
+            var result = await NotificationService.GetNotificationsByUserIdAsync(utilisateurInfo.UtilisateursId);
             if (result.IsSuccess)
             {
-                listNotif = result.Notifications;
+                listNotif = result.Notifications.OrderByDescending(n => n.DateNotification).ToList();
                 CountUnreadNotifications(); // Calculer le nombre de notifications non lues
             }
             StateHasChanged();
@@ -325,9 +328,5 @@
         linkClickedStates[linkKey] = true;
     }
 
-    private async Task OnShowOffcanvasClick(Placement placement)
-    {
-        offcanvas.Placement = placement;
-        await offcanvas.ShowAsync();
-    }
+   
 }

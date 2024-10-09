@@ -78,6 +78,12 @@ public partial class Utilisateur
     [JsonPropertyName("EncouragementPublicationCommentaires")]
     public virtual ICollection<EncouragementPublicationCommentaire> EncouragementPublicationCommentaires { get; set; } = new List<EncouragementPublicationCommentaire>();
     [JsonIgnore]
+    [JsonPropertyName("Participations")]
+    public virtual ICollection<Participation> Participations { get; set; } = new List<Participation>();
+    [JsonIgnore]
+    [JsonPropertyName("NoteAnnonces")]
+    public virtual ICollection<NoteAnnonce> NoteAnnonces { get; set; } = new List<NoteAnnonce>();
+    [JsonIgnore]
     [JsonPropertyName("EncouragementPublications")]
     public virtual ICollection<EncouragementPublication> EncouragementPublications { get; set; } = new List<EncouragementPublication>();
 }
