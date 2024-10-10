@@ -1,0 +1,84 @@
+﻿.chat {
+    border: 2px solid #49beb7;
+    border-radius: 15px;
+}
+
+.chat-header {
+    border-radius: 15px 15px 0 0;
+}
+
+.chat-history {
+    padding: 10px;
+}
+
+.chat-scroll {
+    margin-right: -15px; /* Scrollbar externe */
+}
+
+.chat-message {
+    z-index: 1000;
+}
+
+.avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+}
+
+.bg-custom-user {
+    background-color: #49beb7;
+    color: white;
+}
+
+.bg-body-tertiary {
+    background-color: #f1f1f1;
+    color: black;
+}
+
+.message-bubble {
+    padding: 10px;
+    border-radius: 15px;
+    max-width: 400px;
+    word-wrap: break-word;
+}
+
+.timestamp {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+/* Désactiver le défilement global du body */
+main {
+    overflow: hidden;
+}
+/* Activer le défilement vertical dans la liste */
+#plist {
+    max-height: 850px;
+    overflow: auto; /* Ajoute le défilement vertical seulement ici */
+}
+/* Responsivité sur mobile */
+@media (max-width: 768px) {
+    .chat-app .col-lg-4 {
+        display: none;
+    }
+
+    .chat-app .col-lg-8 {
+        display: block;
+        width: 100%;
+    }
+
+    .chat-header {
+        margin-top: 10px;
+    }
+}
+
+/* Afficher uniquement la liste des groupes sur mobile */
+@media (max-width: 768px) {
+    .chat-app .col-lg-4.show-groups {
+        display: block;
+        width: 100%;
+    }
+
+    .chat-app .col-lg-8.hide-messages {
+        display: none;
+    }
+}

@@ -124,7 +124,7 @@
                     <Icon Name="IconName.BellFill" />
                     @if (listNotif.Any(n => !n.Vu))
                     {
-                        <Badge Color="BadgeColor.Danger">@listNotif.Count(n => !n.Vu)</Badge>
+                        <span><Badge Color="BadgeColor.Danger">@listNotif.Count(n => !n.Vu)</Badge></span>
                     }
                 </Button>
 
@@ -142,7 +142,7 @@
 </nav>
 
 
-<Modal @ref="modal" IsVerticallyCentered="true" Size="ModalSize.Small" IsScrollable="true">
+<Modal @ref="modal" IsVerticallyCentered="true" Size="ModalSize.Regular" IsScrollable="true">
     <BodyTemplate>
         @if (listNotif.Any())
         {

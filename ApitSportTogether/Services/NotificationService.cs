@@ -24,6 +24,7 @@ namespace ApiSportTogether.Services
 
             foreach (var participation in participations)
             {
+              
                 // Créer le contenu de la notification
                 var contenu = $"Veuillez évaluer l'annonce {participation.Annonce.Titre}";
 
@@ -37,6 +38,10 @@ namespace ApiSportTogether.Services
                     Contenu = contenu
                 };
 
+                if(_context.NotificationUtilisateurs.Where(nu => nu.Contenu == notification.Contenu).Any())
+                {
+                    return;
+                }
                 // Ajouter la notification dans la base de données
                 _context.NotificationUtilisateurs.Add(notification);
             }

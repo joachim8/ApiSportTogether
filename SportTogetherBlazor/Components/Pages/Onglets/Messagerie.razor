@@ -6,9 +6,18 @@
 @inject LocalStorageServices localStorage
 @using Microsoft.AspNetCore.SignalR.Client
 @implements IDisposable
+@inject IJSRuntime jsRuntime
+
+
+
+
 <div class="container" >
+    @if (isMobile && showMessages)
+    {
+        <Button Color="ButtonColor.None" @onclick="ShowGroups" Size="Size.Small"><Icon Name="IconName.ChevronBarLeft"></Icon> </Button>
+    }
     <div class="row m-0">
-        <div class="col-lg-4">
+        <div class="col-lg-4 @(showGroups ? "" : "d-none")">
             <div class="card chat-app">
                 <div id="plist" class="people-list" style="overflow-x: auto">
                     <EditForm Model="@rechercheModel" OnSubmit="@RechercheSubmit" FormName="RechercheForm">
@@ -22,112 +31,149 @@
                             </Button>
                         </div>
                     </EditForm>
-                    <div class="list-group " id="list-tab" role="tablist" >
+                    
                         @if (listGroupe.Any())
                         {
-                            @foreach (Groupe groupe in listGroupe)
-                            {
-                                <a class="list-group-item list-group-item-action @(groupe == selectedGroupe ? "active" : "")"
-                                   id="list-@groupe.Nom-list" @onclick="() => SelectGroupe(groupe)" style="padding: 8px;">
-                                    <div class="card" style="min-height: 100px;">
-                                        <div class="row no-gutters">
-                                            <div class="col-sm-5">
-                                                <img class="card-img img-fluid img-thumbnail" src="/images/@GetSportImageUrl((int)groupe.Annonce!.SportId!)" alt="groupe"
-                                                     style="height: 80px; object-fit: cover; width: 100%;">
-                                            </div>
-                                            <div class="col-sm-7">
-                                                <div class="card-body p-2">
-                                                    <h5 class="card-title mb-1">@groupe.Nom</h5>
-                                                    <small>@groupe.LastMessage</small>
-                                                    <br />
-                                                    <small class="text-muted">@groupe.DateCreation.Value.ToString("dd/MM/yyyy")</small> <!-- Ajout de l'heure du groupe -->
-                                                </div>
-                                            </div>
-                                        </div>
+                        <div class="card chat-app">
+                            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <a class="nav-link active" id="a-venir-tab" data-bs-toggle="tab" href="#a-venir" role="tab" aria-controls="a-venir" aria-selected="true">À venir</a>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <a class="nav-link" id="archives-tab" data-bs-toggle="tab" href="#archives" role="tab" aria-controls="archives" aria-selected="false">Archivés</a>
+                                </li>
+                            </ul>
+                            <div class="tab-content" id="myTabContent">
+                                <div class="tab-pane fade show active" id="a-venir" role="tabpanel" aria-labelledby="a-venir-tab">
+                                    <!-- Liste des groupes à venir -->
+                                    <div class="list-group" id="list-tab" role="tablist">
+                                        @foreach (Groupe groupe in listGroupe.Where(lg => lg.DateSuppression > DateTime.Now).ToList())
+                                        {
+                                                <a class="list-group-item list-group-item-action @(groupe == selectedGroupe ? "active" : "")"
+                                                   id="list-@groupe.Nom-list" @onclick="() => SelectGroupe(groupe)" style="padding: 8px;">
+                                                    <div class="card" style="min-height: 100px;">
+                                                        <div class="row no-gutters">
+                                                            <div class="col-sm-5">
+                                                                <img class="card-img img-fluid img-thumbnail" src="/images/@GetSportImageUrl((int)groupe.Annonce!.SportId!)" alt="groupe"
+                                                                     style="height: 80px; object-fit: cover; width: 100%;">
+                                                            </div>
+                                                            <div class="col-sm-7">
+                                                                <div class="card-body p-2">
+                                                                    <h5 class="card-title mb-1">@groupe.Nom</h5>
+                                                                    <small>@groupe.LastMessage</small>
+                                                                    <br />
+                                                                    <small class="text-muted">@groupe.DateCreation.Value.ToString("dd/MM/yyyy")</small> <!-- Ajout de l'heure du groupe -->
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    @if (groupe.nbreMessageVu != null && groupe.nbreMessageVu != 0)
+                                                    {
+                                                        <span><Badge Color="BadgeColor.Danger" Placement="BadgePlacement.MiddleRight">@groupe.nbreMessageVu</Badge></span>
+                                                    }
+                                                </a>
+                                            
+                                        }
                                     </div>
-                                    @if (groupe.nbreMessageVu != null && groupe.nbreMessageVu != 0)
-                                    {
-                                        <span><Badge Color="BadgeColor.Danger" Placement="BadgePlacement.MiddleRight">@groupe.nbreMessageVu</Badge></span>
-                                    }
-                                </a>
+                                </div>
+                                <div class="tab-pane fade" id="archives" role="tabpanel" aria-labelledby="archives-tab">
+                                    <!-- Liste des groupes archivés -->
+                                    <div class="list-group" id="list-tab" role="tablist">
+                                        @foreach (Groupe groupe in listGroupe.Where(lg => lg.DateSuppression < DateTime.Now).ToList())
+                                        {
+                                           
+                                                <a class="list-group-item list-group-item-action @(groupe == selectedGroupe ? "active" : "")"
+                                                   id="list-@groupe.Nom-list" @onclick="() => SelectGroupe(groupe)" style="padding: 8px;">
+                                                    <div class="card" style="min-height: 100px;">
+                                                        <div class="row no-gutters">
+                                                            <div class="col-sm-5">
+                                                                <img class="card-img img-fluid img-thumbnail" src="/images/@GetSportImageUrl((int)groupe.Annonce!.SportId!)" alt="groupe"
+                                                                     style="height: 80px; object-fit: cover; width: 100%;">
+                                                            </div>
+                                                            <div class="col-sm-7">
+                                                                <div class="card-body p-2">
+                                                                    <h5 class="card-title mb-1">@groupe.Nom</h5>
+                                                                    <small>@groupe.LastMessage</small>
+                                                                    <br />
+                                                                    <small class="text-muted">@groupe.DateCreation.Value.ToString("dd/MM/yyyy")</small> <!-- Ajout de l'heure du groupe -->
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    @if (groupe.nbreMessageVu != null && groupe.nbreMessageVu != 0)
+                                                    {
+                                                        <span><Badge Color="BadgeColor.Danger" Placement="BadgePlacement.MiddleRight">@groupe.nbreMessageVu</Badge></span>
+                                                    }
+                                                </a>
 
-                            }
-                        }
-                        else
-                        {
-                            <p>Veuillez participer ou ajouter une annonce</p>
+                                            
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         }
                     </div>
+                   
+
                 </div>
             </div>
-        </div>
 
-        <div class="col-lg-8">
-            <div class="chat border rounded">
+        <div class="col-lg-8 @(showMessages ? "" : "d-none")">
+            <div class="container d-flex flex-column bg-success bg-opacity-10 p-sm-1 mb-sm-5" style="height: 100vh;">
+
                 @if (selectedGroupe != null)
                 {
-                    <div class="container">
-
-                        @if (selectedGroupe != null)
-                        {
-                            <!-- Header avec des bords arrondis -->
-                            <div class="chat-header position-sticky rounded-top" >
-                                <div class="row align-items-center text-white" style="background-color:#49beb7; margin-bottom:5px; margin-top:5px;">
-                                    <div class="col-lg-6">
-                                        <h5 class="mb-0">@selectedGroupe.Nom</h5>
-                                    </div>
-                                    <div class="col-lg-6 text-end">
-                                        <Button Color="ButtonColor.None" @onclick="OpenSettings" TooltipTitle="Paramètre">
-                                            <Icon Name="IconName.GearFill" Color="IconColor.White" />
-                                        </Button>
-                                    </div>
-                                </div>
+                    <!-- Header avec des bords arrondis -->
+                    <div class="chat-header" style="background-color:#49beb7; padding:10px;">
+                        <div class="row align-items-center text-white">
+                            <div class="col-6">
+                                <h5 class="mb-0">@selectedGroupe.Nom</h5>
                             </div>
+                            <div class="col-6 text-end">
+                                <Button Color="ButtonColor.None" @onclick="OpenSettings" TooltipTitle="Paramètre">
+                                    <Icon Name="IconName.GearFill" Color="IconColor.White" />
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
 
-                            @if (listMessage != null && listMessage.Any())
+                    <!-- Chat avec l'historique des messages -->
+                    <div class="chat-history flex-grow-1 overflow-auto p-3" style="background-color: #f8f9fa;">
+                        @if (listMessage != null && listMessage.Any())
+                        {
+                            @foreach (var message in listMessage)
                             {
-                                <!-- Historique des messages avec scrollbar externe -->
-                                <div class="chat-history overflow-auto chat-scroll" style="max-height: calc(100vh - 150px);">
-                                    @foreach (var message in listMessage)
-                                    {
-                                        <div class="d-flex flex-column @((message.UtilisateurId == utilisateurID ? "align-items-end" : "align-items-start"))">
-                                            <div class="dropdown">
-                                                
-                                                <img src="@message.urlProfilImage" class="avatar mb-2">
-                                                <button class="p-2 rounded-3 btn-sm @((message.UtilisateurId == utilisateurID ? "bg-custom-user" : "bg-body-tertiary"))" style="border:none;" data-bs-toggle="dropdown" aria-expanded="false">
-                                                    @message.Contenu
-                                                </button>
-                                                @if (message.UtilisateurId == utilisateurID)
-                                                {
-                                                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton-@message.MessagesId">
-                                                        <li><a class="dropdown-item" @onclick="() => SupprimerMessage(message.MessagesId)">Supprimer</a></li>
-                                                        <li><a class="dropdown-item" @onclick="() => Reaction(message.MessagesId)">Réagir</a></li>
-                                                    </ul>
-                                                }
-                                                <p class="text-muted align-items-end" style="font-size:small; padding-bottom:0">
-                                                    @message.Timestamp!.Value.ToString("HH:mm") | @message.NomUtilisateur
-                                                </p>
-                                            </div>
-                                            
-                                        </div>
-                                    }
+                                <div class="d-flex flex-column @((message.UtilisateurId == utilisateurID ? "align-items-end" : "align-items-start"))">
+                                    <div class="dropdown">
+                                        <img src="@message.urlProfilImage" class="avatar mb-2">
+                                        <button class="p-2 rounded-3 btn-sm @((message.UtilisateurId == utilisateurID ? "bg-custom-user" : "bg-body-tertiary"))" style="border:none;" data-bs-toggle="dropdown" aria-expanded="false">
+                                            @message.Contenu
+                                        </button>
+                                        @if (message.UtilisateurId == utilisateurID)
+                                        {
+                                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton-@message.MessagesId">
+                                                <li><a class="dropdown-item" @onclick="() => SupprimerMessage(message.MessagesId)">Supprimer</a></li>
+                                                <li><a class="dropdown-item" @onclick="() => Reaction(message.MessagesId)">Réagir</a></li>
+                                            </ul>
+                                        }
+                                        <p class="text-muted align-items-end" style="font-size:small;">
+                                            @message.Timestamp!.Value.ToString("HH:mm") | @message.NomUtilisateur
+                                        </p>
+                                    </div>
                                 </div>
                             }
+                        }
+                    </div>
 
-                            <!-- Formulaire pour envoyer un message -->
-                            <div class="chat-message clearfix position-fixed w-50" style="bottom: 0; background-color: white; padding: 10px;">
-                                <div class="input-group mb-0">
-                                    <InputText class="form-control" placeholder="Tapez votre message..." @bind-Value="nouveauMessage" />
-                                    <div class="input-group-append">
-                                        <Button Color="ButtonColor.Success" @onclick="EnvoyerMessage">Envoyer</Button>
-                                    </div>
-                                </div>
+                    <!-- Formulaire pour envoyer un message -->
+                    <div class="chat-message w-100 p-3" style="background-color: white;">
+                        <div class="input-group mb-0">
+                            <InputText class="form-control" placeholder="Tapez votre message..." @bind-Value="nouveauMessage" />
+                            <div class="input-group-append">
+                                <Button Color="ButtonColor.Success" @onclick="EnvoyerMessage">Envoyer</Button>
                             </div>
-                        }
-                        else
-                        {
-                            <p class="text-center">Veuillez sélectionner un groupe pour afficher les messages.</p>
-                        }
+                        </div>
                     </div>
                 }
                 else
@@ -135,31 +181,36 @@
                     <p class="text-center">Veuillez sélectionner un groupe pour afficher les messages.</p>
                 }
             </div>
+
+           
+
         </div>
+     </div>
     </div>
-</div>
+    <script>
+    window.isMobile = () => {
+        return window.innerWidth <= 768; // Détecte si la largeur de l'écran est inférieure à 768px
+    };
 
-<!-- Style optimisé -->
+    </script>
 <style>
-    .chat {
-        border: 2px solid #49beb7;
-        border-radius: 15px;
-    }
-
+    /* Styles spécifiques au chat */
     .chat-header {
-        border-radius: 15px 15px 0 0;
+        background-color: #49beb7;
+        padding: 10px;
+        border-radius: 0.5rem 0.5rem 0 0;
     }
 
     .chat-history {
-        padding: 10px;
-    }
-
-    .chat-scroll {
-        margin-right: -15px; /* Scrollbar externe */
+        flex-grow: 1; /* Le chat prend tout l'espace disponible */
+        overflow-y: auto; /* Scrolling si le contenu dépasse */
     }
 
     .chat-message {
-        z-index: 1000;
+        background-color: white;
+        padding: 10px;
+        position: sticky;
+        bottom: 0;
     }
 
     .avatar {
@@ -189,23 +240,70 @@
         font-size: 0.8rem;
         color: #6c757d;
     }
-    /* Désactiver le défilement global du body */
-    main {
-        overflow: hidden;
+
+    .container {
+
+        flex-direction: column;
+       
     }
+
+    .chat-header {
+        flex-shrink: 0; /* Le header ne se rétrécit pas */
+    }
+
+    .chat-history {
+        flex-grow: 1; /* Le chat prend tout l'espace restant */
+        overflow-y: auto;
+    }
+
+    .chat-message {
+        flex-shrink: 0; /* Le formulaire reste en bas, ne bouge pas */
+        position: relative;
+    }
+
+   
     /* Activer le défilement vertical dans la liste */
     #plist {
-        max-height:850px;
+        max-height: 850px;
         overflow: auto; /* Ajoute le défilement vertical seulement ici */
     }
-</style>
+    /* Responsivité sur mobile */
+    .media (max-width: 768px) {
+        .chat-app .col-lg-4 {
+            display: none;
+        }
 
+        .chat-app .col-lg-8 {
+            display: block;
+            width: 100%;
+        }
+
+        .chat-header {
+            margin-top: 10px;
+        }
+    }
+
+    /* Afficher uniquement la liste des groupes sur mobile */
+    .media (max-width: 768px) {
+        .chat-app .col-lg-4.show-groups {
+            display: block;
+            width: 100%;
+        }
+
+        .chat-app .col-lg-8.hide-messages {
+            display: none;
+        }
+    }
+
+</style>
 @code {
     #region "Variables"
     [Parameter]
     public string UserSessionId { get; set; }
     private RechercheModel rechercheModel = new RechercheModel();
     private List<Groupe> listGroupe = new();
+    private List<Groupe> listGroupeEnCours = new();
+    private List<Groupe> listGroupeArchives = new();
     private HttpClient httpClient;
     private int utilisateurID = 0;
     private Groupe selectedGroupe;
@@ -214,9 +312,18 @@
     private string nomUtilisateur;
     private HubConnection _hubConnection;
     [Inject] protected ToastService ToastService { get; set; } = default!;
+    private bool isMobile = false; // Pour détecter si l'utilisateur est sur mobile
+    private bool showGroups = true; // Par défaut, montrer les groupes sur mobile
+    private bool showMessages = true; // Par défaut, ne pas montrer les messages sur mobile
     #endregion
     #region "ContextMenu"
-
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            isMobile = await jsRuntime.InvokeAsync<bool>("isMobile");
+        }
+    }
     private async Task SupprimerMessage(int MessagesId)
     {
         if (MessagesId != 0)
@@ -264,7 +371,10 @@
         if (listGroupe != null)
         {
             listGroupe.Clear();
+            listGroupeArchives.Clear();
+            listGroupeEnCours.Clear();
         }
+
         if(listMessage != null)
         {
             listMessage.Clear();
@@ -445,6 +555,14 @@
         }
 
         selectedGroupe = groupe;
+
+
+        // En mobile, masquer les groupes et afficher les messages
+        if (isMobile)
+        {
+            showGroups = false;
+            showMessages = true;
+        }
         if (selectedGroupe.nbreMessageVu != null && selectedGroupe.nbreMessageVu != 0)
         {
             bool bModifier = await ModifierLesMessagesVu(selectedGroupe.GroupesId);
@@ -537,6 +655,11 @@
         }
     }
 
+    private void ShowGroups()
+    {
+        showGroups = true;
+        showMessages = false;
+    }
 
     private async Task RechercheSubmit()
     {
