@@ -100,6 +100,22 @@
 
         /* Allow sidebar to scroll for tall menus */
         height: calc(100vh - 3.5rem);
-        overflow-y: auto;
     }
 }
+
+
+/* Assure une taille uniforme des icônes */
+.nav-link-mb {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px; /* Taille uniforme des icônes */
+    height: 40px; /* Taille uniforme des icônes */
+}
+
+/* Ajoute une ligne verticale entre les éléments */
+.nav-item-mb + .nav-item-mb {
+    border-left: 1px solid #fff; /* Ligne blanche entre les éléments */
+    padding-left: 15px; /* Espace après la ligne */
+}
+

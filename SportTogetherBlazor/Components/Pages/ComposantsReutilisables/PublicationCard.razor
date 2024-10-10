@@ -665,7 +665,7 @@ else
     // Méthode pour envoyer une notification à l'auteur
     private async Task SendNotificationToAuthor(string contenu, string type, int? cle = null)
     {
-        
+        if (utilisateurId == publicationVue.UtilisateurId) return;
         var notification = new NotificationUtilisateur
             {
                 DateNotification = DateTime.Now,
