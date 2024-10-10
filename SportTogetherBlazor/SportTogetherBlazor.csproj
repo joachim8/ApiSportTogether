@@ -4,10 +4,12 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+	  <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
   </PropertyGroup>
 
   <ItemGroup>
     <Content Remove="wwwroot\.js" />
+    <Content Remove="wwwroot\service-worker.js" />
   </ItemGroup>
 
 
@@ -28,6 +30,7 @@
     <None Include="wwwroot\images\rugby.jpg" />
     <None Include="wwwroot\images\volleyball.jpg" />
     <None Include="wwwroot\images\yoga.jpg" />
+    <None Include="wwwroot\service-worker.js" />
   </ItemGroup>
 
   <ItemGroup>
