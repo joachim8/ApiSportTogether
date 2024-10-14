@@ -1,13 +1,12 @@
 ﻿@page "/SportTogether/Profil-utilisateur-vue/{UserSessionId}"
 @using SportTogetherBlazor.Models
 @using System.Net.Http.Json
-
 @using SportTogetherBlazor.Components.Pages.ComposantsReutilisables
 @using SportTogetherBlazor.Components.Pages.Formulaires
 @inject IHttpClientFactory HttpClientFactory
 @using SportTogetherBlazor.Services
 @inject LocalStorageServices localStorage
-
+@inject TaskNotificationServices notificationService
 
 @if (profilUtilisateurVu != null)
 {
@@ -20,17 +19,10 @@
                     <img src="@profilUtilisateurVu.urlProfilImage" alt="Profile Picture" class="rounded-circle shadow-lg" id="img-profile" />
                     <h4 class="mt-2 mx-2">@profilUtilisateurVu.Pseudo</h4>
                 </div>
-                <div class="mt-2">
-                    @if ((bool)profilUtilisateurVu.isCoequipier!)
-                    {
-
-                        <Button Color="ButtonColor.Success" TooltipTitle="Vous êtes coéquipier">Coequipier</Button>
-                    }
-                    else
-                    {
-                        <Button Color="ButtonColor.Primary" TooltipTitle="Vous n'êtes pas coéquipier">Ajouter</Button>
-                    }
-                </div>
+              
+                   <BoutonGestionCoequipier TypeCoequipier="@profilUtilisateurVu.typeCoequipier"
+                  PseudoUtilisateurVu="@profilUtilisateurVu.Pseudo"
+                  UtilisateurId="@profilUtilisateurVu.UtilisateursId" />
             </div>
 
         </div>
@@ -81,9 +73,7 @@
                         </TitleTemplate>
                         <Content>
                             <div class="container-fluid bg-light">
-                                <div class="mt-4 p-1">
-                                    <AjoutDePublication UtilisateurId="profilUtilisateurVu.UtilisateursId" OnPublicationAdded="RafraichirPublications" />
-                                </div>
+                              
                                 <div class="mt-4">
                                     <MesPublications @ref="mesPublicationsRef" utilisateurId="profilUtilisateurVu.UtilisateursId" />
                                 </div>
@@ -134,6 +124,7 @@
             </div>
         </div>
     </div>
+    <ConfirmDialog @ref="dialog" />
 }
 else
 {
@@ -157,50 +148,58 @@ else
     }
 </style>
 @code {
+    private ConfirmDialog dialog = default!;
+    [Inject] protected ToastService ToastService { get; set; } = default!;
     [SupplyParameterFromQuery(Name = "utilisateur")]
     public int utilisateur_id { get; set; } = 0;
     [Parameter]
     public string UserSessionId { get; set; } = string.Empty;
 
     private int utilisateurEnCoursId { get; set; }
+   
 
     public ProfilUtilisateurVu profilUtilisateurVu { get; set; }
     private HttpClient httpClient;
     private MesPublications mesPublicationsRef;
     private int nombreAmis = 0;
 
-    private bool showModifierBtn = false;
+  
 
     // Méthode pour afficher la liste d'amis
     private void AfficherListeAmis()
     {
         // Logique pour ouvrir la modal des amis (ou utiliser un autre composant)
     }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender) // Eviter les appels multiples
+        {
+            utilisateurEnCoursId = (await localStorage.GetUserFromLocalStorage()).UtilisateursId;
 
+            try
+            {
+                profilUtilisateurVu = await httpClient.GetFromJsonAsync<ProfilUtilisateurVu>($"Utilisateur/GetProfilUtilisateurVueByIdParMois/{utilisateur_id}/{utilisateurEnCoursId}")!;
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"Erreur lors de la requête : {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur inattendue : {ex.Message}");
+            }
+            // Appel API pour récupérer le nombre d'amis
+            nombreAmis = await httpClient.GetFromJsonAsync<int>($"Ami/GetNombreAmi/{profilUtilisateurVu.UtilisateursId}");
+            StateHasChanged();
+        }
+    }
     protected override async Task OnInitializedAsync()
     {
         // Appel API pour récupérer l'utilisateur
         httpClient = HttpClientFactory.CreateClient("ApiSportTogetherClient");
-        utilisateurEnCoursId =  (await localStorage.GetUserFromLocalStorage()).UtilisateursId;
-        try
-        {
-            profilUtilisateurVu = await httpClient.GetFromJsonAsync<ProfilUtilisateurVu>($"Utilisateur/GetProfilUtilisateurVueByIdParMois/{utilisateur_id}/{utilisateurEnCoursId}")!;
-        }
-        catch (HttpRequestException ex)
-        {
-            Console.WriteLine($"Erreur lors de la requête : {ex.Message}");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Erreur inattendue : {ex.Message}");
-        }
-        // Appel API pour récupérer le nombre d'amis
-        nombreAmis = await httpClient.GetFromJsonAsync<int>($"Ami/GetNombreAmi/{profilUtilisateurVu.UtilisateursId}");
-    }
-    private async Task RafraichirPublications()
-    {
-        await mesPublicationsRef.GetPublicationsIdsByUtilisateur(); // Méthode pour récupérer les publications
-        StateHasChanged();
+      
     }
   
+
+ 
 }

@@ -295,7 +295,8 @@ public partial class SportTogetherContext : DbContext
             entity.Property(e => e.TypeNotification)
                 .HasColumnType("enum('Participation','Ajout en ami','Commentaire','Encouragement_commentaire','Encouragement_publication','Note')")
                 .HasColumnName("type_notification");
-            entity.Property(e => e.UtilisateurId).HasColumnName("utilisateur_id");
+            entity.Property(e => e.UtilisateurId).HasColumnName("utilisateur_id");  
+            entity.Property(e => e.UtilisateurEnvoiId).HasColumnName("utilisateur_envoi_id");
             entity.Property(e => e.Vu).HasColumnName("vu");
 
             entity.HasOne(d => d.Utilisateur).WithMany(p => p.NotificationUtilisateurs)

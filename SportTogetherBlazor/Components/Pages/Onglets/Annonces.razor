@@ -122,12 +122,12 @@
 
         SportsSelected = selectedSports;
         string sports = string.Join(",", SportsSelected);
-        // Met à jour l'URL avec les paramètres de filtre
-        navigation.NavigateTo($"/SportTogether/Annonces?sports={sports}&villes={string.Join(",", SelectedVilles)}&genre={SelectedGenre}");
+    
 
         try
         {
-            annonces.Clear();
+            if (annonces != null)
+                annonces.Clear();
             annonces = ((await Http.GetFromJsonAsync<List<AnnonceVue>>($"/vue/sports/{sports}/{villeUtilisateur}/{genreUtilisateur}"))!);
             PreloadService.Show(SpinnerColor.Light, "Recherche en cours...");
 
@@ -150,10 +150,10 @@
 
         SelectedVilles = selectedVilles;
         string villes = string.Join(",", SelectedVilles);
-        // Met à jour l'URL avec les paramètres de filtre
-        navigation.NavigateTo($"/SportTogether/Annonces?sports={string.Join(",", SportsSelected)}&villes={villes}&genre={SelectedGenre}");
+       
         try
         {
+            if(annonces != null)
             annonces.Clear();
             PreloadService.Show(SpinnerColor.Light, "Recherche en cours...");
             annonces = ((await Http.GetFromJsonAsync<List<AnnonceVue>>($"/vue/villes/{villes}/{genreUtilisateur}"))!);
@@ -176,10 +176,11 @@
         }
 
         SelectedGenre = selectedGenre;
-        navigation.NavigateTo($"/SportTogether/Annonces?sports={string.Join(",", SportsSelected)}&villes={string.Join(",", SelectedVilles)}&genre={SelectedGenre}");
+      
         try
         {
-            annonces.Clear();
+            if (annonces != null)
+                annonces.Clear();
             PreloadService.Show(SpinnerColor.Light, "Recherche en cours...");
             annonces = ((await Http.GetFromJsonAsync<List<AnnonceVue>>($"/vue/genre/{selectedGenre}/{villeUtilisateur}"))!);
             PreloadService.Hide();

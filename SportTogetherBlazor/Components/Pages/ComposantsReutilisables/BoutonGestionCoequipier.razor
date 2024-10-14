@@ -1,0 +1,159 @@
+﻿@using SportTogetherBlazor.Services 
+@using SportTogetherBlazor.Models
+@inject IHttpClientFactory HttpClientFactory
+@inject LocalStorageServices localStorage
+@inject TaskNotificationServices notificationService
+@inject HttpClient HttpClient
+
+
+<div class="mt-2 align-items-center justify-content-center">
+    @if (TypeCoequipier == "Coequipier")
+    {
+        <Button Color="ButtonColor.Light" TooltipTitle="Vous êtes coéquipier, supprimer des coéquipiers ?" @onclick="ShowDeleteCoequipierAsync" Size="Size.Large">
+            <Icon Name="IconName.PersonFillCheck" />
+        </Button>
+    }
+    else if (TypeCoequipier == "Non coequipier")
+    {
+        <Button Color="ButtonColor.Light" TooltipTitle="Ajouter le coéquipier" @onclick="ShowAjoutCoequipierAsync"  Size="Size.Large">
+            <Icon Name="IconName.PersonFillAdd" />
+        </Button>
+    }
+    else if(TypeCoequipier == "En attente")
+    {
+        <Button Color="ButtonColor.Light" TooltipTitle="Supprimer la demande d'ajout" Size="Size.Large" Disabled="true">
+            <Icon Name="IconName.ClockFill" /> En attente
+        </Button>
+    }
+</div>
+<ConfirmDialog @ref="dialog" />
+
+@code {
+    [Parameter]
+    public string TypeCoequipier { get; set; } // Indique si l'utilisateur est un coéquipier 
+
+    [Parameter]
+    public string PseudoUtilisateurVu { get; set; } = string.Empty; // Pseudo de l'utilisateur que l'on ajoute ou supprime
+
+
+    [Parameter]
+    public int UtilisateurId { get; set; } // ID de l'utilisateur cible
+    [Inject] protected ToastService ToastService { get; set; } = default!;
+    private ConfirmDialog dialog = default!;
+    private int utilisateurEnCoursId { get; set; }
+    private string pseudoUtilisateurEnCours { get; set; } = string.Empty;
+    private HttpClient httpClient;
+    protected override async Task OnInitializedAsync()
+    {
+        // Appel API pour récupérer l'utilisateur
+        httpClient = HttpClientFactory.CreateClient("ApiSportTogetherClient");
+        utilisateurEnCoursId = (await localStorage.GetUserFromLocalStorage()).UtilisateursId;
+        pseudoUtilisateurEnCours = (await localStorage.GetUserFromLocalStorage()).Pseudo;
+
+
+       
+    }
+    private async Task AjoutCoequipier()
+    {
+        try
+        {
+            var notification = new NotificationUtilisateur
+                {
+                    UtilisateurId = UtilisateurId,
+                    TypeNotification = "Ajout en ami",
+                    DateNotification = DateTime.UtcNow,
+                    Vu = false,
+                    Contenu = $"{pseudoUtilisateurEnCours} souhaite vous ajouter en tant que coéquipier.",
+                    UtilisateurEnvoiId = utilisateurEnCoursId // Assurez-vous que cette variable est définie
+                };
+
+            var (isSuccess, createdNotification, errorMessage) = await notificationService.CreateNotificationAsync(notification);
+
+            if (isSuccess)
+            {
+                ToastService.Notify(new(ToastType.Success, $"Votre demande d'ajout à {PseudoUtilisateurVu} a bien été envoyée."));
+            }
+            else
+            {
+                ToastService.Notify(new(ToastType.Danger, $"Un problème est survenu : {errorMessage}"));
+            }
+        }
+        catch (HttpRequestException ex)
+        {
+            ToastService.Notify(new(ToastType.Danger, $"Erreur réseau : {ex.ToString()}"));
+        }
+        catch (Exception ex)
+        {
+            ToastService.Notify(new(ToastType.Danger, $"Erreur inattendue : {ex.Message}"));
+        }
+    }
+
+    private async Task DeleteCoequipier()
+    {
+        try
+        {
+            // Suppression de l'amitié via l'API
+            var response = await HttpClient.DeleteAsync($"Ami/{UtilisateurId}");
+
+            if (response.IsSuccessStatusCode)
+            {
+                ToastService.Notify(new(ToastType.Success, $"{PseudoUtilisateurVu} a été retiré de vos coéquipiers."));
+            }
+            else
+            {
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                ToastService.Notify(new(ToastType.Danger, $"Erreur lors de la suppression de {PseudoUtilisateurVu} : {errorMessage}"));
+            }
+        }
+        catch (HttpRequestException ex)
+        {
+            ToastService.Notify(new(ToastType.Danger, $"Erreur réseau : {ex.Message}"));
+        }
+        catch (Exception ex)
+        {
+            ToastService.Notify(new(ToastType.Danger, $"Erreur inattendue : {ex.Message}"));
+        }
+    }
+
+    private async Task ShowAjoutCoequipierAsync()
+    {
+        var options = new ConfirmDialogOptions
+            {
+                YesButtonText = "Ok",
+                YesButtonColor = ButtonColor.Success,
+                NoButtonText = "Annuler",
+                NoButtonColor = ButtonColor.Danger
+            };
+
+        var confirmation = await dialog.ShowAsync(
+            title: "Ajout d'un coéquipier",
+            message1: $"Vous voulez ajouter {PseudoUtilisateurVu} comme coéquipier ?",
+            confirmDialogOptions: options);
+
+        if (confirmation)
+        {
+            await AjoutCoequipier();
+        }
+    }
+
+    private async Task ShowDeleteCoequipierAsync()
+    {
+        var options = new ConfirmDialogOptions
+            {
+                YesButtonText = "Ok",
+                YesButtonColor = ButtonColor.Success,
+                NoButtonText = "Annuler",
+                NoButtonColor = ButtonColor.Danger
+            };
+
+        var confirmation = await dialog.ShowAsync(
+            title: "Supprimer un coéquipier",
+            message1: $"Vous voulez supprimer {PseudoUtilisateurVu} comme coéquipier ?",
+            confirmDialogOptions: options);
+
+        if (confirmation)
+        {
+            await DeleteCoequipier();
+        }
+    }
+}

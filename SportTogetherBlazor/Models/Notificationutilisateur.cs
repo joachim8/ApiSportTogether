@@ -16,6 +16,8 @@ namespace SportTogetherBlazor.Models
         public bool Vu { get; set; }
         [JsonPropertyName("Contenu")]
         public string Contenu { get; set; } = null!;
+        [JsonPropertyName("UtilisateurEnvoiId")]
+        public int? UtilisateurEnvoiId { get; set; }
         [JsonIgnore]
         [JsonPropertyName("Utilisateur")]
         public virtual Utilisateur? Utilisateur { get; set; }

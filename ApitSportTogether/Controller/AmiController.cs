@@ -37,8 +37,8 @@ namespace ApiSportTogether.Controller
             return ami == null ? NotFound() : ami;
         }
 
-        // POST: ApiSportTogether/Ami
-        [HttpPost]
+        // POST: ApiSportTogether/Ami/CreateAmis
+        [HttpPost("CreateAmis")]
         public ActionResult<Ami> PostAmi([FromBody] Ami ami)
         {
             _context.Amis.Add(ami);

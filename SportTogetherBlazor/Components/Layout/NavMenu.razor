@@ -150,6 +150,7 @@
                 <Tab>
                     <TitleTemplate>
                         <Icon Name="IconName.ListNested" Color="IconColor.Dark" />
+                        <Badge Placement="BadgePlacement.BottomRight" Color="BadgeColor.Danger" IndicatorType="BadgeIndicatorType.RoundedPill"> @listNotif.Where(n => n.TypeNotification == "Note" || n.TypeNotification == "Participation").Where(n => n.Vu == false).Count() </Badge>
                     </TitleTemplate>
                     <Content>
                         @foreach (NotificationUtilisateur notification in listNotif.Where(n => n.TypeNotification == "Note" || n.TypeNotification == "Participation"))
@@ -170,19 +171,25 @@
                 </Tab>
                 <Tab>
                     <TitleTemplate>
-                        <Icon Name="IconName.PersonAdd" Color="IconColor.Dark" />
+                        <div>
+                         <Icon Name="IconName.PersonAdd" Color="IconColor.Dark" />
+                            <Badge Placement="BadgePlacement.BottomRight" Color="BadgeColor.Danger" IndicatorType="BadgeIndicatorType.RoundedPill"> @listNotif.Where(n => n.TypeNotification == "Ajout en ami" && n.Vu == false).Count() </Badge>
+                        </div>
+                     
                     </TitleTemplate>
                     <Content>
                         @foreach (NotificationUtilisateur notification in listNotif.Where(n => n.TypeNotification == "Ajout en ami"))
                         {
                             <div class="@(notification.Vu ? "bg-light" : "bg-info")">
-                                <Button Color="ButtonColor.None" Type="ButtonType.Link" Class="d-flex align-items-start" @onclick="() => MarkAsRead(notification.NotificationId)">
+                                <Button Color="ButtonColor.None" Type="ButtonType.Link" Class="d-flex align-items-start" @onclick="() => MarkAsRead(notification.NotificationId)" >
                                     <span class="badge badge-pill bg-success" style="width: 40px; height: 40px; font-size: 16px; line-height: 40px;">
                                         @GetInitials(notification.TypeNotification)
                                     </span>
                                     <div class="ms-3">
                                         <div class=" text-wrap">@notification.Contenu</div>
                                         <div class="text-muted small">@notification.DateNotification.ToString("dd/MM/yyyy")</div>
+                                        <Button Color="ButtonColor.Success" @onclick="() => AccepterDemande(notification.UtilisateurEnvoiId, notification.NotificationId)" Class="rounded-circle" Size="Size.Small"><Icon Name="IconName.Check2" /></Button>
+                                        <Button Color="ButtonColor.Danger" @onclick="() => RefuserDemande(notification.NotificationId)" Class="rounded-circle" Size="Size.Small"><Icon Name="IconName.X" /></Button>
                                     </div>
                                 </Button>
                             </div>
@@ -192,6 +199,7 @@
                 <Tab>
                     <TitleTemplate>
                         <Icon Name="IconName.ChatFill" Color="IconColor.Dark" />
+                        <Badge Placement="BadgePlacement.BottomRight" Color="BadgeColor.Danger" IndicatorType="BadgeIndicatorType.RoundedPill"> @listNotif.Where(n => n.TypeNotification == "Encouragement_publication" || n.TypeNotification == "Commentaire " || n.TypeNotification == "Encouragement_commentaire").Where(n => n.Vu == false).Count() </Badge>
                     </TitleTemplate>
                     <Content>
                         @foreach (NotificationUtilisateur notification in listNotif.Where(n => n.TypeNotification == "Encouragement_publication" || n.TypeNotification == "Commentaire " || n.TypeNotification == "Encouragement_commentaire"))
@@ -225,25 +233,18 @@
 
 @code {
     private Modal modal = default!;
+    [Inject] protected ToastService ToastService { get; set; } = default!;
 
-    private async Task OnShowModalClick()
-    {
-        await modal.ShowAsync();
-    }
-
-    private async Task OnHideModalClick()
-    {
-        await modal.HideAsync();
-    }
     private Utilisateur utilisateurInfo = new();
     private string urlPhotoProfil = string.Empty;
-   
+
     bool messageCount = false;
     int nbrMessages = 0;
     private string? userSession = string.Empty;
     private bool _firstRender = true;
     private List<NotificationUtilisateur> listNotif = new();
     private int unreadCount = 0;
+    private HttpClient httpClient;
     private string GetInitials(string type)
     {
         return type switch
@@ -252,12 +253,17 @@
             "Encouragement_publication" => "EP",
             "Encouragement_commentaire" => "EC",
             "Participation" => "P",
-            "ajout en amis" => "A",
+            "Ajout en ami" => "A",
             "Note" => "N",
             _ => "N/A"
         };
     }
 
+    protected override void OnInitialized()
+    {
+        // Appel API pour récupérer l'utilisateur
+        httpClient = ClientFactory.CreateClient("ApiSportTogetherClient");
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -297,6 +303,11 @@
             {
                 notification.Vu = true; // Met à jour l'état local pour refléter le changement
                 CountUnreadNotifications(); // Recalculer le nombre de notifications non lues
+                if(notification.TypeNotification == "Ajout en ami")
+                {
+                    NavigationManager.NavigateTo($"/SportTogether/Profil-utilisateur-vue/{userSession}?utilisateur={notification.UtilisateurEnvoiId}");
+                    await modal.HideAsync();
+                }
             }
         }
         else
@@ -332,8 +343,8 @@
     {
         try
         {
-            HttpClient _httpClient = ClientFactory.CreateClient("ApiSportTogetherClient");
-            nbrMessages = await _httpClient.GetFromJsonAsync<int>($"VuMessage/GetAllVuMessagesCount/{utilisateurInfo.UtilisateursId}")!;
+
+            nbrMessages = await httpClient.GetFromJsonAsync<int>($"VuMessage/GetAllVuMessagesCount/{utilisateurInfo.UtilisateursId}")!;
             if (nbrMessages != 0)
             {
                 messageCount = true;
@@ -345,7 +356,92 @@
         }
     }
 
- 
+    private async Task AccepterDemande(int? utilisateurEnvoiId, int notificationId)
+    {
+        try
+        {
+            if (utilisateurEnvoiId.Value == 0) return;
+            // Logique pour ajouter l'utilisateur en ami
+            var ami = new Ami
+                {
+                    UtilisateurId1 = utilisateurEnvoiId,
+                    UtilisateurId2 = utilisateurInfo.UtilisateursId,
+                    DateAjout = DateTime.Now
 
+                };
+
+            // Appel à l'API pour créer la nouvelle amitié
+            var response = await httpClient.PostAsJsonAsync($"Ami/CreateAmis", ami);
+            response.EnsureSuccessStatusCode();
+
+            // Supprimer la notification après avoir accepté la demande
+            await SupprimerNotification(notificationId);
+
+            // Notification de succès à l'utilisateur
+            ToastService.Notify(new(ToastType.Success, $"L'utilisateur a été ajouté en tant que coéquipier."));
+        }
+        catch (HttpRequestException ex)
+        {
+            ToastService.Notify(new(ToastType.Danger, $"Erreur lors de l'ajout en ami : {ex.Message}"));
+        }
+        catch (Exception ex)
+        {
+            ToastService.Notify(new(ToastType.Danger, $"Erreur inattendue : {ex.Message}"));
+        }
+    }
+
+    private async Task SupprimerNotification(int notificationId)
+    {
+        try
+        {
+            var result = await NotificationService.DeleteNotificationAsync(notificationId);
+            if (result.IsSuccess)
+            {
+                var notification = listNotif.Where(ln => ln.NotificationId == notificationId).FirstOrDefault();
+                listNotif.Remove(notification);
+                
+               
+            }
+        }catch (HttpRequestException ex)
+        {
+            ToastService.Notify(new(ToastType.Danger, $"Erreur lors de la suppression de la notification : {ex.Message}"));
+        }
+        catch (Exception ex)
+        {
+            ToastService.Notify(new(ToastType.Danger, $"Erreur inattendue : {ex.Message}"));
+        }
+    }
+
+    private async Task RefuserDemande(int notificationId)
+    {
+        try
+        {
+
+            await SupprimerNotification(notificationId);
+            // Notification de succès à l'utilisateur
+            ToastService.Notify(new(ToastType.Success, "La demande de coéquipier a été refusée."));
+            StateHasChanged();
+
+          
+        }
+        catch (HttpRequestException ex)
+        {
+            ToastService.Notify(new(ToastType.Danger, $"Erreur lors de la suppression de la notification : {ex.Message}"));
+        }
+        catch (Exception ex)
+        {
+            ToastService.Notify(new(ToastType.Danger, $"Erreur inattendue : {ex.Message}"));
+        }
+    }
+
+    private async Task OnShowModalClick()
+    {
+        await modal.ShowAsync();
+    }
+
+    private async Task OnHideModalClick()
+    {
+        await modal.HideAsync();
+    }
    
 }

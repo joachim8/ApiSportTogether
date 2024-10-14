@@ -32,8 +32,8 @@ namespace SportTogetherBlazor.Models
         public List<string>? TopTroisSport { get; set; }
         [JsonPropertyName("urlProfilImage")]
         public string? urlProfilImage { get; set; }
-        [JsonPropertyName("isCoequipier")]
-        public bool? isCoequipier { get; set; }
+        [JsonPropertyName("typeCoequipier")]
+        public string? typeCoequipier { get; set; }
         [JsonPropertyName("NiveauSport")]
         public string? NiveauSport { get; set; }
         [JsonPropertyName("Disponibilites")]
@@ -45,5 +45,7 @@ namespace SportTogetherBlazor.Models
         public string? TypePartenaire { get; set; }
         [JsonPropertyName("FunFact")]
         public string? FunFact { get; set; }
+        [JsonPropertyName("AmitieId")]
+        public int? AmitieId { get; set; }
     }
 }
