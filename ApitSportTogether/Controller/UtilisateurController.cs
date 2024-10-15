@@ -518,10 +518,10 @@ namespace ApiSportTogether.Controller
                                         .Select(s => s.Sports!.Nom)
                                         .ToList()!;
             string urlProfilImage = _context.ProfileImages.Where(pi => pi.UtilisateursId == utilisateur_id).FirstOrDefault()!.Url!;
-            int? amiId = 0 ;
+            int? amiId = 0;
             if (utilisateur_id != utilisateur_en_cours_id)
             {
-                if(listAmi != null)
+                if (listAmi != null)
                 {
                     if (listAmi.Any())
                     {
@@ -533,16 +533,14 @@ namespace ApiSportTogether.Controller
                                     (ami.UtilisateurId1 == utilisateur_id && ami.UtilisateurId2 == utilisateur_en_cours_id) ||
                                     (ami.UtilisateurId1 == utilisateur_en_cours_id && ami.UtilisateurId2 == utilisateur_id)).FirstOrDefault()!.AmisId;
                         }
-                        else
-                        {
-                            typeCoequipier = "Non coequipier";
-                        }
+
 
                     }
                 }
-                
+
             }
-            if(typeCoequipier == string.Empty)
+
+            if (typeCoequipier == string.Empty)
             {
                 if(_context.NotificationUtilisateurs.Where(nu => nu.UtilisateurId == utilisateur_id && nu.UtilisateurEnvoiId == utilisateur_en_cours_id).FirstOrDefault() != null || _context.NotificationUtilisateurs.Where(nu => nu.UtilisateurId == utilisateur_en_cours_id && nu.UtilisateurEnvoiId == utilisateur_id).FirstOrDefault() != null)
                 {

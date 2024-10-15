@@ -19,7 +19,6 @@
                     <img src="@profilUtilisateurVu.urlProfilImage" alt="Profile Picture" class="rounded-circle shadow-lg" id="img-profile" />
                     <h4 class="mt-2 mx-2">@profilUtilisateurVu.Pseudo</h4>
                 </div>
-              
                    <BoutonGestionCoequipier TypeCoequipier="@profilUtilisateurVu.typeCoequipier"
                   PseudoUtilisateurVu="@profilUtilisateurVu.Pseudo"
                   UtilisateurId="@profilUtilisateurVu.UtilisateursId" />
@@ -46,10 +45,7 @@
                         </p>
                         <hr class="mb-1 " style="width:50%; margin-left: auto;
                     margin-right: auto;" />
-                        <!-- Bouton coéquipiers avec compteur -->
-                        <Button Color="ButtonColor.Success" @onclick="AfficherListeAmis">
-                            <Icon Name="IconName.PersonHeart" class="me-1" /> @nombreAmis
-                        </Button>
+                       <ListeCoequipier nombreAmis="@nombreAmis" IsDisabled="true" userSession="@UserSessionId" utilisateurId="utilisateurEnCoursId" />
                         <hr class="mb-1 " style="width:50%; margin-left: auto;
                     margin-right: auto;" />
                         <Badge Color="BadgeColor.Secondary">
@@ -165,11 +161,7 @@ else
 
   
 
-    // Méthode pour afficher la liste d'amis
-    private void AfficherListeAmis()
-    {
-        // Logique pour ouvrir la modal des amis (ou utiliser un autre composant)
-    }
+   
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender) // Eviter les appels multiples

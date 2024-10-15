@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace ApiSportTogether.model.ObjectVue
+namespace SportTogetherBlazor.Models
 {
     public partial class AmiVue
     {
@@ -15,6 +15,5 @@ namespace ApiSportTogether.model.ObjectVue
         public string UrlProfilImage { get; set; } = null!;
         [JsonPropertyName("DescriptionSport")]
         public string DescriptionSport { get; set; } = null!;
-
     }
 }

@@ -1,5 +1,6 @@
 ﻿using ApiSportTogether.model.dbContext;
 using ApiSportTogether.model.ObjectContext;
+using ApiSportTogether.model.ObjectVue;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -77,8 +78,8 @@ namespace ApiSportTogether.Controller
             return NoContent();
         }
 
-        // DELETE: ApiSportTogether/Ami/5
-        [HttpDelete("{id}")]
+        // DELETE: ApiSportTogether/Ami/DeleteAmi/5
+        [HttpDelete("DeleteAmi/{id}")]
         public IActionResult DeleteAmi(int id)
         {
             var ami = _context.Amis.Find(id);
@@ -102,7 +103,7 @@ namespace ApiSportTogether.Controller
         }
         // GET: ApiSportTogether/Ami/GetListAmi/1
         [HttpGet("GetListAmi/{utilisateur_id}")]
-        public ActionResult<IEnumerable<Utilisateur>> GetListAmi(int utilisateur_id)
+        public ActionResult<IEnumerable<AmiVue>> GetListAmi(int utilisateur_id)
         {
             if (utilisateur_id == 0)
             {
@@ -112,22 +113,51 @@ namespace ApiSportTogether.Controller
             // Récupérer la liste des relations d'amitié impliquant l'utilisateur
             List<Ami> listAmi = _context.Amis
                                         .Where(a => a.UtilisateurId1 == utilisateur_id || a.UtilisateurId2 == utilisateur_id)
-                                        .Include(a => a.UtilisateurId1Navigation)
-                                        .Include(a => a.UtilisateurId2Navigation)
+                                        .Include(a => a.UtilisateurId1Navigation).ThenInclude(uid1 => uid1.ProfileImages)
+                                        .Include(a => a.UtilisateurId2Navigation).ThenInclude(uid1 => uid1.ProfileImages)
                                         .ToList();
 
             if (listAmi == null || listAmi.Count == 0)
             {
                 return NoContent();
             }
+            List<AmiVue> listAmiVue = new();
+            foreach (Ami ami in listAmi)
+            {
+                if(ami.UtilisateurId1 == utilisateur_id)
+                {
+                    AmiVue amiVue = new()
+                    {
+                        AmiId = ami.AmisId,
+                        DescriptionSport = ami.UtilisateurId2Navigation.DescriptionSport,
+                        Pseudo =  ami.UtilisateurId2Navigation.Pseudo,
+                        UrlProfilImage = ami.UtilisateurId2Navigation.ProfileImages.FirstOrDefault().Url,
+                        UtilisateurId = ami.UtilisateurId2Navigation.UtilisateursId
+                    };
+                    listAmiVue.Add(amiVue);
+                }
+                else
+                {
+                    AmiVue amiVue = new()
+                    {
+                        AmiId = ami.AmisId,
+                        DescriptionSport = ami.UtilisateurId1Navigation.DescriptionSport,
+                        Pseudo = ami.UtilisateurId1Navigation.Pseudo,
+                        UrlProfilImage = ami.UtilisateurId1Navigation.ProfileImages.FirstOrDefault().Url,
+                        UtilisateurId = ami.UtilisateurId1Navigation.UtilisateursId
+                    };
+                    listAmiVue.Add(amiVue);
+                }
+            }
+         
 
-            // Création de la liste des utilisateurs amis
-            List<Utilisateur> listUtilisateur = listAmi.Select(a =>
-                a.UtilisateurId1 == utilisateur_id ? a.UtilisateurId2Navigation : a.UtilisateurId1Navigation
-            ).ToList()!;
+            if (listAmiVue == null || !listAmiVue.Any())
+            {
+                return NoContent();
+            }
 
-            if(listUtilisateur == null || !listUtilisateur.Any()) return NoContent();
-            return Ok(listUtilisateur.ToArray());
+            return Ok(listAmiVue.ToArray());
         }
+
     }
 }

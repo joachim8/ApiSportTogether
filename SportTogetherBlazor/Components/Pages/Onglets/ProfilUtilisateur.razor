@@ -1,4 +1,4 @@
-﻿@page "/SportTogether/Profil-utilisateur"
+﻿@page "/SportTogether/Profil-utilisateur/{UserSessionId}"
 @using SportTogetherBlazor.Models
 @using System.Net.Http.Json
 @using SportTogetherBlazor.Services
@@ -46,10 +46,7 @@
                         </p>
                         <hr class="mb-1 " style="width:50%; margin-left: auto;
                     margin-right: auto;" />
-                        <!-- Bouton coéquipiers avec compteur -->
-                        <Button Color="ButtonColor.Success" @onclick="AfficherListeAmis">
-                            <Icon Name="IconName.PersonHeart" class="me-1" /> @nombreAmis
-                        </Button>
+                        <ListeCoequipier nombreAmis="@nombreAmis" IsDisabled="false" userSession="@UserSessionId" utilisateurId="utilisateurVue.UtilisateursId" />
                         <hr class="mb-1 " style="width:50%; margin-left: auto;
                     margin-right: auto;" />
                         <Badge Color="BadgeColor.Secondary">
@@ -178,7 +175,8 @@ else
     }
 </style>
 @code {
-
+    [Parameter]
+    public string UserSessionId { get; set; }
     public UtilisateurVue? utilisateurVue { get; set; } 
     private Utilisateur utilisateurInfo;
     private HttpClient httpClient;
@@ -187,11 +185,7 @@ else
     
     private bool showModifierBtn = false;
 
-    // Méthode pour afficher la liste d'amis
-    private void AfficherListeAmis()
-    {
-        // Logique pour ouvrir la modal des amis (ou utiliser un autre composant)
-    }
+  
 
     protected override async Task OnInitializedAsync()
     {

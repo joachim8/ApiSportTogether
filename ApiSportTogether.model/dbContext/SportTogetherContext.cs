@@ -267,6 +267,7 @@ public partial class SportTogetherContext : DbContext
                 .HasPrecision(10)
                 .HasColumnName("note");
             entity.Property(e => e.UtilisateurId).HasColumnName("utilisateur_id");
+            entity.Property(e => e.IsPublic).HasColumnName("is_public");
 
             entity.HasOne(d => d.Annonce).WithMany(p => p.NoteAnnonces)
                 .HasForeignKey(d => d.AnnonceId)

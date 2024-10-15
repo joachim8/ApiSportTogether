@@ -74,32 +74,31 @@
             </a>
             <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
                 <li><a class="dropdown-item" href="/SportTogether/Parametre">Paramètre</a></li>
-                <li><a class="dropdown-item" href="/SportTogether/Profil-utilisateur">Profil</a></li>
+                <li><a class="dropdown-item" href="/SportTogether/Profil-utilisateur/@userSession">Profil</a></li>
                 <li><a class="dropdown-item" @onclick="Logout">Se déconnecter</a></li>
             </ul>
         </div>
     </div>
 </div>
 <!-- Bottom navigation for mobile and medium screens -->
-<nav class="navbar navbar-dark bg-dark d-lg-none d-md-none fixed-bottom">
+<nav class="navbar navbar-dark bg-dark d-lg-none d-md-none sticky-top ">
     <div class="container ">
         <div class="row justify-content-between">
             <!-- Left side: nav items (Centered) -->
-           
-            <div class="col-8">
-                <ul class="navbar-nav flex-row text-center">
+            <div class="col-6">
+                <ul class="navbar-nav flex-row ">
                     <li class="nav-item-mb text-center  h-auto " >
-                        <a href="/SportTogether/Fil-D-Actualite/@userSession" class="nav-link-mb " style="width: 40px;">
+                        <a href="/SportTogether/Fil-D-Actualite/@userSession" class="nav-link-mb " >
                             <Icon Name="IconName.BookHalf" Color="IconColor.Light" />
                         </a>
                     </li>
-                    <li class="nav-item-mb  text-center  h-auto ">
-                        <a href="/SportTogether/Annonces/@userSession" class="nav-link-mb " style="width: 40px;">
+                    <li class="nav-item-mb text-center  h-auto ">
+                        <a href="/SportTogether/Annonces/@userSession" class="nav-link-mb " >
                             <Icon Name="IconName.House" Color="IconColor.Light" />
                         </a>
                     </li>
-                    <li class="nav-item-mb  text-center h-auto ">
-                        <a href="/SportTogether/Messagerie-instantane/@userSession" class="nav-link-mb " style="width: 40px;">
+                    <li class="nav-item-mb text-center h-auto ">
+                        <a href="/SportTogether/Messagerie-instantane/@userSession" class="nav-link-mb border-white border-1" >
                             <Icon Name="IconName.Messenger" Color="IconColor.Light" />
                             @if (messageCount)
                             {
@@ -110,16 +109,19 @@
                         </a>
                     </li>
                     <li class="nav-item-mb text-center h-auto">
-                        <a href="/SportTogether/Mes-annonces/@userSession" class="nav-link-mb " style="width: 40px;">
+                        <a href="/SportTogether/Mes-annonces/@userSession" class="nav-link-mb " >
                             <Icon Name="IconName.Calendar2Week" Color="IconColor.Light" />
                         </a>
                     </li>
                 </ul>
 
             </div>
+            <div class="col-1 me-4">
+                
+            </div>
 
             <!-- Right side: dropdown (Notification and User Profile) -->
-            <div class="col-4 dropup d-flex justify-content-end align-items-center">
+            <div class="col-4 d-flex justify-content-end align-items-center">
                 <Button Color="ButtonColor.Light" @onclick="OnShowModalClick" Size="Size.Small">
                     <Icon Name="IconName.BellFill" />
                     @if (listNotif.Any(n => !n.Vu))
@@ -127,15 +129,17 @@
                         <span><Badge Color="BadgeColor.Danger">@listNotif.Count(n => !n.Vu)</Badge></span>
                     }
                 </Button>
-
-                <div class="d-flex align-items-center dropdown-toggle ms-3" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
-                    <img src="@urlPhotoProfil" alt="" width="32" height="32" class="rounded-circle me-2">
+                <div class="dropdown dropstart">
+                    <div class="d-flex align-items-center dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
+                        <img src="@urlPhotoProfil" alt="" width="32" height="32" class="rounded-circle me-2">
+                    </div>
+                    <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="dropdownUser1">
+                        <li><a class="dropdown-item" href="/SportTogether/Parametre/@userSession">Paramètre</a></li>
+                        <li><a class="dropdown-item" href="/SportTogether/Profil-utilisateur/@userSession">Profil</a></li>
+                        <li><a class="dropdown-item" @onclick="Logout">Se déconnecter</a></li>
+                    </ul>
                 </div>
-                <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser1">
-                    <li><a class="dropdown-item" href="/SportTogether/Parametre">Paramètre</a></li>
-                    <li><a class="dropdown-item" href="/SportTogether/Profil-utilisateur">Profil</a></li>
-                    <li><a class="dropdown-item" @onclick="Logout">Se déconnecter</a></li>
-                </ul>
+               
             </div>
         </div>
     </div>
@@ -306,6 +310,7 @@
                 if(notification.TypeNotification == "Ajout en ami")
                 {
                     NavigationManager.NavigateTo($"/SportTogether/Profil-utilisateur-vue/{userSession}?utilisateur={notification.UtilisateurEnvoiId}");
+                    NavigationManager.Refresh(true);
                     await modal.HideAsync();
                 }
             }

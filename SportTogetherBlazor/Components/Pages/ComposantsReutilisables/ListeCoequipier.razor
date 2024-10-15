@@ -1,0 +1,105 @@
+﻿@using SportTogetherBlazor.Models
+@using Microsoft.AspNetCore.Components
+@using System.Net.Http.Json
+@inject IHttpClientFactory HttpClientFactory
+<Modal @ref="modal" Title="Liste Coéquipiers" IsVerticallyCentered="true" >
+    <BodyTemplate>
+        <div class="list-group">
+            @if (amiVues != null && amiVues.Any())
+            {
+                foreach (var ami in amiVues)
+                {
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <img src="@ami.UrlProfilImage" alt="Image de profil" class="rounded-circle me-3" style="width: 50px; height: 50px;" />
+                            <a href="@($"/SportTogether/Profil-utilisateur-vue/{userSession}?utilisateur={ami.UtilisateurId}")" class="text-decoration-none text-black">@ami.Pseudo</a>
+                        </div>
+                        <div class="d-flex align-items-end">
+                            <Button Color="ButtonColor.Danger" @onclick="() => OnDeleteAmi(ami.AmiId)">
+                                <Icon Name="IconName.Trash2Fill" />
+                            </Button>
+                        </div>
+                        
+                    </div>
+                }
+            }
+            else
+            {
+                <p>Aucun coéquipier trouvé.</p>
+            }
+        </div>
+    </BodyTemplate>
+    <FooterTemplate>
+        <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Fermer</Button>
+    </FooterTemplate>
+</Modal>
+
+<!-- Bouton coéquipiers avec compteur -->
+<Button Color="ButtonColor.Success" @onclick="OnShowModalClick" Disabled="IsDisabled">
+    <Icon Name="IconName.PersonHeart" Class="me-1" /> @nombreAmis
+</Button>
+
+@code {
+    private Modal modal = default!;
+    [Parameter]
+    public int utilisateurId { get; set; }
+    [Parameter]
+    public int nombreAmis { get; set; }
+    [Parameter]
+    public bool IsDisabled { get; set; }
+    [Parameter]
+    public string userSession { get; set; }
+    private List<AmiVue> amiVues = null;
+    private HttpClient httpClient;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Appel API pour récupérer l'utilisateur
+        httpClient = HttpClientFactory.CreateClient("ApiSportTogetherClient");
+        await LoadAmiList();
+
+    }
+
+    private async Task OnShowModalClick()
+    {
+        
+        await modal.ShowAsync();
+
+    }
+
+    private async Task OnHideModalClick()
+    {
+        await modal.HideAsync();
+    }
+
+    private async Task LoadAmiList()
+    {
+        try
+        {
+            amiVues = await httpClient.GetFromJsonAsync<List<AmiVue>>($"Ami/GetListAmi/{utilisateurId}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur lors du chargement des amis : {ex.Message}");
+        }
+    }
+
+    private async Task OnDeleteAmi(int amiId)
+    {
+        // Logique de suppression de l'ami
+        try
+        {
+            var response = await httpClient.DeleteAsync($"Ami/DeleteAmi/{amiId}");
+            if (response.IsSuccessStatusCode)
+            {
+                var ami = amiVues.Where(a => a.AmiId == amiId).FirstOrDefault();
+                amiVues.Remove(ami);
+                nombreAmis--;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur lors de la suppression de l'ami : {ex.Message}");
+        }
+    }
+}

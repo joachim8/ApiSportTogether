@@ -14,6 +14,8 @@ namespace SportTogetherBlazor.Models
         public string Commentaire { get; set; } = null!;
         [JsonPropertyName("Note")]
         public decimal Note { get; set; }
+        [JsonPropertyName("IsPublic")]
+        public bool IsPublic { get; set; }
         [JsonIgnore]
         [JsonPropertyName("Annonce")]
         public virtual Annonce? Annonce { get; set; }
