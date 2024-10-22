@@ -217,11 +217,11 @@
                         <label class="form-label" for="niveau">Niveau</label>
                         <InputSelect id="niveau" class="form-control" @bind-Value="annonce.Niveau">
                             <option value="">Sélectionnez le niveau</option>
-                            <option value="Femme">Débutant</option>
-                            <option value="Homme">Intermédiaire</option>
-                            <option value="Mixte">Avancé</option>
+                            <option value="Débutant">Débutant</option>
+                            <option value="Intermédiaire">Intermédiaire</option>
+                            <option value="Avancé">Avancé</option>
                         </InputSelect>
-                        <ValidationMessage For="@(() => annonce.Niveau)" />
+
                     </div>
                 </div>
             </div>
@@ -244,7 +244,8 @@
                 NombreParticipants = annonce.NombreParticipants,
                 Titre = annonce.Titre,
                 Lieu = annonce.Lieu,
-                SportId = annonce.SportId
+                SportId = annonce.SportId,
+                Niveau = annonce.Niveau
             };
         <div>
             <h2>Étape 2: Confirmations</h2>

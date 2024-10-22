@@ -72,19 +72,65 @@
     </div>
 </div>
 
+<!-- Pagination Section -->
+@if (totalPages > 1)
+{
+    <Pagination ActivePageNumber="@currentPage"
+                TotalPages="@totalPages"
+                DisplayPages="5"
+                FirstLinkIcon="IconName.ChevronDoubleLeft"
+                PreviousLinkIcon="IconName.ChevronLeft"
+                NextLinkIcon="IconName.ChevronRight"
+                LastLinkIcon="IconName.ChevronDoubleRight"
+                PageChanged="PageChanged"
+                Class="custom-pagination-container" />
+}
 <style>
     .card-header img {
         width: 100%; /* Adjust image width within card */
     }
 
-    .card {
+    .custom-pagination-container {
+        display: flex;
+        justify-content: center; /* Centrer la pagination horizontalement */
+        align-items: center;
+
     }
+
+        .custom-pagination-container .pagination-link {
+            color: #4CAF50 !important; /* Changer la couleur du texte */
+            background-color: #f0f0f0; /* Couleur d'arrière-plan des liens */
+            border: 1px solid #ddd; /* Bordure autour des liens */
+            margin: 0 5px;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+
+            .custom-pagination-container .pagination-link:hover {
+                background-color: #4CAF50; /* Changer la couleur au survol */
+                color: white !important; /* Couleur du texte au survol */
+            }
+
+            .custom-pagination-container .pagination-link.active {
+                background-color: #007bff; /* Couleur d'arrière-plan pour la page active */
+                color: white !important;
+            }
+
+            .custom-pagination-container .pagination-link.disabled {
+                background-color: #e0e0e0; /* Couleur pour les liens désactivés (premier/dernier) */
+                color: #888 !important;
+            }
+
 </style>
 
 @code {
     [Parameter]
     public string UserSessionId { get; set; }
 
+    private int currentPage = 1;
+    private int totalPages = 1;
+    private int annoncesPerPage = 12;
     private List<AnnonceVue> annonces;
     private bool bFirstFiltreAnnonces = true;
     [Inject] protected PreloadService PreloadService { get; set; }
@@ -97,15 +143,58 @@
     {
         public string Titre { get; set; } = string.Empty;
     }
-    [Parameter]
+    [SupplyParameterFromForm]
     public List<string> SportsSelected { get; set; } = new List<string>();
-    [Parameter]
+    [SupplyParameterFromForm]
     public List<string> SelectedVilles { get; set; } = new List<string>();
-    [Parameter]
+    [SupplyParameterFromForm]
     public string SelectedGenre { get; set; } = string.Empty;
 
     public List<string> listGenre = new();
     private bool showFilterSports = false;
+    private string typeFiltre = string.Empty;
+
+    // Méthode pour charger les annonces avec pagination
+    private async Task LoadAnnonces(int page)
+    {
+        try
+        {
+            var result = await Http.GetFromJsonAsync<List<AnnonceVue>>($"/vue/{genreUtilisateur}/{villeUtilisateur}/{page}");
+            if (result != null)
+            {
+                annonces = result;
+                totalPages = (int)Math.Ceiling(annonces.FirstOrDefault().TotalAnnonce.Value / 12.0);
+                currentPage = page;
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception lors de l'appel API: {ex.Message}");
+        }
+    }
+
+    // Méthode appelée lors du changement de page
+    private async Task PageChanged(int newPage)
+    {
+        switch (typeFiltre)
+        {
+            case "Genre":
+                await RechercherParGenre(SelectedGenre);
+                break;
+               
+            case "Ville":
+              await RechercherParVille(SelectedVilles);
+                break;
+            case "Sport":
+                await RechercherParSport(SportsSelected);
+                break;
+            default:
+                await LoadAnnonces(newPage);
+                break;
+        }
+
+    }
 
     private void ToggleFilterSports()
     {
@@ -122,18 +211,22 @@
 
         SportsSelected = selectedSports;
         string sports = string.Join(",", SportsSelected);
-    
 
         try
         {
             if (annonces != null)
                 annonces.Clear();
-            annonces = ((await Http.GetFromJsonAsync<List<AnnonceVue>>($"/vue/sports/{sports}/{villeUtilisateur}/{genreUtilisateur}"))!);
             PreloadService.Show(SpinnerColor.Light, "Recherche en cours...");
+            var result = ((await Http.GetFromJsonAsync<List<AnnonceVue>>($"/vue/sports/{sports}/{villeUtilisateur}/{genreUtilisateur}/{currentPage}"))!);
+            if (result != null)
+            {
+                annonces = result;
+                totalPages = (int)Math.Ceiling(annonces.FirstOrDefault().TotalAnnonce.Value / 12.0); 
+                typeFiltre = "Sport";
+                PreloadService.Hide();
+                StateHasChanged();
 
-            PreloadService.Hide();
-            StateHasChanged();
-
+            }
         }
         catch (Exception ex)
         {
@@ -150,23 +243,30 @@
 
         SelectedVilles = selectedVilles;
         string villes = string.Join(",", SelectedVilles);
-       
+
+
         try
         {
-            if(annonces != null)
-            annonces.Clear();
+            if (annonces != null)
+                annonces.Clear();
             PreloadService.Show(SpinnerColor.Light, "Recherche en cours...");
-            annonces = ((await Http.GetFromJsonAsync<List<AnnonceVue>>($"/vue/villes/{villes}/{genreUtilisateur}"))!);
-            PreloadService.Hide();
+            var result = ((await Http.GetFromJsonAsync<List<AnnonceVue>>($"/vue/villes/{villes}/{genreUtilisateur}/{currentPage}"))!);
+            if (result != null)
+            {
+                annonces = result;
+                totalPages = (int)Math.Ceiling(annonces.FirstOrDefault().TotalAnnonce.Value / 12.0);
+                typeFiltre = "Sport";
+                PreloadService.Hide();
+                StateHasChanged();
 
-
-            StateHasChanged();
+            }
         }
         catch (Exception ex)
         {
             PreloadService.Hide();
             Console.WriteLine($"Exception lors de l'appel API: {ex.Message}");
         }
+       
     }
     private async Task RechercherParGenre(string selectedGenre)
     {
@@ -176,21 +276,28 @@
         }
 
         SelectedGenre = selectedGenre;
-      
         try
         {
             if (annonces != null)
                 annonces.Clear();
             PreloadService.Show(SpinnerColor.Light, "Recherche en cours...");
-            annonces = ((await Http.GetFromJsonAsync<List<AnnonceVue>>($"/vue/genre/{selectedGenre}/{villeUtilisateur}"))!);
-            PreloadService.Hide();
-            StateHasChanged();
+            var result = ((await Http.GetFromJsonAsync<List<AnnonceVue>>($"/vue/genre/{selectedGenre}/{villeUtilisateur}/{currentPage}"))!);
+            if (result != null)
+            {
+                annonces = result;
+                totalPages = (int)Math.Ceiling(annonces.FirstOrDefault().TotalAnnonce.Value / 12.0);
+                typeFiltre = "Genre";
+                PreloadService.Hide();
+                StateHasChanged();
+
+            }
         }
         catch (Exception ex)
         {
             PreloadService.Hide();
             Console.WriteLine($"Exception lors de l'appel API: {ex.Message}");
         }
+        
     }
 
 
@@ -223,7 +330,7 @@
                 genreUtilisateur = utilisateurInfo.Genre;
                 utilisateurId = utilisateurInfo.UtilisateursId;
             }
-           
+
             if (listGenre.Any()) listGenre.Clear();
             switch (genreUtilisateur)
             {
@@ -237,29 +344,12 @@
                     break;
 
             }
-            await LoadAnnonces();
+            typeFiltre = "";
+            await LoadAnnonces(currentPage);
         }
 
     }
 
-    private async Task LoadAnnonces()
-    {
-
-        try
-        {
-            annonces = (await Http.GetFromJsonAsync<List<AnnonceVue>>($"/vue/{genreUtilisateur}/{villeUtilisateur}"))!;
-            if (annonces.Any())
-            {
-                bFirstFiltreAnnonces = false;
-            }
-
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Exception lors de l'inscription: {ex.Message}");
-        }
-
-    }
 
     private void AllerAAjoutAnnonce()
     {
@@ -290,7 +380,7 @@
         }
         else
         {
-            await LoadAnnonces();
+            await LoadAnnonces(currentPage);
         }
     }
     private readonly Dictionary<int, (string color, string imageUrl)> sportStyles = new()

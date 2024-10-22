@@ -216,8 +216,8 @@ namespace ApiSportTogether.Controller
 
 
         // GET: ApiSportTogether/Annonce/vue/genre/ville
-        [HttpGet("/vue/{genre}/{ville}")]
-        public ActionResult<IEnumerable<AnnonceVue>> GetAnnonceVue(string genre, string ville)
+        [HttpGet("/vue/{genre}/{ville}/{indexPage}")]
+        public ActionResult<IEnumerable<AnnonceVue>> GetAnnonceVue(string genre, string ville, int indexPage)
         {
             DateTime dateDuJour = DateTime.Now;
             List<Annonce> listAnnonce = new();
@@ -228,24 +228,29 @@ namespace ApiSportTogether.Controller
                 listAnnonce = listAnnonce.Where(la => la.GenreAttendu == genre || la.GenreAttendu == "Mixte").ToList();
                 foreach (Annonce annonce in listAnnonce)
                 {
-                    AnnonceVue annonceVue = new()
-                    {
-                        AnnoncesId = annonce.AnnoncesId,
-                        DateHeureAnnonce = annonce.DateHeureAnnonce,
-                        Auteur = annonce.AuteurNavigation?.Pseudo ?? string.Empty,
-                        AuteurId = annonce.Auteur,
-                        Description = annonce.Description,
-                        GenreAttendu = annonce.GenreAttendu,
-                        Lieu = annonce.Lieu,
-                        SportId = annonce.SportId,
-                        SportName = annonce.Sport?.Nom ?? string.Empty,
-                        NombreParticipants = annonce.NombreParticipants,
-                        Titre = annonce.Titre,
-                        Ville = annonce.Ville
-                    };
+                        AnnonceVue annonceVueFirst = new()
+                        {
+                            AnnoncesId = annonce.AnnoncesId,
+                            DateHeureAnnonce = annonce.DateHeureAnnonce,
+                            Auteur = annonce.AuteurNavigation?.Pseudo ?? string.Empty,
+                            AuteurId = annonce.Auteur,
+                            Description = annonce.Description,
+                            GenreAttendu = annonce.GenreAttendu,
+                            Lieu = annonce.Lieu,
+                            SportId = annonce.SportId,
+                            SportName = annonce.Sport?.Nom ?? string.Empty,
+                            NombreParticipants = annonce.NombreParticipants,
+                            Titre = annonce.Titre,
+                            Ville = annonce.Ville,
+                            TotalAnnonce = listAnnonce.Count,
+                            Niveau = annonce.Niveau
+                        };
+                        listAnnonceVue.Add(annonceVueFirst);
+                  
+                  
 
 
-                    listAnnonceVue.Add(annonceVue);
+                   
                 }
                 // Trier les annonces par NiveauUtilisateur et NiveauAnnonce
                 if (listAnnonceVue.Count > 0)
@@ -255,7 +260,7 @@ namespace ApiSportTogether.Controller
                         .ThenBy(a => _context.Annonces.FirstOrDefault(an => an.AnnoncesId == a.AnnoncesId)?.Niveau) // Puis par niveau de l'annonce
                         .ToList();
                 }
-                return listAnnonceVue.ToArray();
+                return listAnnonceVue.Skip((indexPage - 1) * 12).Take(12).ToArray();
             }
             else
             {
@@ -264,8 +269,8 @@ namespace ApiSportTogether.Controller
         }
 
         // GET: ApiSportTogether/Annonce/vue/sports
-        [HttpGet("/vue/sports/{sports}/{ville}/{genreUtilisateur}")]
-        public ActionResult<IEnumerable<AnnonceVue>> GetAnnonceVueBySports(string sports, string ville, string genreUtilisateur)
+        [HttpGet("/vue/sports/{sports}/{ville}/{genreUtilisateur}/{indexPage}")]
+        public ActionResult<IEnumerable<AnnonceVue>> GetAnnonceVueBySports(string sports, string ville, string genreUtilisateur, int indexPage)
         {
             DateTime dateDuJour = DateTime.Now;
             List<string> sportsList = sports.Split(',').ToList();
@@ -293,24 +298,28 @@ namespace ApiSportTogether.Controller
                     SportName = annonce.Sport?.Nom ?? string.Empty,
                     NombreParticipants = annonce.NombreParticipants,
                     Titre = annonce.Titre,
-                    Ville = annonce.Ville
+                    Ville = annonce.Ville,
+                    TotalAnnonce = listAnnonce.Count,
+                    Niveau = annonce.Niveau
                 }).ToList();
+                
                 if (listAnnonceVue.Count > 0)
                 {
+                  
                     listAnnonceVue = listAnnonceVue
                         .OrderBy(a => _context.Utilisateurs.FirstOrDefault(u => u.UtilisateursId == a.AuteurId)?.NiveauSport) // Trier par niveau utilisateur
                         .ThenBy(a => _context.Annonces.FirstOrDefault(an => an.AnnoncesId == a.AnnoncesId)?.Niveau) // Puis par niveau de l'annonce
                         .ToList();
                 }
-                return listAnnonceVue.ToArray();
+                return listAnnonceVue.Skip((indexPage - 1) * 12).Take(12).ToArray();
             }
             else
             {
                 return NotFound();
             }
         } // GET: ApiSportTogether/Annonce/vue/genre
-        [HttpGet("/vue/genre/{genreUtilisateur}/{ville}")]
-        public ActionResult<IEnumerable<AnnonceVue>> GetAnnonceVueByGenre(string ville, string genreUtilisateur)
+        [HttpGet("/vue/genre/{genreUtilisateur}/{ville}/{indexPage}")]
+        public ActionResult<IEnumerable<AnnonceVue>> GetAnnonceVueByGenre(string ville, string genreUtilisateur, int indexPage)
         {
             DateTime dateDuJour = DateTime.Now;
             List<Annonce> listAnnonce = _context.Annonces
@@ -336,16 +345,19 @@ namespace ApiSportTogether.Controller
                     SportName = annonce.Sport?.Nom ?? string.Empty,
                     NombreParticipants = annonce.NombreParticipants,
                     Titre = annonce.Titre,
-                    Ville = annonce.Ville
+                    Ville = annonce.Ville,
+                    TotalAnnonce = listAnnonce.Count,
+                    Niveau = annonce.Niveau
                 }).ToList();
                 if (listAnnonceVue.Count > 0)
                 {
+                    
                     listAnnonceVue = listAnnonceVue
                         .OrderBy(a => _context.Utilisateurs.FirstOrDefault(u => u.UtilisateursId == a.AuteurId)?.NiveauSport) // Trier par niveau utilisateur
                         .ThenBy(a => _context.Annonces.FirstOrDefault(an => an.AnnoncesId == a.AnnoncesId)?.Niveau) // Puis par niveau de l'annonce
                         .ToList();
                 }
-                return listAnnonceVue.ToArray();
+                return listAnnonceVue.Skip((indexPage - 1) * 12).Take(12).ToArray();
             }
             else
             {
@@ -353,8 +365,8 @@ namespace ApiSportTogether.Controller
             }
         }
         // GET: ApiSportTogether/Annonce/vue/villes
-        [HttpGet("/vue/villes/{villes}/{genreUtilisateur}")]
-        public ActionResult<IEnumerable<AnnonceVue>> GetAnnonceVueByVilles(string villes, string genreUtilisateur)
+        [HttpGet("/vue/villes/{villes}/{genreUtilisateur}/{indexPage}")]
+        public ActionResult<IEnumerable<AnnonceVue>> GetAnnonceVueByVilles(string villes, string genreUtilisateur, int indexPage)
         {
             DateTime dateDuJour = DateTime.Now;
             List<string> villesList = villes.Split(',').ToList();
@@ -381,16 +393,19 @@ namespace ApiSportTogether.Controller
                     SportName = annonce.Sport?.Nom ?? string.Empty,
                     NombreParticipants = annonce.NombreParticipants,
                     Titre = annonce.Titre,
-                    Ville = annonce.Ville
+                    Ville = annonce.Ville,
+                    TotalAnnonce = listAnnonce.Count,
+                    Niveau = annonce.Niveau
                 }).ToList();
                 if (listAnnonceVue.Count > 0)
                 {
+                   
                     listAnnonceVue = listAnnonceVue
                         .OrderBy(a => _context.Utilisateurs.FirstOrDefault(u => u.UtilisateursId == a.AuteurId)?.NiveauSport) // Trier par niveau utilisateur
                         .ThenBy(a => _context.Annonces.FirstOrDefault(an => an.AnnoncesId == a.AnnoncesId)?.Niveau) // Puis par niveau de l'annonce
                         .ToList();
                 }
-                return listAnnonceVue.ToArray();
+                return listAnnonceVue.Skip((indexPage - 1) * 12).Take(12).ToArray();
             }
             else
             {
@@ -399,8 +414,8 @@ namespace ApiSportTogether.Controller
         }
 
         // GET: ApiSportTogether/Annonce/vue/titre
-        [HttpGet("/vue/titre/{motCle}/{genreUtilisateur}/{ville}")]
-        public ActionResult<IEnumerable<AnnonceVue>> GetAnnonceVueByTitre(string motCle, string ville, string genreUtilisateur)
+        [HttpGet("/vue/titre/{motCle}/{genreUtilisateur}/{ville}/{indexPage}")]
+        public ActionResult<IEnumerable<AnnonceVue>> GetAnnonceVueByTitre(string motCle, string ville, string genreUtilisateur, int indexPage)
         {
             DateTime dateDuJour = DateTime.Now;
             List<Annonce> listAnnonce = _context.Annonces
@@ -427,24 +442,27 @@ namespace ApiSportTogether.Controller
                     SportName = annonce.Sport?.Nom ?? string.Empty,
                     NombreParticipants = annonce.NombreParticipants,
                     Titre = annonce.Titre,
-                    Ville = annonce.Ville
+                    Ville = annonce.Ville,
+                    TotalAnnonce = listAnnonce.Count,
+                    Niveau = annonce.Niveau
                 }).ToList();
                 if (listAnnonceVue.Count > 0)
                 {
+                    listAnnonceVue.First().TotalAnnonce = listAnnonceVue.Count;
                     listAnnonceVue = listAnnonceVue
                         .OrderBy(a => _context.Utilisateurs.FirstOrDefault(u => u.UtilisateursId == a.AuteurId)?.NiveauSport) // Trier par niveau utilisateur
                         .ThenBy(a => _context.Annonces.FirstOrDefault(an => an.AnnoncesId == a.AnnoncesId)?.Niveau) // Puis par niveau de l'annonce
                         .ToList();
                 }
-                return listAnnonceVue.ToArray();
+                return listAnnonceVue.Skip((indexPage - 1) * 12).Take(12).ToArray();
             }
             else
             {
                 return NotFound();
             }
         }
-        [HttpGet("/annonces/auteur/{utilisateurId}")]
-        public ActionResult<IEnumerable<AnnonceVue>> GetAnnoncesByAuteur(int utilisateurId)
+        [HttpGet("/annonces/auteur/{utilisateurId}/{indexPage}")]
+        public ActionResult<IEnumerable<AnnonceVue>> GetAnnoncesByAuteur(int utilisateurId, int indexPage)
         {
             DateTime dateDuJour = DateTime.Now;
             List<Annonce> listAnnonce = _context.Annonces
@@ -469,18 +487,23 @@ namespace ApiSportTogether.Controller
                     SportName = annonce.Sport?.Nom ?? string.Empty,
                     NombreParticipants = annonce.NombreParticipants,
                     Titre = annonce.Titre,
-                    Ville = annonce.Ville
+                    Ville = annonce.Ville,
+                    TotalAnnonce = listAnnonce.Count,
+                    Niveau = annonce.Niveau
                 }).ToList();
-
-                return listAnnonceVue.ToArray();
+                if(listAnnonceVue.Count > 0)
+                {
+                    listAnnonceVue.First().TotalAnnonce = listAnnonceVue.Count;
+                }
+                return listAnnonceVue.Skip((indexPage - 1) * 12).Take(12).ToArray();
             }
             else
             {
                 return NotFound();
             }
         }
-        [HttpGet("/annonces/participant/{utilisateurId}")]
-        public ActionResult<IEnumerable<AnnonceVue>> GetAnnoncesByParticipant(int utilisateurId)
+        [HttpGet("/annonces/participant/{utilisateurId}/{indexPage}")]
+        public ActionResult<IEnumerable<AnnonceVue>> GetAnnoncesByParticipant(int utilisateurId, int indexPage)
         {
             DateTime dateDuJour = DateTime.Now;
 
@@ -513,16 +536,19 @@ namespace ApiSportTogether.Controller
                         SportName = annonce.Sport?.Nom ?? string.Empty,
                         NombreParticipants = annonce.NombreParticipants,
                         Titre = annonce.Titre,
-                        Ville = annonce.Ville
+                        Ville = annonce.Ville,
+                        TotalAnnonce = listAnnonce.Count,
+                        Niveau = annonce.Niveau
                     }).ToList();
                     if (listAnnonceVue.Count > 0)
                     {
+                        listAnnonceVue.First().TotalAnnonce = listAnnonceVue.Count;
                         listAnnonceVue = listAnnonceVue
                             .OrderBy(a => _context.Utilisateurs.FirstOrDefault(u => u.UtilisateursId == a.AuteurId)?.NiveauSport) // Trier par niveau utilisateur
                             .ThenBy(a => _context.Annonces.FirstOrDefault(an => an.AnnoncesId == a.AnnoncesId)?.Niveau) // Puis par niveau de l'annonce
                             .ToList();
                     }
-                    return Ok(listAnnonceVue.ToArray());
+                    return Ok(listAnnonceVue.Skip((indexPage - 1) * 12).Take(12).ToArray());   
                 }
                 else
                 {
@@ -536,8 +562,8 @@ namespace ApiSportTogether.Controller
                 return NotFound();
             }
         }
-        [HttpGet("/annonces/historique/{utilisateurId}")]
-        public ActionResult<IEnumerable<AnnonceVue>> GetAnnoncesByHistorique(int utilisateurId)
+        [HttpGet("/annonces/historique/{utilisateurId}/{indexPage}")]
+        public ActionResult<IEnumerable<AnnonceVue>> GetAnnoncesByHistorique(int utilisateurId, int indexPage)
         {
             DateTime dateDuJour = DateTime.Now;
 
@@ -582,16 +608,19 @@ namespace ApiSportTogether.Controller
                     SportName = annonce.Sport?.Nom ?? string.Empty,
                     NombreParticipants = annonce.NombreParticipants,
                     Titre = annonce.Titre,
-                    Ville = annonce.Ville
+                    Ville = annonce.Ville,
+                    TotalAnnonce = combinedAnnonces.Count,
+                    Niveau = annonce.Niveau
                 }).ToList();
                 if (listAnnonceVue.Count > 0)
                 {
+                 
                     listAnnonceVue = listAnnonceVue
                         .OrderBy(a => _context.Utilisateurs.FirstOrDefault(u => u.UtilisateursId == a.AuteurId)?.NiveauSport) // Trier par niveau utilisateur
                         .ThenBy(a => _context.Annonces.FirstOrDefault(an => an.AnnoncesId == a.AnnoncesId)?.Niveau) // Puis par niveau de l'annonce
                         .ToList();
                 }
-                return Ok(listAnnonceVue.ToArray());
+                return Ok(listAnnonceVue.Skip((indexPage - 1) * 12).Take(12).ToArray());
             }
             else
             {

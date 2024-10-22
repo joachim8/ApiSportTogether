@@ -45,5 +45,8 @@ namespace SportTogetherBlazor.Models
         [JsonPropertyName("Niveau")]
         public string Niveau { get; set; } = null!;
 
+        [JsonPropertyName("TotalAnnonce")]
+        public int? TotalAnnonce { get; set; }
+
     }
 }

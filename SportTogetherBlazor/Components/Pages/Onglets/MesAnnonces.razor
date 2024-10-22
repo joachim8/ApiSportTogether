@@ -7,16 +7,20 @@
 @inject LocalStorageServices localStorage
 
 <div class="container h-100">
-    <Tabs EnableFadeEffect="true" NavStyle="NavStyle.Underline" Class="custom-tabs" Style="padding-top: 20px; height: 100% !important; background-color: aliceblue !important; color: black !important;">
+
+            <Tabs EnableFadeEffect="true" NavStyle="NavStyle.Underline" Class="custom-tabs" Style="padding-top: 20px; height: 100% !important; background-color: aliceblue !important; color: black !important;">
         <Tab Title="" IsActive="true">
             <TitleTemplate>
                 <Icon Name="IconName.Person" /> Mes annonces en tant qu'auteur
             </TitleTemplate>
             <Content>
                 <div class="container mt-4">
-                    <Button Color="ButtonColor.None" Class="mb-2 mt-2 align-content-start" @onclick="() => SortByTitle(typeAuteur)">
-                        <Icon Name="IconName.SortAlphaDown" /> Trier par Titre
-                    </Button>
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <Button Color="ButtonColor.None" Class="sort-button" @onclick="() => SortByTitle(typeAuteur)">
+                            <Icon Name="IconName.SortAlphaDown" /> Trier par Titre
+                        </Button>
+                        <input type="date" class="form-control w-auto" />
+                    </div>
 
                     @if (annoncesAuteur != null && annoncesAuteur.Any())
                     {
@@ -24,27 +28,27 @@
                             @foreach (var annonce in annoncesAuteur)
                             {
                                 <div class="col col-sm-12">
-                                    <div class="card card-bubble">
-                                        <div class="card-body position-relative">
-                                            <div class="d-flex justify-content-between align-items-start w-100">
-                                                <h5 class="card-title text-center flex-grow-1">@annonce.Titre</h5>
-                                                <div class="dropdown-button">
-                                                    <Dropdown Color="DropdownColor.Secondary">
-                                                        <DropdownToggleButton>Actions</DropdownToggleButton>
-                                                        <DropdownMenu>
-                                                            <DropdownItem Type="ButtonType.Button" @onclick="() => SupprimerAnnonce(annonce.AnnoncesId)">Supprimer</DropdownItem>
-                                                            <DropdownItem Type="ButtonType.Button" @onclick="() => OuvrirModalModifierAnnonce(annonce)">Modifier</DropdownItem>
-                                                        </DropdownMenu>
-                                                    </Dropdown>
-                                                </div>
+                                    <div class="card card-bubble custom-card">
+                                        <div class="card-header-pills d-flex justify-content-between align-items-center">
+                                            <h3 class="card-title">@annonce.Titre</h3>
+                                            <div class="dropdown-button">
+                                                <Dropdown Color="DropdownColor.Secondary">
+                                                    <DropdownToggleButton>Actions</DropdownToggleButton>
+                                                    <DropdownMenu>
+                                                        <DropdownItem Type="ButtonType.Button" @onclick="() => SupprimerAnnonce(annonce.AnnoncesId)">Supprimer</DropdownItem>
+                                                        <DropdownItem Type="ButtonType.Button" @onclick="() => OuvrirModalModifierAnnonce(annonce)">Modifier</DropdownItem>
+                                                    </DropdownMenu>
+                                                </Dropdown>
                                             </div>
+                                        </div>
 
-                                            <div class="details-section text-center mt-3">
+                                        <div class="card-body">
+                                            <div class="details-section">
                                                 <p><strong>Lieu :</strong> @annonce.Lieu</p>
                                                 <p>@annonce.Description</p>
                                                 <p><strong>Genre attendu :</strong> @annonce.GenreAttendu</p>
-                                                <p class="text-muted"><strong>Sport :</strong> @annonce.SportName</p>
-                                                <p class="text-muted"><strong>Date :</strong> Le @annonce.DateHeureAnnonce.ToString("dd/MM/yyyy") à @annonce.DateHeureAnnonce.ToString("HH:mm")</p>
+                                                <p><strong>Sport :</strong> @annonce.SportName</p>
+                                                <p><strong>Date :</strong> Le @annonce.DateHeureAnnonce.ToString("dd/MM/yyyy") à @annonce.DateHeureAnnonce.ToString("HH:mm")</p>
                                             </div>
                                         </div>
                                     </div>
@@ -60,131 +64,145 @@
             </Content>
         </Tab>
 
-        <Tab>
-            <TitleTemplate>
-                <Icon Name="IconName.PersonArmsUp" /> Mes annonces en tant que participant
-            </TitleTemplate>
-            <Content>
-                <div class="container mt-4">
-                    <Button Color="ButtonColor.None" Class="mb-2 mt-2 align-content-start" @onclick="() => SortByTitle(typeAuteur)">
-                        <Icon Name="IconName.SortAlphaDown" /> Trier par Titre
-                    </Button>
+                <Tab>
+                    <TitleTemplate>
+                        <Icon Name="IconName.PersonArmsUp" /> Mes annonces en tant que participant
+                    </TitleTemplate>
+                    <Content>
+                        <div class="container mt-4">
+                            <Button Color="ButtonColor.None" Class="mb-2 mt-2 align-content-start" @onclick="() => SortByTitle(typeParticipant)">
+                                <Icon Name="IconName.SortAlphaDown" /> Trier par Titre
+                            </Button>
 
-                    @if (annoncesParticipant != null && annoncesParticipant.Any())
-                    {
-                       
-                        <div class="row row-cols-1 row-cols-md-2 g-4">
-                            @foreach (var annonce in annoncesParticipant)
+                            @if (annoncesParticipant != null && annoncesParticipant.Any())
                             {
-                                <div class="col col-sm-12">
-                                    <div class="card card-bubble">
-                                        <div class="card-body position-relative">
-                                            <div class="d-flex justify-content-between align-items-start w-100">
-                                                <h5 class="card-title text-center flex-grow-1">@annonce.Titre</h5>
+
+        
+                                <div class="row row-cols-1 row-cols-md-2 g-4">
+                                    @foreach (var annonce in annoncesParticipant)
+                                    {
+                                    <div class="col col-sm-12">
+                                        <div class="card card-bubble custom-card">
+                                            <div class="card-header-pills d-flex justify-content-between align-items-center">
+                                                <h3 class="card-title">@annonce.Titre</h3>
                                                 <div class="dropdown-button">
-                                                    @if (annonce.isParticipate)
-                                                    {
+                                                                        @if (annonce.isParticipate)
+                                                                        {
                                                         <Button Color="ButtonColor.Danger" @onclick="() => ShowRemoveParticipationModal(annonce)" Size="Size.Small">
-                                                            <Icon Name="IconName.X" ></Icon>
+                                                            <Icon Name="IconName.X"></Icon>
                                                         </Button>
-                                                    }
-                                                    else
-                                                    {
+                                                                        }
+                                                                        else
+                                                                        {
                                                         <Button Color="ButtonColor.Success" @onclick="() => ShowAddParticipationModal(annonce)" Size="Size.Small">
-                                                            <Icon Name="IconName.Check" ></Icon>
+                                                            <Icon Name="IconName.Check"></Icon>
                                                         </Button>
-                                                    }
+                                                                        }
+                                               
                                                 </div>
                                             </div>
 
-                                            <div class="details-section text-center mt-3">
-                                                <p class="text-muted">@annonce.SportName</p>
-                                                <p class="text-muted">Le @annonce.DateHeureAnnonce.ToString("dd/MM/yyyy") à @annonce.DateHeureAnnonce.ToString("HH:mm")</p>
-                                                <p>@annonce.Lieu</p>
-                                                <a href="@($"/SportTogether/Profil-utilisateur-vue/{UserSessionId}?utilisateur={annonce.AuteurId}")" class="text-decoration-none text-info">Auteur: @annonce.Auteur</a>
-                                                <p>Nombre de participants: @annonce.NombreParticipants</p>
-                                                <p>Description: @annonce.Description</p>
-                                                <p>Genre attendu: @annonce.GenreAttendu</p>
+                                            <div class="card-body">
+                                                <div class="details-section">
+                                                <a href="@($"/SportTogether/Profil-utilisateur-vue/{UserSessionId}?utilisateur={annonce.AuteurId}")" class="text-decoration-none text-secondary mb-4"><Icon Name="IconName.PersonBadge" /> @annonce.Auteur</a>
+                                                        <p class="text-muted">@annonce.SportName</p>
+                                               
+                                                        <p class="text-muted">Le @annonce.DateHeureAnnonce.ToString("dd/MM/yyyy") à @annonce.DateHeureAnnonce.ToString("HH:mm")</p>
+                                                        <p>@annonce.Lieu</p>
+                                                    
+                                                        <p>Nombre de participants: @annonce.NombreParticipants</p>
+                                                        <p>Description: @annonce.Description</p>
+                                                        <p>Genre attendu: @annonce.GenreAttendu</p>
+                                                        <p>Niveau :  @annonce.Niveau </p>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
+                            
+                                    }
                                 </div>
                             }
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="alert alert-info">Aucune annonce trouvée. Veuillez en créer des nouvelles.</div>
-                    }
-                </div>
-              
-            </Content>
-        </Tab>
-
-        <Tab Title="">
-            <TitleTemplate>
-                <Icon Name="IconName.Book" /> Historiques
-            </TitleTemplate>
-            <Content>
-                <div class="container mt-4">
-                    <Button Color="ButtonColor.None" Class="mb-2 mt-2 align-content-start" @onclick="() => SortByTitle(typeAuteur)">
-                        <Icon Name="IconName.SortAlphaDown" /> Trier par Titre
-                    </Button>
-
-                    @if (historiqueAnnonce != null && historiqueAnnonce.Any())
-                    {
-
-                        <div class="row row-cols-1 row-cols-md-2 g-4">
-                            @foreach (var annonce in historiqueAnnonce)
+                            else
                             {
-                                <div class="col col-sm-12">
-                                    <div class="card card-bubble">
-                                        <div class="card-body position-relative">
-                                            <div class="d-flex justify-content-between align-items-start w-100">
-                                                <h5 class="card-title text-center flex-grow-1">@annonce.Titre</h5>
-                                                <div class="dropdown-button">
-                                                    @if (annonce.AuteurId != utilisateurID)
-                                                    {
-                                                        <Dropdown Color="DropdownColor.Secondary">
-                                                            <DropdownToggleButton>Actions</DropdownToggleButton>
-                                                            <DropdownMenu>
-                                                                <DropdownItem Type="ButtonType.Button" @onclick="() => SignalerAnnonce(annonce.AnnoncesId)">Signaler</DropdownItem>
-                                                                <DropdownItem Type="ButtonType.Button" @onclick="() => AjouterNoteAnnonce(annonce.AnnoncesId)">Ajouter une note</DropdownItem>
-                                                            </DropdownMenu>
-                                                        </Dropdown>
-                                                    }
-                                                </div>
-                                            </div>
-
-                                            <div class="details-section text-center mt-3">
-                                                <p class="text-muted">@annonce.SportName</p>
-                                                <p class="text-muted">Le @annonce.DateHeureAnnonce.ToString("dd/MM/yyyy") à @annonce.DateHeureAnnonce.ToString("HH:mm")</p>
-                                                <p>@annonce.Lieu</p>
-                                                 @if (annonce.AuteurId != utilisateurID)
-                                                    {
-                                                        <a href="@($"/SportTogether/Profil-utilisateur-vue/{UserSessionId}?utilisateur={annonce.AuteurId}")" class="text-decoration-none text-info">Auteur: @annonce.Auteur</a>
-                                                    }
-                                                <p>Nombre de participants: @annonce.NombreParticipants</p>
-                                                <p>Description: @annonce.Description</p>
-                                                <p>Genre attendu: @annonce.GenreAttendu</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                                <div class="alert alert-info">Aucune annonce trouvée. Veuillez en créer des nouvelles.</div>
                             }
                         </div>
-                    }
-                    else
-                    {
-                        <div class="alert alert-info">Aucune annonce trouvée. Veuillez en créer des nouvelles.</div>
-                    }
-                </div>
-               
-            </Content>
-        </Tab>
-    </Tabs>
-</div>
 
+                    </Content>
+                </Tab>
+
+                <Tab Title="">
+                    <TitleTemplate>
+                        <Icon Name="IconName.Book" /> Historiques
+                    </TitleTemplate>
+                    <Content>
+                        <div class="container mt-4">
+
+                            @if (historiqueAnnonce != null && historiqueAnnonce.Any())
+                            {
+
+                                <div class="row row-cols-1 row-cols-md-2 g-4">
+                                    @foreach (var annonce in historiqueAnnonce)
+                                    {
+                                        <div class="col col-sm-12">
+                                            <div class="card card-bubble custom-card">
+                                                <div class="card-header-pills d-flex justify-content-between align-items-center">
+                                                    <h3 class="card-title">@annonce.Titre</h3>
+                                                    <div class="dropdown-button">
+                                                            @if (annonce.AuteurId != utilisateurID)
+                                                            {
+                                                                <Dropdown Color="DropdownColor.Secondary">
+                                                                    <DropdownToggleButton>Actions</DropdownToggleButton>
+                                                                    <DropdownMenu>
+                                                                        <DropdownItem Type="ButtonType.Button" @onclick="() => SignalerAnnonce(annonce.AnnoncesId)">Signaler</DropdownItem>
+                                                                        <DropdownItem Type="ButtonType.Button" @onclick="() => AjouterNoteAnnonce(annonce.AnnoncesId)">Ajouter une note</DropdownItem>
+                                                                    </DropdownMenu>
+                                                                </Dropdown>
+                                                            }
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="card-body">
+                                                        <div class="details-section">
+                                                            @if (annonce.AuteurId != utilisateurID)
+                                                            {
+                                                                <a href="@($"/SportTogether/Profil-utilisateur-vue/{UserSessionId}?utilisateur={annonce.AuteurId}")" class="text-decoration-none text-secondary                 m-2"><Icon Name="IconName.PersonBadge" /> @annonce.Auteur</a>
+                                                            }
+                                                        <p class="text-muted">@annonce.SportName</p>
+                                                        <p class="text-muted">Le @annonce.DateHeureAnnonce.ToString("dd/MM/yyyy") à @annonce.DateHeureAnnonce.ToString("HH:mm")</p>
+                                                        <p>@annonce.Lieu</p>
+
+                                                        <p>Nombre de participants: @annonce.NombreParticipants</p>
+                                                        <p>Description: @annonce.Description</p>
+                                                        <p>Genre attendu: @annonce.GenreAttendu</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-info">Aucune annonce trouvée. Veuillez en créer des nouvelles.</div>
+                            }
+                        </div>
+
+                    </Content>
+                </Tab>
+            </Tabs>
+</div>
+@if (totalPages > 1)
+{
+    <Pagination ActivePageNumber="@currentPage"
+                TotalPages="@totalPages"
+                DisplayPages="5"
+                FirstLinkIcon="IconName.ChevronDoubleLeft"
+                PreviousLinkIcon="IconName.ChevronLeft"
+                NextLinkIcon="IconName.ChevronRight"
+                LastLinkIcon="IconName.ChevronDoubleRight"
+                PageChanged="PageChanged" />
+}
 <!-- Modals for Participation Confirmation -->
 <Modal @ref="addParticipationModal" Title="Confirmer la participation" IsVerticallyCentered="true">
     <BodyTemplate>
@@ -236,33 +254,60 @@
         color: black;
     }
 
-    .card-bubble {
-        background-color: #e9fffe;
-        border-radius: 25px;
-        padding: 20px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    .custom-card {
+        background-color: rgba(8, 95, 99, 0.5); /* Couleur avec opacité */
+        border-radius: 20px;
+        padding: 15px;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         transition: transform 0.3s ease;
+        width: 100%; /* Prend toute la largeur disponible */
     }
 
-        .card-bubble:hover {
+        .custom-card:hover {
             transform: translateY(-5px);
         }
 
+    .card-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: white;
+        margin: 0;
+    }
+
     .dropdown-button {
-        position: absolute;
-        right: 10px;
-        top: 10px;
+        position: relative;
     }
 
     .details-section {
-        margin-top: 10px;
-        text-align: center;
+        margin-top: 15px;
+        padding: 10px;
+        background-color: rgba(255, 255, 255, 0.1); /* Légère transparence */
+        border-radius: 10px;
+        color: white;
+        font-size: 1.1rem;
     }
 
         .details-section p {
-            margin-bottom: 5px;
+            margin-bottom: 10px;
         }
 
+    .sort-button {
+        color: black;
+        border: 1px solid white;
+        background-color: transparent;
+    }
+
+    input[type="date"] {
+        background-color: rgba(255, 255, 255, 0.3);
+        border: 1px solid #fff;
+        border-radius: 5px;
+        color: white;
+        padding: 5px;
+    }
+
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+        }
 
 
    
@@ -291,54 +336,65 @@
     private bool boolAscDate = true;
 
     private bool firstAscDesc = true;
+    private bool _firstRender= true;
+    private int currentPage = 1;
+    private int totalPages = 1;
+    private int annoncesPerPage = 12;
+    private string typeFiltre = string.Empty;
     #endregion
     #region "Init"
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        utilisateurID = (await localStorage.GetUserFromLocalStorage()).UtilisateursId;
-        Http = HttpClientFactory.CreateClient("ApiSportTogetherClient");
-        try
+        if (_firstRender) // Eviter les appels multiples
         {
-            annoncesAuteur = await GetAnnoncesAuteurAsync(utilisateurID);
-        }
-        catch (Exception ex)
-        {
-            // Gérer les exceptions spécifiques si besoin
-            // Par exemple, loguer l'erreur ou montrer un message à l'utilisateur
-        }
-
-        try
-        {
-            annoncesParticipant = await GetAnnoncesParticipantAsync(utilisateurID);
-            if (annoncesParticipant.Any())
+            _firstRender = false;
+            utilisateurID = (await localStorage.GetUserFromLocalStorage()).UtilisateursId;
+            Http = HttpClientFactory.CreateClient("ApiSportTogetherClient");
+            try
             {
-                foreach (AnnonceVue annonceV in annoncesParticipant)
+                annoncesAuteur = await GetAnnoncesAuteurAsync(utilisateurID);
+            }
+            catch (Exception ex)
+            {
+                // Gérer les exceptions spécifiques si besoin
+                // Par exemple, loguer l'erreur ou montrer un message à l'utilisateur
+            }
+
+            try
+            {
+                annoncesParticipant = await GetAnnoncesParticipantAsync(utilisateurID);
+                if (annoncesParticipant.Any())
                 {
-                    annonceV.isParticipate = await CheckIfParticipant(annonceV.AnnoncesId);
+                    foreach (AnnonceVue annonceV in annoncesParticipant)
+                    {
+                        annonceV.isParticipate = await CheckIfParticipant(annonceV.AnnoncesId);
+                    }
                 }
             }
-        }
-        catch (Exception ex)
-        {
-            // Gérer les exceptions spécifiques si besoin
-            // Par exemple, loguer l'erreur ou montrer un message à l'utilisateur
-        }
+            catch (Exception ex)
+            {
+                // Gérer les exceptions spécifiques si besoin
+                // Par exemple, loguer l'erreur ou montrer un message à l'utilisateur
+            }
 
-        try
-        {
-            historiqueAnnonce = await GetAnnoncesHistoriqueAsync(utilisateurID);
-        }
-        catch (Exception ex)
-        {
-            // Gérer les exceptions spécifiques si besoin
-            // Par exemple, loguer l'erreur ou montrer un message à l'utilisateur
+            try
+            {
+                historiqueAnnonce = await GetAnnoncesHistoriqueAsync(utilisateurID);
+            }
+            catch (Exception ex)
+            {
+                // Gérer les exceptions spécifiques si besoin
+                // Par exemple, loguer l'erreur ou montrer un message à l'utilisateur
+            }
+            StateHasChanged();
         }
     }
+ 
     #endregion
     #region "GetAnnonces"
     public async Task<List<AnnonceVue>> GetAnnoncesAuteurAsync(int utilisateurID)
     {
-        var response = await Http.GetAsync($"/annonces/auteur/{utilisateurID}");
+        var response = await Http.GetAsync($"/annonces/auteur/{utilisateurID}/{currentPage}");
         if (response.IsSuccessStatusCode)
         {
             return await response.Content.ReadFromJsonAsync<List<AnnonceVue>>() ?? new List<AnnonceVue>();
@@ -352,7 +408,7 @@
 
     public async Task<List<AnnonceVue>> GetAnnoncesParticipantAsync(int utilisateurID)
     {
-        var response = await Http.GetAsync($"/annonces/participant/{utilisateurID}");
+        var response = await Http.GetAsync($"/annonces/participant/{utilisateurID}/{currentPage}");
         if (response.IsSuccessStatusCode)
         {
             return await response.Content.ReadFromJsonAsync<List<AnnonceVue>>() ?? new List<AnnonceVue>();
@@ -365,7 +421,7 @@
     }
     public async Task<List<AnnonceVue>> GetAnnoncesHistoriqueAsync(int utilisateurID)
     {
-        var response = await Http.GetAsync($"/annonces/historique/{utilisateurID}");
+        var response = await Http.GetAsync($"/annonces/historique/{utilisateurID}/{currentPage}");
         if (response.IsSuccessStatusCode)
         {
             return await response.Content.ReadFromJsonAsync<List<AnnonceVue>>() ?? new List<AnnonceVue>();
@@ -656,5 +712,25 @@
         // Logique de tri par date
     }
     #endregion
+
+    // Méthode appelée lors du changement de page
+    private async Task PageChanged(int newPage)
+    {
+        switch (typeFiltre)
+        {
+            case "GeAuteurnre":
+                await GetAnnoncesAuteurAsync(utilisateurID);
+                break;
+
+            case "Participant":
+                await GetAnnoncesAuteurAsync(utilisateurID);
+                break;
+            case "Historique":
+                await GetAnnoncesAuteurAsync(utilisateurID);
+                break;
+           
+        }
+
+    }
     
 }

@@ -6,7 +6,7 @@
         {
             "femmelette", "ménagère", "hystérique", "poufiasse", "gonzesse", "salope", "boniche",
             "pute", "nymphomane", "bimbo", "poule", "machiste", "péripatéticienne", "chauvin",
-            "pisseuse", "cruche", "frustrée", "dinde", "vieux garçon", "pédé"
+            "pisseuse", "cruche", "frustrée", "dinde", "vieux garçon", "pédé", "pd"
         };
 
         private readonly List<string> motsRacistes = new List<string>
